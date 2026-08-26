@@ -1,5 +1,6 @@
 package com.smartpantry.chef.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -29,9 +31,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.smartpantry.chef.R
 
 @Composable
 fun ExploreScreen() {
@@ -111,9 +116,7 @@ fun ExploreScreen() {
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
             categories.forEach { category ->
-
                 FilterChip(
                     selected = selectedCategory == category,
                     onClick = {
@@ -138,7 +141,7 @@ fun ExploreScreen() {
         Spacer(modifier = Modifier.height(14.dp))
 
         RecipeCard(
-            emoji = "🍝",
+            imageRes = R.drawable.pasta_chicken,
             title = "Kremalı Tavuklu Makarna",
             description = "Pratik • 30 dk",
             rating = "⭐ 4.9",
@@ -148,7 +151,7 @@ fun ExploreScreen() {
         Spacer(modifier = Modifier.height(12.dp))
 
         RecipeCard(
-            emoji = "🍰",
+            imageRes = R.drawable.pasta_chicken,
             title = "San Sebastian Cheesecake",
             description = "Tatlı • 45 dk",
             rating = "⭐ 4.8",
@@ -194,13 +197,12 @@ fun ExploreScreen() {
 
 @Composable
 private fun RecipeCard(
-    emoji: String,
+    imageRes: Int,
     title: String,
     description: String,
     rating: String,
     likes: String
 ) {
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -211,20 +213,23 @@ private fun RecipeCard(
             defaultElevation = 3.dp
         )
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp)
+                .padding(12.dp)
         ) {
 
-            Text(
-                text = emoji,
-                fontSize = 42.sp
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = title,
+                modifier = Modifier
+                    .width(110.dp)
+                    .height(95.dp),
+                contentScale = ContentScale.Crop
             )
 
             Column(
-                modifier = Modifier.padding(start = 16.dp)
+                modifier = Modifier.padding(start = 14.dp)
             ) {
 
                 Text(
@@ -259,7 +264,6 @@ private fun WorldCuisineCard(
     country: String,
     description: String
 ) {
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -267,7 +271,6 @@ private fun WorldCuisineCard(
             containerColor = Color(0xFFDDE9DF)
         )
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
