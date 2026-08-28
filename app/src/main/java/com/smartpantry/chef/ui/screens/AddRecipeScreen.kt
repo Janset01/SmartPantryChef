@@ -1,5 +1,5 @@
 package com.smartpantry.chef.ui.screens
-
+import android.widget.Toast
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,14 +40,25 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope
+import com.smartpantry.chef.data.AppDatabase
+import com.smartpantry.chef.data.Recipe
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeScreen() {
 
-    var recipeName by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Kategori Seç") }
-    var categoryExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val database = remember {
+        AppDatabase.getDatabase(context)
+    }
+
+    val recipeDao = database.recipeDao()
 
     val categoryList = listOf(
         "Kahvaltı",
@@ -57,10 +68,16 @@ fun AddRecipeScreen() {
         "Fit",
         "Atıştırmalık"
     )
-    var preparationTime by remember { mutableStateOf("") }
-    var servings by remember { mutableStateOf("") }
-    var ingredients by remember { mutableStateOf("") }
-    var instructions by remember { mutableStateOf("") }
+
+    var recipeName by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("Kategori Seç") }
+    var categoryExpanded by rememberSaveable { mutableStateOf(false) }
+
+    var preparationTime by rememberSaveable { mutableStateOf("") }
+    var servings by rememberSaveable { mutableStateOf("") }
+    var ingredients by rememberSaveable { mutableStateOf("") }
+    var instructions by rememberSaveable { mutableStateOf("") }
+
 
     var selectedImageUri by remember {
         mutableStateOf<Uri?>(null)
@@ -298,14 +315,40 @@ fun AddRecipeScreen() {
 
         Button(
             onClick = {
-                // Sonraki aşamada kayıt işlemini bağlayacağız.
+                val recipe = Recipe(
+                    name = recipeName,
+                    category = category,
+                    preparationTime = preparationTime,
+                    servings = servings,
+                    ingredients = ingredients,
+                    instructions = instructions,
+                    imageUri = selectedImageUri?.toString()
+                )
+
+                scope.launch {
+                    recipeDao.insertRecipe(recipe)
+
+                    Toast.makeText(
+                        context,
+                        "Tarif başarıyla eklendi ✅",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    recipeName = ""
+                    category = "Kategori Seç"
+                    preparationTime = ""
+                    servings = ""
+                    ingredients = ""
+                    instructions = ""
+                    selectedImageUri = null
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp),
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF5F7F65)
+                containerColor = Color(0xFF4F7F65)
             )
         ) {
             Text(
