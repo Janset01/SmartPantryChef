@@ -1,5 +1,9 @@
 package com.smartpantry.chef.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,9 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.rememberAsyncImagePainter
+import androidx.activity.result.PickVisualMediaRequest
 
 @Composable
 fun AddRecipeScreen() {
@@ -38,6 +46,16 @@ fun AddRecipeScreen() {
     var servings by remember { mutableStateOf("") }
     var ingredients by remember { mutableStateOf("") }
     var instructions by remember { mutableStateOf("") }
+
+    var selectedImageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        selectedImageUri = uri
+    }
 
     Column(
         modifier = Modifier
@@ -76,7 +94,6 @@ fun AddRecipeScreen() {
                 defaultElevation = 3.dp
             )
         ) {
-
             Column(
                 modifier = Modifier.padding(18.dp)
             ) {
@@ -86,7 +103,9 @@ fun AddRecipeScreen() {
                     onValueChange = { recipeName = it },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Tarif Adı") },
-                    placeholder = { Text("Örn: Kremalı Tavuklu Makarna") },
+                    placeholder = {
+                        Text("Örn: Kremalı Tavuklu Makarna")
+                    },
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp)
                 )
@@ -98,7 +117,9 @@ fun AddRecipeScreen() {
                     onValueChange = { category = it },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Kategori") },
-                    placeholder = { Text("Örn: Akşam Yemeği") },
+                    placeholder = {
+                        Text("Örn: Akşam Yemeği")
+                    },
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp)
                 )
@@ -181,25 +202,45 @@ fun AddRecipeScreen() {
                 containerColor = Color(0xFFDDE9DF)
             )
         ) {
-
             Column(
                 modifier = Modifier.padding(18.dp)
             ) {
 
                 Text(
-                    text = "📸 Fotoğraf veya Video",
+                    text = "📸 Tarif Fotoğrafı",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF2F3E34)
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = "Tarifine görsel ekleme özelliğini birazdan aktif edeceğiz.",
-                    fontSize = 13.sp,
-                    color = Color(0xFF55645A)
-                )
+                OutlinedButton(
+                    onClick = {
+                        imagePickerLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Galeriden Fotoğraf Seç")
+                }
+
+                selectedImageUri?.let { uri ->
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Image(
+                        painter = rememberAsyncImagePainter(uri),
+                        contentDescription = "Seçilen tarif fotoğrafı",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         }
 
@@ -207,7 +248,7 @@ fun AddRecipeScreen() {
 
         Button(
             onClick = {
-                // Sonra kayıt işlemini bağlayacağız.
+                // Sonraki aşamada kayıt işlemini bağlayacağız.
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -217,7 +258,6 @@ fun AddRecipeScreen() {
                 containerColor = Color(0xFF5F7F65)
             )
         ) {
-
             Text(
                 text = "Tarifi Paylaş",
                 fontSize = 16.sp,
