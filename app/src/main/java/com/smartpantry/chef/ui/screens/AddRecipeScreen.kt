@@ -36,12 +36,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
 import androidx.activity.result.PickVisualMediaRequest
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeScreen() {
 
     var recipeName by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("Kategori Seç") }
+    var categoryExpanded by remember { mutableStateOf(false) }
+
+    val categoryList = listOf(
+        "Kahvaltı",
+        "Öğle Yemeği",
+        "Akşam Yemeği",
+        "Tatlı",
+        "Fit",
+        "Atıştırmalık"
+    )
     var preparationTime by remember { mutableStateOf("") }
     var servings by remember { mutableStateOf("") }
     var ingredients by remember { mutableStateOf("") }
@@ -112,17 +127,52 @@ fun AddRecipeScreen() {
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                OutlinedTextField(
-                    value = category,
-                    onValueChange = { category = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Kategori") },
-                    placeholder = {
-                        Text("Örn: Akşam Yemeği")
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp)
-                )
+                ExposedDropdownMenuBox(
+                    expanded = categoryExpanded,
+                    onExpandedChange = {
+                        categoryExpanded = !categoryExpanded
+                    }
+                ) {
+
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        label = {
+                            Text("Kategori")
+                        },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = categoryExpanded
+                            )
+                        },
+                        shape = RoundedCornerShape(16.dp)
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = categoryExpanded,
+                        onDismissRequest = {
+                            categoryExpanded = false
+                        }
+                    ) {
+
+                        categoryList.forEach { item ->
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(item)
+                                },
+                                onClick = {
+                                    category = item
+                                    categoryExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
