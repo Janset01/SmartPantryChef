@@ -9,12 +9,12 @@ import androidx.room.Query
 @Dao
 interface RecipeDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE) // tarif ekler
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecipe(recipe: Recipe)
 
     @Delete
-    suspend fun deleteRecipe(recipe: Recipe) // tarif siler
+    suspend fun deleteRecipe(recipe: Recipe)
 
-    @Query("SELECT * FROM recipes ORDER BY id DESC") // kayıtlı tarifleri getirir
+    @Query("SELECT * FROM recipes ORDER BY id DESC")
     suspend fun getAllRecipes(): List<Recipe>
 }
