@@ -2,6 +2,7 @@ package com.smartpantry.chef.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,14 +34,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.R
+import com.smartpantry.chef.data.AppDatabase
+import com.smartpantry.chef.data.Recipe
 
 @Composable
-fun ExploreScreen() {
+fun ExploreScreen(
+    onRecipeClick: (Recipe) -> Unit
+) {
 
     var searchText by remember {
         mutableStateOf("")
@@ -49,14 +57,43 @@ fun ExploreScreen() {
         mutableStateOf("Tümü")
     }
 
+    var savedRecipes by remember {
+        mutableStateOf<List<Recipe>>(emptyList())
+    }
+
+    val context = LocalContext.current
+
+    val database = remember {
+        AppDatabase.getDatabase(context)
+    }
+
+    val recipeDao = database.recipeDao()
+
+    LaunchedEffect(Unit) {
+        savedRecipes = recipeDao.getAllRecipes()
+    }
+
     val categories = listOf(
         "Tümü",
         "Kahvaltı",
+        "Öğle Yemeği",
+        "Akşam Yemeği",
         "Tatlı",
-        "Akşam",
         "Fit",
         "Atıştırmalık"
     )
+
+    val filteredRecipes = savedRecipes.filter { recipe ->
+
+        val matchesSearch =
+            recipe.name.contains(searchText, ignoreCase = true)
+
+        val matchesCategory =
+            selectedCategory == "Tümü" ||
+                    recipe.category == selectedCategory
+
+        matchesSearch && matchesCategory
+    }
 
     Column(
         modifier = Modifier
@@ -116,7 +153,9 @@ fun ExploreScreen() {
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+
             categories.forEach { category ->
+
                 FilterChip(
                     selected = selectedCategory == category,
                     onClick = {
@@ -130,6 +169,58 @@ fun ExploreScreen() {
         }
 
         Spacer(modifier = Modifier.height(28.dp))
+
+        // -----------------------------
+        // KAYITLI TARİFLER
+        // -----------------------------
+
+        Text(
+            text = "🍽️ Senin Tariflerin",
+            fontSize = 21.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF2F3E34)
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        if (filteredRecipes.isEmpty()) {
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFDDE9DF)
+                )
+            ) {
+
+                Text(
+                    text = "Henüz bu alanda tarif bulunmuyor.",
+                    modifier = Modifier.padding(18.dp),
+                    fontSize = 14.sp,
+                    color = Color(0xFF55645A)
+                )
+            }
+
+        } else {
+
+            filteredRecipes.forEach { recipe ->
+
+                SavedRecipeCard(
+                    recipe = recipe,
+                    onClick = {
+                        onRecipeClick(recipe)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // -----------------------------
+        // TREND TARİFLER
+        // -----------------------------
 
         Text(
             text = "🔥 Trend Tarifler",
@@ -159,6 +250,10 @@ fun ExploreScreen() {
         )
 
         Spacer(modifier = Modifier.height(30.dp))
+
+        // -----------------------------
+        // DÜNYA MUTFAĞI
+        // -----------------------------
 
         Text(
             text = "🌍 Dünya Mutfağı",
@@ -196,6 +291,91 @@ fun ExploreScreen() {
 }
 
 @Composable
+private fun SavedRecipeCard(
+    recipe: Recipe,
+    onClick: () -> Unit
+) {
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        )
+    ) {
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+
+            if (recipe.imageUri != null) {
+
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        recipe.imageUri
+                    ),
+                    contentDescription = recipe.name,
+                    modifier = Modifier
+                        .width(110.dp)
+                        .height(95.dp),
+                    contentScale = ContentScale.Crop
+                )
+
+            } else {
+
+                Image(
+                    painter = painterResource(
+                        id = R.drawable.pasta_chicken
+                    ),
+                    contentDescription = recipe.name,
+                    modifier = Modifier
+                        .width(110.dp)
+                        .height(95.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Column(
+                modifier = Modifier.padding(start = 14.dp)
+            ) {
+
+                Text(
+                    text = recipe.name,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2F3E34)
+                )
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Text(
+                    text = recipe.category,
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Text(
+                    text = "⏱️ ${recipe.preparationTime}   🍽️ ${recipe.servings}",
+                    fontSize = 13.sp,
+                    color = Color(0xFF55645A)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun RecipeCard(
     imageRes: Int,
     title: String,
@@ -203,6 +383,7 @@ private fun RecipeCard(
     rating: String,
     likes: String
 ) {
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -213,6 +394,7 @@ private fun RecipeCard(
             defaultElevation = 3.dp
         )
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -264,6 +446,7 @@ private fun WorldCuisineCard(
     country: String,
     description: String
 ) {
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -271,6 +454,7 @@ private fun WorldCuisineCard(
             containerColor = Color(0xFFDDE9DF)
         )
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
