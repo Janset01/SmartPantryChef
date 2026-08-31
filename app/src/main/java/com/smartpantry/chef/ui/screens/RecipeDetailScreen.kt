@@ -36,10 +36,12 @@ import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import kotlinx.coroutines.launch
 
+
 @Composable
 fun RecipeDetailScreen(
     recipe: Recipe,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEdit: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -153,14 +155,26 @@ fun RecipeDetailScreen(
             color = Color(0xFF2F3E34)
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
         Text(
             text = recipe.instructions,
             fontSize = 15.sp
         )
 
-        Spacer(modifier = Modifier.height(30.dp))
+// Hazırlanış metni ile Düzenle butonu arası
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = onEdit,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "✏️ Tarifi Düzenle",
+                fontSize = 16.sp
+            )
+        }
+
+// Düzenle ile Sil birbirine yakın
+        Spacer(modifier = Modifier.height(10.dp))
 
         Button(
             onClick = {
@@ -177,7 +191,7 @@ fun RecipeDetailScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(25.dp))
     }
 
     if (showDeleteDialog) {

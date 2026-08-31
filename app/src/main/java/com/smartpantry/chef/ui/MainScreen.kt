@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.ui.screens.AddRecipeScreen
+import com.smartpantry.chef.ui.screens.EditRecipeScreen
 import com.smartpantry.chef.ui.screens.ExploreScreen
 import com.smartpantry.chef.ui.screens.HomeScreen
 import com.smartpantry.chef.ui.screens.PantryScreen
@@ -40,101 +41,151 @@ fun MainScreen() {
         mutableStateOf<Recipe?>(null)
     }
 
-    if (selectedRecipe != null) {
+    var isEditingRecipe by remember {
+        mutableStateOf(false)
+    }
 
-        RecipeDetailScreen(
-            recipe = selectedRecipe!!,
-            onBack = {
-                selectedRecipe = null
+    Scaffold(
+        bottomBar = {
+
+            NavigationBar {
+
+                NavigationBarItem(
+                    selected = selectedIndex == 0,
+                    onClick = {
+                        selectedIndex = 0
+                        selectedRecipe = null
+                        isEditingRecipe = false
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Ana Sayfa"
+                        )
+                    },
+                    label = {
+                        Text("Ana Sayfa")
+                    }
+                )
+
+                NavigationBarItem(
+                    selected = selectedIndex == 1,
+                    onClick = {
+                        selectedIndex = 1
+                        selectedRecipe = null
+                        isEditingRecipe = false
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Keşfet"
+                        )
+                    },
+                    label = {
+                        Text("Keşfet")
+                    }
+                )
+
+                NavigationBarItem(
+                    selected = selectedIndex == 2,
+                    onClick = {
+                        selectedIndex = 2
+                        selectedRecipe = null
+                        isEditingRecipe = false
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Tarif Ekle"
+                        )
+                    },
+                    label = {
+                        Text("Tarif Ekle")
+                    }
+                )
+
+                NavigationBarItem(
+                    selected = selectedIndex == 3,
+                    onClick = {
+                        selectedIndex = 3
+                        selectedRecipe = null
+                        isEditingRecipe = false
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Kitchen,
+                            contentDescription = "Buzdolabım"
+                        )
+                    },
+                    label = {
+                        Text("Buzdolabım")
+                    }
+                )
+
+                NavigationBarItem(
+                    selected = selectedIndex == 4,
+                    onClick = {
+                        selectedIndex = 4
+                        selectedRecipe = null
+                        isEditingRecipe = false
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profil"
+                        )
+                    },
+                    label = {
+                        Text("Profil")
+                    }
+                )
             }
-        )
+        }
+    ) { innerPadding ->
 
-    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
 
-        Scaffold(
-            bottomBar = {
-                NavigationBar {
+            if (selectedRecipe != null) {
 
-                    NavigationBarItem(
-                        selected = selectedIndex == 0,
-                        onClick = { selectedIndex = 0 },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Home,
-                                contentDescription = "Ana Sayfa"
-                            )
+                if (isEditingRecipe) {
+
+                    EditRecipeScreen(
+                        recipe = selectedRecipe!!,
+
+                        onBack = {
+                            isEditingRecipe = false
                         },
-                        label = {
-                            Text("Ana Sayfa")
+
+                        onRecipeUpdated = { updatedRecipe ->
+
+                            selectedRecipe = updatedRecipe
+                            isEditingRecipe = false
                         }
                     )
 
-                    NavigationBarItem(
-                        selected = selectedIndex == 1,
-                        onClick = { selectedIndex = 1 },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Keşfet"
-                            )
-                        },
-                        label = {
-                            Text("Keşfet")
-                        }
-                    )
+                } else {
 
-                    NavigationBarItem(
-                        selected = selectedIndex == 2,
-                        onClick = { selectedIndex = 2 },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Tarif Ekle"
-                            )
-                        },
-                        label = {
-                            Text("Tarif Ekle")
-                        }
-                    )
+                    RecipeDetailScreen(
+                        recipe = selectedRecipe!!,
 
-                    NavigationBarItem(
-                        selected = selectedIndex == 3,
-                        onClick = { selectedIndex = 3 },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Kitchen,
-                                contentDescription = "Buzdolabım"
-                            )
+                        onBack = {
+                            selectedRecipe = null
                         },
-                        label = {
-                            Text("Buzdolabım")
-                        }
-                    )
 
-                    NavigationBarItem(
-                        selected = selectedIndex == 4,
-                        onClick = { selectedIndex = 4 },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profil"
-                            )
-                        },
-                        label = {
-                            Text("Profil")
+                        onEdit = {
+                            isEditingRecipe = true
                         }
                     )
                 }
-            }
-        ) { innerPadding ->
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
+            } else {
 
                 when (selectedIndex) {
+
                     0 -> HomeScreen()
 
                     1 -> ExploreScreen(
@@ -144,7 +195,9 @@ fun MainScreen() {
                     )
 
                     2 -> AddRecipeScreen()
+
                     3 -> PantryScreen()
+
                     4 -> ProfileScreen()
                 }
             }
