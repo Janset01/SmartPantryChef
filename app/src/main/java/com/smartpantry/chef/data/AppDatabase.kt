@@ -6,13 +6,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [Recipe::class],
-    version = 1,
+    entities = [
+        Recipe::class,
+        Ingredient::class
+    ],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun recipeDao(): RecipeDao
+
+    abstract fun ingredientDao(): IngredientDao
 
     companion object {
 
@@ -27,7 +32,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "smart_pantry_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
 
                 INSTANCE = instance
 
