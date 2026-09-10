@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,17 +55,24 @@ import androidx.core.content.FileProvider
 import coil3.compose.AsyncImage
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Ingredient
+import com.smartpantry.chef.data.processIngredientExpirations
+import com.smartpantry.chef.data.scheduleExpirationChecks
 import com.smartpantry.chef.ui.screens.pantry.DeleteIngredientDialog
 import com.smartpantry.chef.ui.screens.pantry.EditIngredientDialog
 import com.smartpantry.chef.ui.screens.pantry.IngredientCard
 import com.smartpantry.chef.ui.screens.pantry.formatIngredientQuantity
 import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantryScreen() {
+fun PantryScreen(
+    onShowRecipeSuggestions: () -> Unit
+) {
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -128,10 +136,57 @@ fun PantryScreen() {
         "Mililitre",
         "Litre"
     )
+    val notificationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
 
-    // Room'dan malzemeleri getir
+            if (granted) {
+                scope.launch {
+                    processIngredientExpirations(context)
+                    ingredients = ingredientDao.getAllIngredients()
+                }
+            }
+        }
+
+    // Room'dan malzemeleri getir + son kullanma kontrolünü başlat
     LaunchedEffect(Unit) {
-        ingredients = ingredientDao.getAllIngredients()
+
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        }
+
+        val removedNames =
+            processIngredientExpirations(context)
+
+        scheduleExpirationChecks(context)
+
+        ingredients =
+            ingredientDao.getAllIngredients()
+
+        if (removedNames.isNotEmpty()) {
+
+            val message =
+                if (removedNames.size == 1) {
+                    "${removedNames.first()} süresi dolmuştur ve buzdolabından çıkarılmıştır."
+                } else {
+                    "${removedNames.joinToString(", ")} süresi dolduğu için buzdolabından çıkarıldı."
+                }
+
+            Toast.makeText(
+                context,
+                message,
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     // ------------------------------------------------
@@ -254,7 +309,32 @@ fun PantryScreen() {
         )
 
         Spacer(
-            modifier = Modifier.height(24.dp)
+            modifier = Modifier.height(18.dp)
+        )
+
+        val expiryWarnings =
+            buildPantryExpiryWarnings(ingredients)
+
+        if (expiryWarnings.isNotEmpty()) {
+
+            ExpiryWarningCard(
+                warnings = expiryWarnings
+            )
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+        }
+
+        Button(
+            onClick = onShowRecipeSuggestions,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("🍳 Elimdekilerle Ne Yapabilirim?")
+        }
+
+        Spacer(
+            modifier = Modifier.height(20.dp)
         )
 
         // ------------------------------------------------
@@ -988,6 +1068,149 @@ private fun UseIngredientDialog(
             }
         }
     )
+}
+
+private data class PantryExpiryWarning(
+    val ingredientName: String,
+    val daysLeft: Long
+)
+
+@Composable
+private fun ExpiryWarningCard(
+    warnings: List<PantryExpiryWarning>
+) {
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFF3E0)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
+            Text(
+                text = "⏰ Son Kullanma Uyarıları",
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF5D4524)
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            warnings.take(5).forEach { warning ->
+
+                Text(
+                    text = pantryExpiryWarningText(warning),
+                    fontSize = 14.sp,
+                    color = Color(0xFF5D4524)
+                )
+
+                Spacer(
+                    modifier = Modifier.height(5.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun buildPantryExpiryWarnings(
+    ingredients: List<Ingredient>
+): List<PantryExpiryWarning> {
+
+    val formatter =
+        SimpleDateFormat(
+            "dd.MM.yyyy",
+            Locale.getDefault()
+        ).apply {
+            isLenient = false
+        }
+
+    val today =
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+    return ingredients
+        .mapNotNull { ingredient ->
+
+            if (ingredient.remainingQuantity <= 0.0) {
+                return@mapNotNull null
+            }
+
+            val expiration =
+                try {
+                    formatter.parse(
+                        ingredient.expirationDate
+                    )
+                } catch (_: Exception) {
+                    null
+                } ?: return@mapNotNull null
+
+            val expirationCalendar =
+                Calendar.getInstance().apply {
+                    time = expiration
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+            val daysLeft =
+                TimeUnit.MILLISECONDS.toDays(
+                    expirationCalendar.timeInMillis -
+                            today.timeInMillis
+                )
+
+            if (daysLeft in 0L..5L) {
+                PantryExpiryWarning(
+                    ingredientName = ingredient.name,
+                    daysLeft = daysLeft
+                )
+            } else {
+                null
+            }
+        }
+        .sortedBy {
+            it.daysLeft
+        }
+}
+
+private fun pantryExpiryWarningText(
+    warning: PantryExpiryWarning
+): String {
+
+    return when (warning.daysLeft) {
+
+        0L ->
+            "🔴 ${warning.ingredientName} bugün tüketilmeli."
+
+        1L ->
+            "🔴 ${warning.ingredientName} süresi yarın doluyor."
+
+        2L ->
+            "🟠 ${warning.ingredientName} son kullanma tarihine 2 gün kaldı."
+
+        3L ->
+            "🟡 ${warning.ingredientName} son kullanma tarihine 3 gün kaldı."
+
+        4L ->
+            "🟡 ${warning.ingredientName} son kullanma tarihine 4 gün kaldı."
+
+        else ->
+            "⚠️ ${warning.ingredientName} son kullanma tarihine 5 gün kaldı."
+    }
 }
 
 // ------------------------------------------------

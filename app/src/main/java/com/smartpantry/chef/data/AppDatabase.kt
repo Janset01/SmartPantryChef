@@ -8,9 +8,10 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [
         Recipe::class,
-        Ingredient::class
+        Ingredient::class,
+        RecipeIngredient::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -18,6 +19,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao
 
     abstract fun ingredientDao(): IngredientDao
+
+    abstract fun recipeIngredientDao(): RecipeIngredientDao
 
     companion object {
 

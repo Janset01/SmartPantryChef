@@ -55,6 +55,9 @@ dependencies {
     implementation("androidx.room:room-ktx:2.8.4")
     ksp("androidx.room:room-compiler:2.8.4")
 
+    // WORKMANAGER - son kullanma tarihi kontrolü
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
+
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)

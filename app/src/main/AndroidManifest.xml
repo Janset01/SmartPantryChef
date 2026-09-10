@@ -9,6 +9,9 @@
     <!-- Kamera -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Android 13+ bildirim izni -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Kamera olmayan cihazlarda da uygulama kurulabilsin -->
     <uses-feature
         android:name="android.hardware.camera"

@@ -1,4 +1,5 @@
 package com.smartpantry.chef.ui.screens.pantry
+
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,13 +31,10 @@ fun IngredientCard(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
-
     val stockPercentage =
         if (ingredient.initialQuantity > 0) {
-            (
-                    ingredient.remainingQuantity /
-                            ingredient.initialQuantity
-                    ).coerceIn(0.0, 1.0)
+            (ingredient.remainingQuantity / ingredient.initialQuantity)
+                .coerceIn(0.0, 1.0)
         } else {
             0.0
         }
@@ -44,21 +42,12 @@ fun IngredientCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
+        Column(modifier = Modifier.padding(16.dp)) {
 
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-
-            // FOTOĞRAF
             if (!ingredient.imageUri.isNullOrBlank()) {
-
                 AsyncImage(
                     model = Uri.parse(ingredient.imageUri),
                     contentDescription = ingredient.name,
@@ -68,13 +57,9 @@ fun IngredientCard(
                         .clip(RoundedCornerShape(16.dp)),
                     contentScale = ContentScale.Crop
                 )
-
-                Spacer(
-                    modifier = Modifier.height(14.dp)
-                )
+                Spacer(modifier = Modifier.height(14.dp))
             }
 
-            // MALZEME ADI
             Text(
                 text = ingredient.name,
                 fontSize = 19.sp,
@@ -82,45 +67,37 @@ fun IngredientCard(
                 color = Color(0xFF2F3E34)
             )
 
-            Spacer(
-                modifier = Modifier.height(7.dp)
-            )
+            Spacer(modifier = Modifier.height(7.dp))
 
             Text(
                 text = "Başlangıç: ${
-                    formatIngredientQuantity(
-                        ingredient.initialQuantity
+                    formatSmartIngredientQuantity(
+                        ingredient.initialQuantity,
+                        ingredient.unit
                     )
-                } ${ingredient.unit}"
+                }"
             )
 
-            Spacer(
-                modifier = Modifier.height(3.dp)
-            )
+            Spacer(modifier = Modifier.height(3.dp))
 
             Text(
                 text = "Kalan: ${
-                    formatIngredientQuantity(
-                        ingredient.remainingQuantity
+                    formatSmartIngredientQuantity(
+                        ingredient.remainingQuantity,
+                        ingredient.unit
                     )
-                } ${ingredient.unit}",
+                }",
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(
-                modifier = Modifier.height(12.dp)
-            )
+            Spacer(modifier = Modifier.height(12.dp))
 
             LinearProgressIndicator(
-                progress = {
-                    stockPercentage.toFloat()
-                },
+                progress = { stockPercentage.toFloat() },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(
-                modifier = Modifier.height(7.dp)
-            )
+            Spacer(modifier = Modifier.height(7.dp))
 
             Text(
                 text = "Stok: ${(stockPercentage * 100).toInt()}%",
@@ -128,51 +105,33 @@ fun IngredientCard(
                 color = Color.Gray
             )
 
-            Spacer(
-                modifier = Modifier.height(5.dp)
-            )
+            Spacer(modifier = Modifier.height(5.dp))
 
             Text(
-                text = getIngredientStockStatus(
-                    stockPercentage
-                ),
+                text = getIngredientStockStatus(stockPercentage),
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(
-                modifier = Modifier.height(7.dp)
-            )
+            Spacer(modifier = Modifier.height(7.dp))
+
+            Text(text = "📅 ${ingredient.expirationDate}")
+
+            Spacer(modifier = Modifier.height(3.dp))
 
             Text(
-                text = "📅 ${ingredient.expirationDate}"
-            )
-
-            Spacer(
-                modifier = Modifier.height(3.dp)
-            )
-
-            Text(
-                text = getIngredientExpirationStatus(
-                    ingredient.expirationDate
-                ),
+                text = getIngredientExpirationStatus(ingredient.expirationDate),
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(
-                modifier = Modifier.height(14.dp)
-            )
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // KULLANDIM
             Button(
                 onClick = onUseClick,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = ingredient.remainingQuantity > 0
             ) {
-
                 Text(
-                    text = if (
-                        ingredient.remainingQuantity > 0
-                    ) {
+                    text = if (ingredient.remainingQuantity > 0) {
                         "🍴 Kullandım"
                     } else {
                         "🔴 Tükendi"
@@ -180,15 +139,9 @@ fun IngredientCard(
                 )
             }
 
-            Spacer(
-                modifier = Modifier.height(9.dp)
-            )
+            Spacer(modifier = Modifier.height(9.dp))
 
-            // DÜZENLE + SİL
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-
+            Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(
                     onClick = onEditClick,
                     modifier = Modifier.weight(1f)
@@ -196,9 +149,7 @@ fun IngredientCard(
                     Text("✏️ Düzenle")
                 }
 
-                Spacer(
-                    modifier = Modifier.weight(0.05f)
-                )
+                Spacer(modifier = Modifier.weight(0.05f))
 
                 OutlinedButton(
                     onClick = onDeleteClick,
@@ -211,16 +162,57 @@ fun IngredientCard(
     }
 }
 
-fun formatIngredientQuantity(
-    quantity: Double
+fun formatSmartIngredientQuantity(
+    quantity: Double,
+    unit: String
 ): String {
+    val normalizedUnit = unit.trim().lowercase(Locale.getDefault())
 
+    return when (normalizedUnit) {
+        "litre" -> {
+            if (quantity > 0.0 && quantity < 1.0) {
+                "${formatIngredientQuantity(quantity * 1000.0)} Mililitre"
+            } else {
+                "${formatIngredientQuantity(quantity)} Litre"
+            }
+        }
+
+        "mililitre" -> {
+            if (quantity >= 1000.0) {
+                "${formatIngredientQuantity(quantity / 1000.0)} Litre"
+            } else {
+                "${formatIngredientQuantity(quantity)} Mililitre"
+            }
+        }
+
+        "kilogram" -> {
+            if (quantity > 0.0 && quantity < 1.0) {
+                "${formatIngredientQuantity(quantity * 1000.0)} Gram"
+            } else {
+                "${formatIngredientQuantity(quantity)} Kilogram"
+            }
+        }
+
+        "gram" -> {
+            if (quantity >= 1000.0) {
+                "${formatIngredientQuantity(quantity / 1000.0)} Kilogram"
+            } else {
+                "${formatIngredientQuantity(quantity)} Gram"
+            }
+        }
+
+        "adet" ->
+            "${formatIngredientQuantity(quantity)} Adet"
+
+        else ->
+            "${formatIngredientQuantity(quantity)} $unit"
+    }
+}
+
+fun formatIngredientQuantity(quantity: Double): String {
     return if (quantity % 1.0 == 0.0) {
-
         quantity.toInt().toString()
-
     } else {
-
         String.format(
             Locale.getDefault(),
             "%.2f",
@@ -231,32 +223,19 @@ fun formatIngredientQuantity(
     }
 }
 
-private fun getIngredientStockStatus(
-    stockPercentage: Double
-): String {
-
+private fun getIngredientStockStatus(stockPercentage: Double): String {
     return when {
-
-        stockPercentage <= 0.0 ->
-            "🔴 Tükendi"
-
-        stockPercentage <= 0.25 ->
-            "🟠 Çok az kaldı"
-
-        stockPercentage <= 0.50 ->
-            "🟡 Yarıdan az kaldı"
-
-        else ->
-            "🟢 Stok yeterli"
+        stockPercentage <= 0.0 -> "🔴 Tükendi"
+        stockPercentage <= 0.25 -> "🟠 Çok az kaldı"
+        stockPercentage <= 0.50 -> "🟡 Yarıdan az kaldı"
+        else -> "🟢 Stok yeterli"
     }
 }
 
 private fun getIngredientExpirationStatus(
     expirationDate: String
 ): String {
-
     return try {
-
         val formatter = SimpleDateFormat(
             "dd.MM.yyyy",
             Locale.getDefault()
@@ -277,9 +256,7 @@ private fun getIngredientExpirationStatus(
 
         val expirationCalendar =
             Calendar.getInstance().apply {
-
                 time = expiration
-
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
                 set(Calendar.SECOND, 0)
@@ -287,31 +264,19 @@ private fun getIngredientExpirationStatus(
             }
 
         val difference =
-            expirationCalendar.timeInMillis -
-                    today.timeInMillis
+            expirationCalendar.timeInMillis - today.timeInMillis
 
         val days =
-            TimeUnit.MILLISECONDS.toDays(
-                difference
-            )
+            TimeUnit.MILLISECONDS.toDays(difference)
 
         when {
-
-            days < 0 ->
-                "🔴 Süresi Doldu"
-
-            days == 0L ->
-                "🔴 Bugün Tüket"
-
-            days <= 3 ->
-                "🟠 Yakında Tüket • $days gün kaldı"
-
-            else ->
-                "🟢 Taze • $days gün kaldı"
+            days < 0 -> "🔴 Süresi Doldu"
+            days == 0L -> "🔴 Bugün Tüket"
+            days <= 3 -> "🟠 Yakında Tüket • $days gün kaldı"
+            else -> "🟢 Taze • $days gün kaldı"
         }
 
     } catch (_: Exception) {
-
         "⚪ Tarih bilgisi okunamadı"
     }
 }

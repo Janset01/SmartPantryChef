@@ -26,6 +26,7 @@ import com.smartpantry.chef.ui.screens.AddRecipeScreen
 import com.smartpantry.chef.ui.screens.EditRecipeScreen
 import com.smartpantry.chef.ui.screens.ExploreScreen
 import com.smartpantry.chef.ui.screens.HomeScreen
+import com.smartpantry.chef.ui.screens.PantryRecipeSuggestionsScreen
 import com.smartpantry.chef.ui.screens.PantryScreen
 import com.smartpantry.chef.ui.screens.ProfileScreen
 import com.smartpantry.chef.ui.screens.RecipeDetailScreen
@@ -45,6 +46,11 @@ fun MainScreen() {
         mutableStateOf(false)
     }
 
+    // Buzdolabından tarif önerileri ekranını açmak için
+    var showPantrySuggestions by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         bottomBar = {
 
@@ -56,6 +62,7 @@ fun MainScreen() {
                         selectedIndex = 0
                         selectedRecipe = null
                         isEditingRecipe = false
+                        showPantrySuggestions = false
                     },
                     icon = {
                         Icon(
@@ -74,6 +81,7 @@ fun MainScreen() {
                         selectedIndex = 1
                         selectedRecipe = null
                         isEditingRecipe = false
+                        showPantrySuggestions = false
                     },
                     icon = {
                         Icon(
@@ -92,6 +100,7 @@ fun MainScreen() {
                         selectedIndex = 2
                         selectedRecipe = null
                         isEditingRecipe = false
+                        showPantrySuggestions = false
                     },
                     icon = {
                         Icon(
@@ -110,6 +119,7 @@ fun MainScreen() {
                         selectedIndex = 3
                         selectedRecipe = null
                         isEditingRecipe = false
+                        showPantrySuggestions = false
                     },
                     icon = {
                         Icon(
@@ -128,6 +138,7 @@ fun MainScreen() {
                         selectedIndex = 4
                         selectedRecipe = null
                         isEditingRecipe = false
+                        showPantrySuggestions = false
                     },
                     icon = {
                         Icon(
@@ -149,56 +160,89 @@ fun MainScreen() {
                 .padding(innerPadding)
         ) {
 
-            if (selectedRecipe != null) {
+            when {
 
-                if (isEditingRecipe) {
+                // -----------------------------------------
+                // TARİF DETAY / DÜZENLE
+                // -----------------------------------------
 
-                    EditRecipeScreen(
-                        recipe = selectedRecipe!!,
+                selectedRecipe != null -> {
 
-                        onBack = {
-                            isEditingRecipe = false
-                        },
+                    if (isEditingRecipe) {
 
-                        onRecipeUpdated = { updatedRecipe ->
+                        EditRecipeScreen(
+                            recipe = selectedRecipe!!,
 
-                            selectedRecipe = updatedRecipe
-                            isEditingRecipe = false
-                        }
-                    )
+                            onBack = {
+                                isEditingRecipe = false
+                            },
 
-                } else {
+                            onRecipeUpdated = { updatedRecipe ->
 
-                    RecipeDetailScreen(
-                        recipe = selectedRecipe!!,
+                                selectedRecipe = updatedRecipe
+                                isEditingRecipe = false
+                            }
+                        )
 
-                        onBack = {
-                            selectedRecipe = null
-                        },
+                    } else {
 
-                        onEdit = {
-                            isEditingRecipe = true
-                        }
-                    )
+                        RecipeDetailScreen(
+                            recipe = selectedRecipe!!,
+
+                            onBack = {
+                                selectedRecipe = null
+                            },
+
+                            onEdit = {
+                                isEditingRecipe = true
+                            }
+                        )
+                    }
                 }
 
-            } else {
+                // -----------------------------------------
+               // BUZDOLABI TARİF ÖNERİLERİ
+               // -----------------------------------------
 
-                when (selectedIndex) {
+                showPantrySuggestions -> {
 
-                    0 -> HomeScreen()
+                    PantryRecipeSuggestionsScreen(
+                        onBack = {
+                            showPantrySuggestions = false
+                        },
 
-                    1 -> ExploreScreen(
                         onRecipeClick = { recipe ->
                             selectedRecipe = recipe
                         }
                     )
+                }
 
-                    2 -> AddRecipeScreen()
+                // -----------------------------------------
+                // ANA 5 EKRAN
+                // -----------------------------------------
 
-                    3 -> PantryScreen()
+                else -> {
 
-                    4 -> ProfileScreen()
+                    when (selectedIndex) {
+
+                        0 -> HomeScreen()
+
+                        1 -> ExploreScreen(
+                            onRecipeClick = { recipe ->
+                                selectedRecipe = recipe
+                            }
+                        )
+
+                        2 -> AddRecipeScreen()
+
+                        3 -> PantryScreen(
+                            onShowRecipeSuggestions = {
+                                showPantrySuggestions = true
+                            }
+                        )
+
+                        4 -> ProfileScreen()
+                    }
                 }
             }
         }
