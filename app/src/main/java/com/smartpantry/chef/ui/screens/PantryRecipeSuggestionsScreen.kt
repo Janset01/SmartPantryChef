@@ -205,6 +205,7 @@ fun PantryRecipeSuggestionsScreen(
                 CategoryRecipesContent(
                     category = selectedCategory!!,
                     matches = matches,
+                    expiringRecommendations = expiringRecommendations,
                     selectedFilter = selectedFilter,
                     onFilterChange = {
                         selectedFilter = it
@@ -365,15 +366,35 @@ private fun MealCategoryCard(
 private fun CategoryRecipesContent(
     category: MealCategory,
     matches: List<RecipeMatch>,
+    expiringRecommendations: List<ExpiringRecipeRecommendation>,
     selectedFilter: SuggestionFilter,
     onFilterChange: (SuggestionFilter) -> Unit,
     onRecipeClick: (Recipe) -> Unit
 ) {
 
-    val categoryMatches =
-        matches.filter {
-            it.recipe.category == category.databaseValue
+    val urgentDaysByRecipeId =
+        expiringRecommendations.associate {
+            it.match.recipe.id to it.daysLeft
         }
+
+    val categoryMatches =
+        matches
+            .filter {
+                it.recipe.category == category.databaseValue
+            }
+            .sortedWith(
+                compareBy<RecipeMatch> {
+                    when (it.status) {
+                        MatchStatus.CAN_MAKE -> 0
+                        MatchStatus.ALMOST_READY -> 1
+                        MatchStatus.MISSING -> 2
+                    }
+                }.thenBy {
+                    urgentDaysByRecipeId[it.recipe.id] ?: Long.MAX_VALUE
+                }.thenByDescending {
+                    it.compatibilityPercent
+                }
+            )
 
     val filteredMatches =
         when (selectedFilter) {
@@ -401,7 +422,7 @@ private fun CategoryRecipesContent(
     Spacer(modifier = Modifier.height(5.dp))
 
     Text(
-        text = "Buzdolabındaki stoklarına göre sıralandı",
+        text = "Stoklarına ve son kullanma tarihine göre akıllıca sıralandı",
         fontSize = 14.sp,
         color = Color.Gray
     )
@@ -478,6 +499,7 @@ private fun CategoryRecipesContent(
 
                 CompactRecipeCard(
                     match = match,
+                    expiringDaysLeft = urgentDaysByRecipeId[match.recipe.id],
                     rank =
                         if (selectedFilter == SuggestionFilter.BEST) {
                             index + 1
@@ -497,6 +519,7 @@ private fun CategoryRecipesContent(
 @Composable
 private fun CompactRecipeCard(
     match: RecipeMatch,
+    expiringDaysLeft: Long?,
     rank: Int?,
     onClick: () -> Unit
 ) {
@@ -590,6 +613,22 @@ private fun CompactRecipeCard(
                             Color(0xFF715B2E)
                     }
             )
+
+            if (expiringDaysLeft != null) {
+                Spacer(modifier = Modifier.height(7.dp))
+
+                Text(
+                    text =
+                        when (expiringDaysLeft) {
+                            0L -> "♻️ Bugün tüketilmesi gereken malzeme kullanıyor"
+                            1L -> "♻️ 1 gün içinde tüketilmesi gereken malzeme kullanıyor"
+                            else -> "♻️ $expiringDaysLeft gün içinde tüketilmesi gereken malzeme kullanıyor"
+                        },
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF4F7F65)
+                )
+            }
 
             Spacer(modifier = Modifier.height(7.dp))
 
