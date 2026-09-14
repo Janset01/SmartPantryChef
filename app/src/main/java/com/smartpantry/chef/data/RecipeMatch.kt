@@ -1,5 +1,6 @@
 package com.smartpantry.chef.data
 
+import java.util.Locale
 import kotlin.math.roundToInt
 
 data class MissingIngredient(
@@ -31,10 +32,7 @@ object RecipeMatcher {
         pantryIngredients: List<Ingredient>
     ): RecipeMatch {
 
-        // Tarifin yapılandırılmış malzemesi yoksa
-        // "yapabilirsin" dememeliyiz.
         if (recipeIngredients.isEmpty()) {
-
             return RecipeMatch(
                 recipe = recipe,
                 totalIngredients = 0,
@@ -46,54 +44,9 @@ object RecipeMatcher {
         }
 
         var matchedCount = 0
-
-        val missingList =
-            mutableListOf<MissingIngredient>()
+        val missingList = mutableListOf<MissingIngredient>()
 
         recipeIngredients.forEach { required ->
-
-            val pantryIngredient =
-                pantryIngredients.firstOrNull { pantry ->
-
-                    normalizeName(pantry.name) ==
-                            normalizeName(required.name)
-                }
-
-            if (pantryIngredient == null) {
-
-                missingList.add(
-                    MissingIngredient(
-                        name = required.name,
-                        missingQuantity =
-                            required.quantity,
-                        unit = required.unit
-                    )
-                )
-
-                return@forEach
-            }
-
-            // Gram/Kilogram kendi arasında,
-            // ml/Litre kendi arasında,
-            // Adet de sadece Adet ile karşılaştırılır.
-            if (
-                !areUnitsCompatible(
-                    required.unit,
-                    pantryIngredient.unit
-                )
-            ) {
-
-                missingList.add(
-                    MissingIngredient(
-                        name = required.name,
-                        missingQuantity =
-                            required.quantity,
-                        unit = required.unit
-                    )
-                )
-
-                return@forEach
-            }
 
             val requiredBase =
                 convertToBase(
@@ -101,22 +54,11 @@ object RecipeMatcher {
                     required.unit
                 )
 
-            val pantryBase =
-                convertToBase(
-                    pantryIngredient.remainingQuantity,
-                    pantryIngredient.unit
-                )
-
-            if (
-                requiredBase == null ||
-                pantryBase == null
-            ) {
-
+            if (requiredBase == null) {
                 missingList.add(
                     MissingIngredient(
                         name = required.name,
-                        missingQuantity =
-                            required.quantity,
+                        missingQuantity = required.quantity,
                         unit = required.unit
                     )
                 )
@@ -124,14 +66,45 @@ object RecipeMatcher {
                 return@forEach
             }
 
-            if (pantryBase >= requiredBase) {
+            val matchingPantryIngredients =
+                pantryIngredients.filter { pantry ->
 
+                    pantry.remainingQuantity > 0 &&
+                            ingredientNamesMatch(
+                                pantry.name,
+                                required.name
+                            ) &&
+                            areUnitsCompatible(
+                                required.unit,
+                                pantry.unit
+                            )
+                }
+
+            if (matchingPantryIngredients.isEmpty()) {
+                missingList.add(
+                    MissingIngredient(
+                        name = required.name,
+                        missingQuantity = required.quantity,
+                        unit = required.unit
+                    )
+                )
+
+                return@forEach
+            }
+
+            val totalPantryBase =
+                matchingPantryIngredients.sumOf { pantry ->
+                    convertToBase(
+                        pantry.remainingQuantity,
+                        pantry.unit
+                    ) ?: 0.0
+                }
+
+            if (totalPantryBase >= requiredBase) {
                 matchedCount++
-
             } else {
-
                 val missingBase =
-                    requiredBase - pantryBase
+                    requiredBase - totalPantryBase
 
                 val missingQuantity =
                     convertFromBase(
@@ -142,16 +115,14 @@ object RecipeMatcher {
                 missingList.add(
                     MissingIngredient(
                         name = required.name,
-                        missingQuantity =
-                            missingQuantity,
+                        missingQuantity = missingQuantity,
                         unit = required.unit
                     )
                 )
             }
         }
 
-        val total =
-            recipeIngredients.size
+        val total = recipeIngredients.size
 
         val percent =
             (
@@ -162,12 +133,9 @@ object RecipeMatcher {
 
         val status =
             when {
-
                 missingList.isEmpty() ->
                     MatchStatus.CAN_MAKE
 
-                // Sadece 1 malzeme eksikse
-                // neredeyse hazır kabul ediyoruz.
                 missingList.size == 1 ->
                     MatchStatus.ALMOST_READY
 
@@ -185,19 +153,45 @@ object RecipeMatcher {
         )
     }
 
+    private fun ingredientNamesMatch(
+        firstName: String,
+        secondName: String
+    ): Boolean {
+
+        return normalizeName(firstName) ==
+                normalizeName(secondName)
+    }
+
     private fun normalizeName(
         name: String
     ): String {
 
-        return name
-            .trim()
-            .lowercase()
-            .replace("ı", "i")
-            .replace("ş", "s")
-            .replace("ğ", "g")
-            .replace("ü", "u")
-            .replace("ö", "o")
-            .replace("ç", "c")
+        val cleanedName =
+            name
+                .trim()
+                .lowercase(Locale("tr", "TR"))
+                .replace("ı", "i")
+                .replace("ş", "s")
+                .replace("ğ", "g")
+                .replace("ü", "u")
+                .replace("ö", "o")
+                .replace("ç", "c")
+                .replace(Regex("[^a-z0-9\\s]"), " ")
+                .replace(Regex("\\s+"), " ")
+                .trim()
+
+        return when {
+            cleanedName.length > 5 &&
+                    cleanedName.endsWith("lar") ->
+                cleanedName.dropLast(3).trim()
+
+            cleanedName.length > 5 &&
+                    cleanedName.endsWith("ler") ->
+                cleanedName.dropLast(3).trim()
+
+            else ->
+                cleanedName
+        }
     }
 
     private fun normalizeUnit(
@@ -206,7 +200,13 @@ object RecipeMatcher {
 
         return unit
             .trim()
-            .lowercase()
+            .lowercase(Locale("tr", "TR"))
+            .replace("ı", "i")
+            .replace("ş", "s")
+            .replace("ğ", "g")
+            .replace("ü", "u")
+            .replace("ö", "o")
+            .replace("ç", "c")
     }
 
     private fun areUnitsCompatible(
@@ -214,8 +214,15 @@ object RecipeMatcher {
         secondUnit: String
     ): Boolean {
 
-        return unitType(firstUnit) ==
-                unitType(secondUnit)
+        val firstType =
+            unitType(firstUnit)
+
+        val secondType =
+            unitType(secondUnit)
+
+        return firstType != "UNKNOWN" &&
+                secondType != "UNKNOWN" &&
+                firstType == secondType
     }
 
     private fun unitType(
@@ -251,21 +258,18 @@ object RecipeMatcher {
             normalizeUnit(unit)
         ) {
 
-            // Ağırlığın temel birimi Gram
             "gram" ->
                 quantity
 
             "kilogram" ->
                 quantity * 1000
 
-            // Hacmin temel birimi Mililitre
             "mililitre" ->
                 quantity
 
             "litre" ->
                 quantity * 1000
 
-            // Adet kendi başına
             "adet" ->
                 quantity
 
