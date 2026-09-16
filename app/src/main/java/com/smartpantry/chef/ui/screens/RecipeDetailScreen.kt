@@ -42,7 +42,9 @@ import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeIngredient
 import com.smartpantry.chef.data.RecipeMatch
 import com.smartpantry.chef.data.RecipeMatcher
+import com.smartpantry.chef.data.ShoppingItem
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun RecipeDetailScreen(
@@ -60,6 +62,7 @@ fun RecipeDetailScreen(
     val recipeDao = database.recipeDao()
     val ingredientDao = database.ingredientDao()
     val recipeIngredientDao = database.recipeIngredientDao()
+    val shoppingItemDao = database.shoppingItemDao()
 
     var showDeleteDialog by remember {
         mutableStateOf(false)
@@ -91,6 +94,10 @@ fun RecipeDetailScreen(
 
     var refreshPantry by remember {
         mutableStateOf(0)
+    }
+
+    var shoppingMessage by remember {
+        mutableStateOf<String?>(null)
     }
 
     LaunchedEffect(recipe.id, refreshPantry) {
@@ -190,8 +197,40 @@ fun RecipeDetailScreen(
         PantryCompatibilitySection(
             recipeMatch = recipeMatch,
             structuredIngredients = structuredIngredients,
-            isLoading = pantryCheckLoading
+            isLoading = pantryCheckLoading,
+            onAddMissingToShoppingList = {
+                scope.launch {
+                    addMissingIngredientsToShoppingList(
+                        missingItems = recipeMatch?.missingIngredients.orEmpty().map { missing ->
+                            ShoppingItem(
+                                name = missing.name,
+                                quantity = missing.missingQuantity,
+                                unit = missing.unit
+                            )
+                        },
+                        currentShoppingItems = shoppingItemDao.getAllShoppingItems(),
+                        insertShoppingItem = { item ->
+                            shoppingItemDao.insertShoppingItem(item)
+                        },
+                        updateShoppingItem = { item ->
+                            shoppingItemDao.updateShoppingItem(item)
+                        }
+                    )
+                    shoppingMessage =
+                        "✅ Eksik malzemeler alışveriş listene eklendi."
+                }
+            }
         )
+
+        shoppingMessage?.let { message ->
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = message,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF3F6F52)
+            )
+        }
 
         Spacer(modifier = Modifier.height(14.dp))
 
@@ -384,7 +423,8 @@ fun RecipeDetailScreen(
 private fun PantryCompatibilitySection(
     recipeMatch: RecipeMatch?,
     structuredIngredients: List<RecipeIngredient>,
-    isLoading: Boolean
+    isLoading: Boolean,
+    onAddMissingToShoppingList: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -544,6 +584,18 @@ private fun PantryCompatibilitySection(
                             fontSize = 14.sp,
                             color = Color.Gray
                         )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Button(
+                            onClick = onAddMissingToShoppingList,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "🛒 Alışveriş Listeme Ekle",
+                                fontSize = 15.sp
+                            )
+                        }
                     }
                 }
             }
@@ -554,15 +606,29 @@ private fun PantryCompatibilitySection(
 private fun normalizeIngredientName(
     name: String
 ): String {
-    return name
-        .trim()
-        .lowercase()
-        .replace("ı", "i")
-        .replace("ş", "s")
-        .replace("ğ", "g")
-        .replace("ü", "u")
-        .replace("ö", "o")
-        .replace("ç", "c")
+    val cleanedName =
+        name
+            .trim()
+            .lowercase(Locale("tr", "TR"))
+            .replace("ı", "i")
+            .replace("ş", "s")
+            .replace("ğ", "g")
+            .replace("ü", "u")
+            .replace("ö", "o")
+            .replace("ç", "c")
+            .replace(Regex("[^a-z0-9\\s]"), " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
+
+    return when {
+        cleanedName.length > 5 && cleanedName.endsWith("lar") ->
+            cleanedName.dropLast(3).trim()
+
+        cleanedName.length > 5 && cleanedName.endsWith("ler") ->
+            cleanedName.dropLast(3).trim()
+
+        else -> cleanedName
+    }
 }
 
 private fun formatQuantity(
@@ -575,6 +641,54 @@ private fun formatQuantity(
             .trimEnd('0')
             .trimEnd(',')
             .trimEnd('.')
+    }
+}
+
+
+private suspend fun addMissingIngredientsToShoppingList(
+    missingItems: List<ShoppingItem>,
+    currentShoppingItems: List<ShoppingItem>,
+    insertShoppingItem: suspend (ShoppingItem) -> Long,
+    updateShoppingItem: suspend (ShoppingItem) -> Unit
+) {
+    val workingItems = currentShoppingItems.toMutableList()
+
+    for (missing in missingItems) {
+        if (missing.quantity <= 0.0) continue
+
+        val existingIndex =
+            workingItems.indexOfFirst { existing ->
+                !existing.isPurchased &&
+                        normalizeIngredientName(existing.name) ==
+                        normalizeIngredientName(missing.name) &&
+                        ingredientUnitType(existing.unit) ==
+                        ingredientUnitType(missing.unit)
+            }
+
+        if (existingIndex >= 0) {
+            val existing = workingItems[existingIndex]
+            val existingBase =
+                convertQuantityToBase(existing.quantity, existing.unit)
+            val missingBase =
+                convertQuantityToBase(missing.quantity, missing.unit)
+
+            if (existingBase != null && missingBase != null) {
+                val combinedQuantity =
+                    convertBaseToUnit(
+                        existingBase + missingBase,
+                        existing.unit
+                    )
+
+                if (combinedQuantity != null) {
+                    val updated = existing.copy(quantity = combinedQuantity)
+                    updateShoppingItem(updated)
+                    workingItems[existingIndex] = updated
+                }
+            }
+        } else {
+            val newId = insertShoppingItem(missing)
+            workingItems.add(missing.copy(id = newId.toInt()))
+        }
     }
 }
 

@@ -30,6 +30,7 @@ import com.smartpantry.chef.ui.screens.PantryRecipeSuggestionsScreen
 import com.smartpantry.chef.ui.screens.PantryScreen
 import com.smartpantry.chef.ui.screens.ProfileScreen
 import com.smartpantry.chef.ui.screens.RecipeDetailScreen
+import com.smartpantry.chef.ui.screens.ShoppingListScreen
 
 @Composable
 fun MainScreen() {
@@ -46,8 +47,11 @@ fun MainScreen() {
         mutableStateOf(false)
     }
 
-    // Buzdolabından tarif önerileri ekranını açmak için
     var showPantrySuggestions by remember {
+        mutableStateOf(false)
+    }
+
+    var showShoppingList by remember {
         mutableStateOf(false)
     }
 
@@ -63,6 +67,7 @@ fun MainScreen() {
                         selectedRecipe = null
                         isEditingRecipe = false
                         showPantrySuggestions = false
+                        showShoppingList = false
                     },
                     icon = {
                         Icon(
@@ -82,6 +87,7 @@ fun MainScreen() {
                         selectedRecipe = null
                         isEditingRecipe = false
                         showPantrySuggestions = false
+                        showShoppingList = false
                     },
                     icon = {
                         Icon(
@@ -101,6 +107,7 @@ fun MainScreen() {
                         selectedRecipe = null
                         isEditingRecipe = false
                         showPantrySuggestions = false
+                        showShoppingList = false
                     },
                     icon = {
                         Icon(
@@ -120,6 +127,7 @@ fun MainScreen() {
                         selectedRecipe = null
                         isEditingRecipe = false
                         showPantrySuggestions = false
+                        showShoppingList = false
                     },
                     icon = {
                         Icon(
@@ -139,6 +147,7 @@ fun MainScreen() {
                         selectedRecipe = null
                         isEditingRecipe = false
                         showPantrySuggestions = false
+                        showShoppingList = false
                     },
                     icon = {
                         Icon(
@@ -162,10 +171,6 @@ fun MainScreen() {
 
             when {
 
-                // -----------------------------------------
-                // TARİF DETAY / DÜZENLE
-                // -----------------------------------------
-
                 selectedRecipe != null -> {
 
                     if (isEditingRecipe) {
@@ -178,7 +183,6 @@ fun MainScreen() {
                             },
 
                             onRecipeUpdated = { updatedRecipe ->
-
                                 selectedRecipe = updatedRecipe
                                 isEditingRecipe = false
                             }
@@ -200,9 +204,14 @@ fun MainScreen() {
                     }
                 }
 
-                // -----------------------------------------
-               // BUZDOLABI TARİF ÖNERİLERİ
-               // -----------------------------------------
+                showShoppingList -> {
+
+                    ShoppingListScreen(
+                        onBack = {
+                            showShoppingList = false
+                        }
+                    )
+                }
 
                 showPantrySuggestions -> {
 
@@ -216,10 +225,6 @@ fun MainScreen() {
                         }
                     )
                 }
-
-                // -----------------------------------------
-                // ANA 5 EKRAN
-                // -----------------------------------------
 
                 else -> {
 
@@ -238,6 +243,9 @@ fun MainScreen() {
                         3 -> PantryScreen(
                             onShowRecipeSuggestions = {
                                 showPantrySuggestions = true
+                            },
+                            onShowShoppingList = {
+                                showShoppingList = true
                             }
                         )
 

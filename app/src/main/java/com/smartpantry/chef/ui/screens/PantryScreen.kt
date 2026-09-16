@@ -71,7 +71,8 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantryScreen(
-    onShowRecipeSuggestions: () -> Unit
+    onShowRecipeSuggestions: () -> Unit,
+    onShowShoppingList: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -331,6 +332,17 @@ fun PantryScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("🍳 Elimdekilerle Ne Yapabilirim?")
+        }
+
+        Spacer(
+            modifier = Modifier.height(10.dp)
+        )
+
+        OutlinedButton(
+            onClick = onShowShoppingList,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("🛒 Alışveriş Listem")
         }
 
         Spacer(
