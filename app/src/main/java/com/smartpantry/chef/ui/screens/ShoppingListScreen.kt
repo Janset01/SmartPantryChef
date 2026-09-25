@@ -1,5 +1,8 @@
 package com.smartpantry.chef.ui.screens
 
+import android.app.DatePickerDialog
+import android.widget.Toast
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,9 +38,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smartpantry.chef.data.AppDatabase
+import com.smartpantry.chef.data.Ingredient
 import com.smartpantry.chef.data.ShoppingItem
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun ShoppingListScreen(
@@ -50,6 +57,7 @@ fun ShoppingListScreen(
     }
 
     val shoppingItemDao = database.shoppingItemDao()
+    val ingredientDao = database.ingredientDao()
 
     var shoppingItems by remember {
         mutableStateOf<List<ShoppingItem>>(emptyList())
@@ -61,6 +69,10 @@ fun ShoppingListScreen(
 
     var showClearDialog by remember {
         mutableStateOf(false)
+    }
+
+    var itemToAddToPantry by remember {
+        mutableStateOf<ShoppingItem?>(null)
     }
 
     LaunchedEffect(refreshList) {
@@ -166,6 +178,10 @@ fun ShoppingListScreen(
                             }
                         },
 
+                        onAddToPantry = {
+                            itemToAddToPantry = item
+                        },
+
                         onDelete = {
                             scope.launch {
                                 shoppingItemDao.deleteShoppingItem(item)
@@ -193,6 +209,43 @@ fun ShoppingListScreen(
                 )
             }
         }
+    }
+
+    itemToAddToPantry?.let { item ->
+        AddShoppingItemToPantryDialog(
+            item = item,
+            onDismiss = {
+                itemToAddToPantry = null
+            },
+            onConfirm = { expirationDate ->
+                scope.launch {
+
+                    val merged =
+                        addOrMergeShoppingItemIntoPantry(
+                            ingredientDao = ingredientDao,
+                            item = item,
+                            expirationDate = expirationDate
+                        )
+
+                    shoppingItemDao.deleteShoppingItem(
+                        item
+                    )
+
+                    itemToAddToPantry = null
+                    refreshList++
+
+                    Toast.makeText(
+                        context,
+                        if (merged) {
+                            "${item.name} mevcut stokla birleştirildi 🧊➕✅"
+                        } else {
+                            "${item.name} buzdolabına eklendi 🧊✅"
+                        },
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        )
     }
 
     if (showClearDialog) {
@@ -246,6 +299,7 @@ fun ShoppingListScreen(
 private fun ShoppingItemCard(
     item: ShoppingItem,
     onPurchasedChange: (Boolean) -> Unit,
+    onAddToPantry: () -> Unit,
     onDelete: () -> Unit
 ) {
 
@@ -322,7 +376,403 @@ private fun ShoppingItemCard(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onAddToPantry,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("🧊 Buzdolabına Ekle")
+            }
         }
+    }
+}
+
+@Composable
+private fun AddShoppingItemToPantryDialog(
+    item: ShoppingItem,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    val context = LocalContext.current
+
+    var expirationDate by remember(item.id) {
+        mutableStateOf("")
+    }
+
+    val calendar = Calendar.getInstance()
+
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            expirationDate = "%02d.%02d.%04d".format(
+                dayOfMonth,
+                month + 1,
+                year
+            )
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("🧊 Buzdolabına Ekle")
+        },
+        text = {
+            Column {
+                Text(
+                    text = item.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Miktar: ${formatShoppingQuantity(item.quantity)} ${item.unit}",
+                    color = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = if (expirationDate.isBlank()) {
+                        "Son kullanma tarihi seçilmedi."
+                    } else {
+                        "📅 Son kullanma tarihi: $expirationDate"
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                OutlinedButton(
+                    onClick = { datePickerDialog.show() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("📅 Son Kullanma Tarihi Seç")
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (expirationDate.isBlank()) {
+                        Toast.makeText(
+                            context,
+                            "Lütfen son kullanma tarihi seç",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        onConfirm(expirationDate)
+                    }
+                }
+            ) {
+                Text("Buzdolabına Ekle")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Vazgeç")
+            }
+        }
+    )
+}
+
+private suspend fun addOrMergeShoppingItemIntoPantry(
+    ingredientDao: com.smartpantry.chef.data.IngredientDao,
+    item: ShoppingItem,
+    expirationDate: String
+): Boolean {
+
+    val matchingIngredients =
+        ingredientDao
+            .getAllIngredients()
+            .filter { existing ->
+                shoppingPantryNamesMatch(
+                    existing.name,
+                    item.name
+                ) &&
+                        shoppingPantryExpirationDatesMatch(
+                            existing.expirationDate,
+                            expirationDate
+                        ) &&
+                        shoppingPantryCanConvertUnits(
+                            fromUnit = item.unit,
+                            toUnit = existing.unit
+                        )
+            }
+
+    if (matchingIngredients.isEmpty()) {
+
+        ingredientDao.insertIngredient(
+            Ingredient(
+                name = item.name.trim(),
+                initialQuantity = item.quantity,
+                remainingQuantity = item.quantity,
+                unit = item.unit.trim(),
+                expirationDate = expirationDate.trim(),
+                imageUri = null
+            )
+        )
+
+        return false
+    }
+
+    val mainIngredient =
+        matchingIngredients.first()
+
+    var totalInitial =
+        mainIngredient.initialQuantity
+
+    var totalRemaining =
+        mainIngredient.remainingQuantity
+
+    var finalImageUri =
+        mainIngredient.imageUri
+
+    matchingIngredients
+        .drop(1)
+        .forEach { duplicate ->
+
+            shoppingPantryConvertQuantity(
+                duplicate.initialQuantity,
+                duplicate.unit,
+                mainIngredient.unit
+            )?.let {
+                totalInitial += it
+            }
+
+            shoppingPantryConvertQuantity(
+                duplicate.remainingQuantity,
+                duplicate.unit,
+                mainIngredient.unit
+            )?.let {
+                totalRemaining += it
+            }
+
+            if (
+                finalImageUri.isNullOrBlank() &&
+                !duplicate.imageUri.isNullOrBlank()
+            ) {
+                finalImageUri = duplicate.imageUri
+            }
+        }
+
+    val incomingConverted =
+        shoppingPantryConvertQuantity(
+            item.quantity,
+            item.unit,
+            mainIngredient.unit
+        ) ?: item.quantity
+
+    ingredientDao.updateIngredient(
+        mainIngredient.copy(
+            initialQuantity =
+                totalInitial + incomingConverted,
+            remainingQuantity =
+                totalRemaining + incomingConverted,
+            imageUri = finalImageUri
+        )
+    )
+
+    matchingIngredients
+        .drop(1)
+        .forEach { duplicate ->
+            ingredientDao.deleteIngredient(
+                duplicate
+            )
+        }
+
+    return true
+}
+
+private fun shoppingPantryNamesMatch(
+    firstName: String,
+    secondName: String
+): Boolean {
+
+    return normalizeShoppingPantryName(firstName) ==
+            normalizeShoppingPantryName(secondName)
+}
+
+private fun normalizeShoppingPantryName(
+    name: String
+): String {
+
+    val cleaned =
+        name
+            .trim()
+            .lowercase(Locale("tr", "TR"))
+            .replace("ı", "i")
+            .replace("ş", "s")
+            .replace("ğ", "g")
+            .replace("ü", "u")
+            .replace("ö", "o")
+            .replace("ç", "c")
+            .replace(Regex("[^a-z0-9\\s]"), " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
+
+    return when {
+        cleaned.length > 5 &&
+                cleaned.endsWith("lar") ->
+            cleaned.dropLast(3).trim()
+
+        cleaned.length > 5 &&
+                cleaned.endsWith("ler") ->
+            cleaned.dropLast(3).trim()
+
+        else ->
+            cleaned
+    }
+}
+
+private fun shoppingPantryExpirationDatesMatch(
+    firstDate: String,
+    secondDate: String
+): Boolean {
+
+    return firstDate.filter { it.isDigit() } ==
+            secondDate.filter { it.isDigit() }
+}
+
+private enum class ShoppingPantryUnitFamily {
+    COUNT,
+    MASS,
+    VOLUME,
+    UNKNOWN
+}
+
+private fun normalizeShoppingPantryUnit(
+    unit: String
+): String {
+
+    return unit
+        .trim()
+        .lowercase(Locale("tr", "TR"))
+        .replace("ı", "i")
+        .replace("ş", "s")
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ö", "o")
+        .replace("ç", "c")
+        .replace(Regex("[^a-z0-9]"), "")
+}
+
+private fun shoppingPantryUnitFamily(
+    unit: String
+): ShoppingPantryUnitFamily {
+
+    return when (normalizeShoppingPantryUnit(unit)) {
+
+        "adet",
+        "tane" ->
+            ShoppingPantryUnitFamily.COUNT
+
+        "g",
+        "gr",
+        "gram",
+        "kg",
+        "kilogram" ->
+            ShoppingPantryUnitFamily.MASS
+
+        "ml",
+        "mililitre",
+        "mililiter",
+        "millilitre",
+        "milliliter",
+        "l",
+        "lt",
+        "litre",
+        "liter" ->
+            ShoppingPantryUnitFamily.VOLUME
+
+        else ->
+            ShoppingPantryUnitFamily.UNKNOWN
+    }
+}
+
+private fun shoppingPantryCanConvertUnits(
+    fromUnit: String,
+    toUnit: String
+): Boolean {
+
+    val from =
+        shoppingPantryUnitFamily(fromUnit)
+
+    val to =
+        shoppingPantryUnitFamily(toUnit)
+
+    return if (
+        normalizeShoppingPantryUnit(fromUnit) ==
+        normalizeShoppingPantryUnit(toUnit)
+    ) {
+        true
+    } else {
+        from != ShoppingPantryUnitFamily.UNKNOWN &&
+                from == to
+    }
+}
+
+private fun shoppingPantryConvertQuantity(
+    quantity: Double,
+    fromUnit: String,
+    toUnit: String
+): Double? {
+
+    if (
+        normalizeShoppingPantryUnit(fromUnit) ==
+        normalizeShoppingPantryUnit(toUnit)
+    ) {
+        return quantity
+    }
+
+    val fromFamily =
+        shoppingPantryUnitFamily(fromUnit)
+
+    val toFamily =
+        shoppingPantryUnitFamily(toUnit)
+
+    if (
+        fromFamily == ShoppingPantryUnitFamily.UNKNOWN ||
+        fromFamily != toFamily
+    ) {
+        return null
+    }
+
+    val base =
+        when (normalizeShoppingPantryUnit(fromUnit)) {
+            "kg",
+            "kilogram" ->
+                quantity * 1000.0
+
+            "l",
+            "lt",
+            "litre",
+            "liter" ->
+                quantity * 1000.0
+
+            else ->
+                quantity
+        }
+
+    return when (normalizeShoppingPantryUnit(toUnit)) {
+        "kg",
+        "kilogram" ->
+            base / 1000.0
+
+        "l",
+        "lt",
+        "litre",
+        "liter" ->
+            base / 1000.0
+
+        else ->
+            base
     }
 }
 

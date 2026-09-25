@@ -88,6 +88,10 @@ fun PantryScreen(
         mutableStateOf<List<Ingredient>>(emptyList())
     }
 
+    var showAllIngredients by remember {
+        mutableStateOf(false)
+    }
+
     // Yeni malzeme formu
     var name by remember {
         mutableStateOf("")
@@ -670,26 +674,18 @@ fun PantryScreen(
                             return@Button
                         }
 
-                        val ingredient =
-                            Ingredient(
-                                name = name.trim(),
-                                initialQuantity =
-                                    parsedQuantity,
-                                remainingQuantity =
-                                    parsedQuantity,
-                                unit = selectedUnit,
-                                expirationDate =
-                                    expirationDate,
-                                imageUri =
-                                    selectedImageUri
-                                        ?.toString()
-                            )
-
                         scope.launch {
 
-                            ingredientDao
-                                .insertIngredient(
-                                    ingredient
+                            val merged =
+                                addOrMergePantryIngredient(
+                                    ingredientDao = ingredientDao,
+                                    incomingName = name.trim(),
+                                    incomingQuantity = parsedQuantity,
+                                    incomingUnit = selectedUnit,
+                                    incomingExpirationDate = expirationDate,
+                                    incomingImageUri =
+                                        selectedImageUri
+                                            ?.toString()
                                 )
 
                             ingredients =
@@ -705,7 +701,11 @@ fun PantryScreen(
 
                             Toast.makeText(
                                 context,
-                                "Malzeme eklendi ✅",
+                                if (merged) {
+                                    "Mevcut stokla birleştirildi 🧊➕✅"
+                                } else {
+                                    "Malzeme eklendi ✅"
+                                },
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -729,7 +729,7 @@ fun PantryScreen(
         // ------------------------------------------------
 
         Text(
-            text = "📦 Malzemelerim",
+            text = "📦 Malzemelerim (${ingredients.size})",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF2F3E34)
@@ -761,7 +761,14 @@ fun PantryScreen(
 
         } else {
 
-            ingredients.forEach { ingredient ->
+            val visibleIngredients =
+                if (showAllIngredients) {
+                    ingredients
+                } else {
+                    ingredients.take(5)
+                }
+
+            visibleIngredients.forEach { ingredient ->
 
                 IngredientCard(
                     ingredient = ingredient,
@@ -784,6 +791,30 @@ fun PantryScreen(
 
                 Spacer(
                     modifier = Modifier.height(12.dp)
+                )
+            }
+
+            if (ingredients.size > 5) {
+
+                OutlinedButton(
+                    onClick = {
+                        showAllIngredients =
+                            !showAllIngredients
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text =
+                            if (showAllIngredients) {
+                                "▲ Daralt"
+                            } else {
+                                "▼ Tümünü Göster (${ingredients.size})"
+                            }
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
                 )
             }
         }
@@ -1080,6 +1111,310 @@ private fun UseIngredientDialog(
             }
         }
     )
+}
+
+private suspend fun addOrMergePantryIngredient(
+    ingredientDao: com.smartpantry.chef.data.IngredientDao,
+    incomingName: String,
+    incomingQuantity: Double,
+    incomingUnit: String,
+    incomingExpirationDate: String,
+    incomingImageUri: String?
+): Boolean {
+
+    val matchingIngredients =
+        ingredientDao
+            .getAllIngredients()
+            .filter { existing ->
+                pantryIngredientNamesMatch(
+                    existing.name,
+                    incomingName
+                ) &&
+                        pantryExpirationDatesMatch(
+                            existing.expirationDate,
+                            incomingExpirationDate
+                        ) &&
+                        pantryCanConvertUnits(
+                            fromUnit = incomingUnit,
+                            toUnit = existing.unit
+                        )
+            }
+
+    if (matchingIngredients.isEmpty()) {
+
+        ingredientDao.insertIngredient(
+            Ingredient(
+                name = incomingName,
+                initialQuantity = incomingQuantity,
+                remainingQuantity = incomingQuantity,
+                unit = incomingUnit,
+                expirationDate = incomingExpirationDate,
+                imageUri = incomingImageUri
+            )
+        )
+
+        return false
+    }
+
+    val mainIngredient =
+        matchingIngredients.first()
+
+    var totalInitial =
+        mainIngredient.initialQuantity
+
+    var totalRemaining =
+        mainIngredient.remainingQuantity
+
+    var finalImageUri =
+        mainIngredient.imageUri
+
+    matchingIngredients
+        .drop(1)
+        .forEach { duplicate ->
+
+            pantryConvertQuantity(
+                duplicate.initialQuantity,
+                duplicate.unit,
+                mainIngredient.unit
+            )?.let {
+                totalInitial += it
+            }
+
+            pantryConvertQuantity(
+                duplicate.remainingQuantity,
+                duplicate.unit,
+                mainIngredient.unit
+            )?.let {
+                totalRemaining += it
+            }
+
+            if (
+                finalImageUri.isNullOrBlank() &&
+                !duplicate.imageUri.isNullOrBlank()
+            ) {
+                finalImageUri = duplicate.imageUri
+            }
+        }
+
+    val incomingConverted =
+        pantryConvertQuantity(
+            incomingQuantity,
+            incomingUnit,
+            mainIngredient.unit
+        ) ?: incomingQuantity
+
+    if (
+        finalImageUri.isNullOrBlank() &&
+        !incomingImageUri.isNullOrBlank()
+    ) {
+        finalImageUri = incomingImageUri
+    }
+
+    ingredientDao.updateIngredient(
+        mainIngredient.copy(
+            initialQuantity =
+                totalInitial + incomingConverted,
+            remainingQuantity =
+                totalRemaining + incomingConverted,
+            imageUri = finalImageUri
+        )
+    )
+
+    matchingIngredients
+        .drop(1)
+        .forEach { duplicate ->
+            ingredientDao.deleteIngredient(
+                duplicate
+            )
+        }
+
+    return true
+}
+
+private fun pantryIngredientNamesMatch(
+    firstName: String,
+    secondName: String
+): Boolean {
+
+    return normalizePantryIngredientName(firstName) ==
+            normalizePantryIngredientName(secondName)
+}
+
+private fun normalizePantryIngredientName(
+    name: String
+): String {
+
+    val cleaned =
+        name
+            .trim()
+            .lowercase(Locale("tr", "TR"))
+            .replace("ı", "i")
+            .replace("ş", "s")
+            .replace("ğ", "g")
+            .replace("ü", "u")
+            .replace("ö", "o")
+            .replace("ç", "c")
+            .replace(Regex("[^a-z0-9\\s]"), " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
+
+    return when {
+        cleaned.length > 5 &&
+                cleaned.endsWith("lar") ->
+            cleaned.dropLast(3).trim()
+
+        cleaned.length > 5 &&
+                cleaned.endsWith("ler") ->
+            cleaned.dropLast(3).trim()
+
+        else ->
+            cleaned
+    }
+}
+
+private fun pantryExpirationDatesMatch(
+    firstDate: String,
+    secondDate: String
+): Boolean {
+
+    return firstDate.filter { it.isDigit() } ==
+            secondDate.filter { it.isDigit() }
+}
+
+private enum class PantryUnitFamily {
+    COUNT,
+    MASS,
+    VOLUME,
+    UNKNOWN
+}
+
+private fun normalizePantryUnit(
+    unit: String
+): String {
+
+    return unit
+        .trim()
+        .lowercase(Locale("tr", "TR"))
+        .replace("ı", "i")
+        .replace("ş", "s")
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ö", "o")
+        .replace("ç", "c")
+        .replace(Regex("[^a-z0-9]"), "")
+}
+
+private fun pantryUnitFamily(
+    unit: String
+): PantryUnitFamily {
+
+    return when (normalizePantryUnit(unit)) {
+
+        "adet",
+        "tane" ->
+            PantryUnitFamily.COUNT
+
+        "g",
+        "gr",
+        "gram",
+        "kg",
+        "kilogram" ->
+            PantryUnitFamily.MASS
+
+        "ml",
+        "mililitre",
+        "mililiter",
+        "millilitre",
+        "milliliter",
+        "l",
+        "lt",
+        "litre",
+        "liter" ->
+            PantryUnitFamily.VOLUME
+
+        else ->
+            PantryUnitFamily.UNKNOWN
+    }
+}
+
+private fun pantryCanConvertUnits(
+    fromUnit: String,
+    toUnit: String
+): Boolean {
+
+    val from =
+        pantryUnitFamily(fromUnit)
+
+    val to =
+        pantryUnitFamily(toUnit)
+
+    return if (
+        normalizePantryUnit(fromUnit) ==
+        normalizePantryUnit(toUnit)
+    ) {
+        true
+    } else {
+        from != PantryUnitFamily.UNKNOWN &&
+                from == to
+    }
+}
+
+private fun pantryConvertQuantity(
+    quantity: Double,
+    fromUnit: String,
+    toUnit: String
+): Double? {
+
+    if (
+        normalizePantryUnit(fromUnit) ==
+        normalizePantryUnit(toUnit)
+    ) {
+        return quantity
+    }
+
+    val fromFamily =
+        pantryUnitFamily(fromUnit)
+
+    val toFamily =
+        pantryUnitFamily(toUnit)
+
+    if (
+        fromFamily == PantryUnitFamily.UNKNOWN ||
+        fromFamily != toFamily
+    ) {
+        return null
+    }
+
+    val base =
+        when (normalizePantryUnit(fromUnit)) {
+            "kg",
+            "kilogram" ->
+                quantity * 1000.0
+
+            "l",
+            "lt",
+            "litre",
+            "liter" ->
+                quantity * 1000.0
+
+            else ->
+                quantity
+        }
+
+    return when (normalizePantryUnit(toUnit)) {
+        "kg",
+        "kilogram" ->
+            base / 1000.0
+
+        "l",
+        "lt",
+        "litre",
+        "liter" ->
+            base / 1000.0
+
+        else ->
+            base
+    }
 }
 
 private data class PantryExpiryWarning(
