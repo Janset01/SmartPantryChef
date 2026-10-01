@@ -59,7 +59,7 @@ import com.smartpantry.chef.data.processIngredientExpirations
 import com.smartpantry.chef.data.scheduleExpirationChecks
 import com.smartpantry.chef.ui.screens.pantry.DeleteIngredientDialog
 import com.smartpantry.chef.ui.screens.pantry.EditIngredientDialog
-import com.smartpantry.chef.ui.screens.pantry.IngredientCard
+import com.smartpantry.chef.ui.screens.pantry.PantryInventoryTable
 import com.smartpantry.chef.ui.screens.pantry.formatIngredientQuantity
 import kotlinx.coroutines.launch
 import java.io.File
@@ -86,10 +86,6 @@ fun PantryScreen(
 
     var ingredients by remember {
         mutableStateOf<List<Ingredient>>(emptyList())
-    }
-
-    var showAllIngredients by remember {
-        mutableStateOf(false)
     }
 
     // Yeni malzeme formu
@@ -725,11 +721,11 @@ fun PantryScreen(
         )
 
         // ------------------------------------------------
-        // MALZEMELER
+        // PANTRY UI V2 — KATEGORİLİ MODERN STOK TABLOSU
         // ------------------------------------------------
 
         Text(
-            text = "📦 Malzemelerim (${ingredients.size})",
+            text = "📦 Malzemelerim",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF2F3E34)
@@ -739,85 +735,24 @@ fun PantryScreen(
             modifier = Modifier.height(14.dp)
         )
 
-        if (ingredients.isEmpty()) {
+        PantryInventoryTable(
+            ingredients = ingredients,
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor =
-                        Color(0xFFDDE9DF)
-                )
-            ) {
+            onUseClick = { ingredient ->
+                ingredientToUse =
+                    ingredient
+            },
 
-                Text(
-                    text =
-                        "Henüz buzdolabında malzeme yok 🥛",
-                    modifier =
-                        Modifier.padding(18.dp),
-                    color = Color(0xFF55645A)
-                )
+            onEditClick = { ingredient ->
+                ingredientToEdit =
+                    ingredient
+            },
+
+            onDeleteClick = { ingredient ->
+                ingredientToDelete =
+                    ingredient
             }
-
-        } else {
-
-            val visibleIngredients =
-                if (showAllIngredients) {
-                    ingredients
-                } else {
-                    ingredients.take(5)
-                }
-
-            visibleIngredients.forEach { ingredient ->
-
-                IngredientCard(
-                    ingredient = ingredient,
-
-                    onUseClick = {
-                        ingredientToUse =
-                            ingredient
-                    },
-
-                    onEditClick = {
-                        ingredientToEdit =
-                            ingredient
-                    },
-
-                    onDeleteClick = {
-                        ingredientToDelete =
-                            ingredient
-                    }
-                )
-
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
-            }
-
-            if (ingredients.size > 5) {
-
-                OutlinedButton(
-                    onClick = {
-                        showAllIngredients =
-                            !showAllIngredients
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text =
-                            if (showAllIngredients) {
-                                "▲ Daralt"
-                            } else {
-                                "▼ Tümünü Göster (${ingredients.size})"
-                            }
-                    )
-                }
-
-                Spacer(
-                    modifier = Modifier.height(8.dp)
-                )
-            }
-        }
+        )
 
         Spacer(
             modifier = Modifier.height(30.dp)
