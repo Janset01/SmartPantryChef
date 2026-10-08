@@ -2,6 +2,19 @@ package com.smartpantry.chef.data
 
 import java.util.Locale
 
+private fun normalizeIngredientCategoryText(value: String): String =
+    value.trim()
+        .lowercase(Locale.forLanguageTag("tr-TR"))
+        .replace("ı", "i")
+        .replace("ş", "s")
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ö", "o")
+        .replace("ç", "c")
+        .replace(Regex("[^a-z0-9\\s]"), " ")
+        .replace(Regex("\\s+"), " ")
+        .trim()
+
 enum class PantryMainCategory(val title: String, val emoji: String, val order: Int) {
     VEGETABLES("Sebze & Yeşillik", "🥬", 1),
     FRUITS("Meyveler", "🍎", 2),
@@ -28,7 +41,7 @@ object IngredientCategoryClassifier {
     private val categoryMap: Map<String, Entry> by lazy {
         buildMap {
             fun add(main: PantryMainCategory, sub: String, vararg names: String) {
-                names.forEach { put(normalize(it), Entry(main, sub)) }
+                names.forEach { put(normalizeIngredientCategoryText(it), Entry(main, sub)) }
             }
             add(PantryMainCategory.VEGETABLES, "Soğangiller", "sarımsak", "kuru soğan", "kırmızı soğan", "arpacık soğan", "taze soğan", "pırasa")
             add(PantryMainCategory.VEGETABLES, "Kök Sebze", "patates", "tatlı patates", "havuç", "pancar", "kırmızı turp", "beyaz turp", "kereviz kökü", "yer elması", "şalgam")
@@ -86,22 +99,8 @@ object IngredientCategoryClassifier {
             )
 
             // BALIK & DENİZ ÜRÜNLERİ
-            add(
-                PantryMainCategory.FISH_SEAFOOD,
-                "Balık",
-                "balık", "somon", "somon fileto", "levrek", "levrek fileto",
-                "çipura", "çipura fileto", "hamsi", "sardalya", "uskumru",
-                "palamut", "alabalık", "ton balığı", "ton balığı taze",
-                "kalkan", "mezgit", "barbun", "barbunya balığı", "tekir",
-                "lüfer", "istavrit", "kefal", "sazan", "yayın balığı",
-                "dil balığı", "orfoz", "mercan"
-            )
-            add(
-                PantryMainCategory.FISH_SEAFOOD,
-                "Deniz Ürünleri",
-                "karides", "kalamar", "midye", "ahtapot", "yengeç",
-                "ıstakoz", "deniz tarağı", "kerevit"
-            )
+            add(PantryMainCategory.FISH_SEAFOOD, "Balık", "balık", "somon", "somon fileto", "levrek", "levrek fileto", "çipura", "çipura fileto", "hamsi", "sardalya", "uskumru", "palamut", "alabalık", "ton balığı", "ton balığı taze", "kalkan", "mezgit", "barbun", "barbunya balığı", "tekir", "lüfer", "istavrit", "kefal", "sazan", "yayın balığı", "dil balığı", "orfoz", "mercan")
+            add(PantryMainCategory.FISH_SEAFOOD, "Deniz Ürünleri", "karides", "kalamar", "midye", "ahtapot", "yengeç", "ıstakoz", "deniz tarağı", "kerevit")
 
             // ŞARKÜTERİ
             add(
@@ -150,7 +149,7 @@ object IngredientCategoryClassifier {
     }
 
     fun classify(ingredientName: String): PantryCategoryResult {
-        val normalized = normalize(ingredientName)
+        val normalized = normalizeIngredientCategoryText(ingredientName)
 
         if (normalized.isBlank()) {
             return PantryCategoryResult(
@@ -386,10 +385,43 @@ object IngredientCategoryClassifier {
         ]
     }
 
-    fun groupedCategoryOrder(): List<PantryMainCategory> = PantryMainCategory.entries.sortedBy { it.order }
+    fun classify(ingredient: Ingredient): PantryCategoryResult {
+        val manualCategory =
+            ingredient.manualMainCategory
+                ?.let { savedValue ->
+                    PantryMainCategory.entries.firstOrNull { category ->
+                        category.name == savedValue
+                    }
+                }
 
-    private fun normalize(value: String): String = value.trim()
-        .lowercase(Locale("tr", "TR"))
-        .replace("ı","i").replace("ş","s").replace("ğ","g").replace("ü","u").replace("ö","o").replace("ç","c")
-        .replace(Regex("[^a-z0-9\\s]"), " ").replace(Regex("\\s+"), " ").trim()
+        if (manualCategory != null) {
+            return PantryCategoryResult(
+                mainCategory = manualCategory,
+                subCategory =
+                    ingredient.manualSubCategory
+                        ?.takeIf { it.isNotBlank() }
+                        ?: "Diğer"
+            )
+        }
+
+        return classify(ingredient.name)
+    }
+
+    fun subCategoriesFor(
+        mainCategory: PantryMainCategory
+    ): List<String> {
+        return categoryMap
+            .values
+            .asSequence()
+            .filter { it.mainCategory == mainCategory }
+            .map { it.subCategory }
+            .distinct()
+            .sorted()
+            .toList()
+            .ifEmpty { listOf("Diğer") }
+    }
+
+    fun groupedCategoryOrder(): List<PantryMainCategory> =
+        PantryMainCategory.entries.sortedBy { it.order }
+
 }

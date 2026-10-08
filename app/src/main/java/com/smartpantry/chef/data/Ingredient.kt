@@ -24,5 +24,13 @@ data class Ingredient(
     val expirationDate: String,
 
     // Kamera / galeri fotoğrafı
-    val imageUri: String? = null
+    val imageUri: String? = null,
+
+    // Kullanıcı otomatik kategoriyi elle düzeltirse burada saklanır.
+    // null ise otomatik kategori sistemi kullanılmaya devam eder.
+    val manualMainCategory: String? = null,
+
+    // Manuel seçimin alt kategorisi.
+    // null ise otomatik alt kategori kullanılmaya devam eder.
+    val manualSubCategory: String? = null
 )
