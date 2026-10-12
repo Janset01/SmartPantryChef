@@ -1,6 +1,7 @@
 package com.smartpantry.chef.ui.screens.pantry
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,7 +81,7 @@ fun PantryInventoryTable(
                 val category =
                     IngredientCategoryClassifier
                         .classify(
-                            ingredient.name
+                            ingredient
                         )
 
                 PantryTableItem(
@@ -689,6 +690,9 @@ private fun PantryTableRow(
                         Color(0xFFFAFBFA)
                     }
                 )
+                .clickable {
+                    onEditClick(ingredient)
+                }
                 .padding(
                     vertical = 9.dp
                 ),
