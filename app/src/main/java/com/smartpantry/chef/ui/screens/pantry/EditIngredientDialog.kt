@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.smartpantry.chef.data.Ingredient
 import com.smartpantry.chef.data.IngredientCategoryClassifier
+import com.smartpantry.chef.data.PantryMainCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +48,10 @@ fun EditIngredientDialog(
         )
     }
 
+    var quantityError by remember(ingredient.id) {
+        mutableStateOf<String?>(null)
+    }
+
     var selectedUnit by remember(ingredient.id) {
         mutableStateOf(ingredient.unit)
     }
@@ -55,9 +60,17 @@ fun EditIngredientDialog(
         mutableStateOf(ingredient.expirationDate)
     }
 
-    var unitExpanded by remember { mutableStateOf(false) }
-    var mainCategoryExpanded by remember { mutableStateOf(false) }
-    var subCategoryExpanded by remember { mutableStateOf(false) }
+    var unitExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var mainCategoryExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var subCategoryExpanded by remember {
+        mutableStateOf(false)
+    }
 
     var manualCategoryEnabled by remember(ingredient.id) {
         mutableStateOf(
@@ -102,9 +115,7 @@ fun EditIngredientDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 520.dp)
-                    .verticalScroll(
-                        rememberScrollState()
-                    )
+                    .verticalScroll(rememberScrollState())
             ) {
                 OutlinedTextField(
                     value = name,
@@ -143,6 +154,8 @@ fun EditIngredientDialog(
                                         it == ',' ||
                                         it == '.'
                             }
+
+                        quantityError = null
                     },
                     modifier = Modifier.fillMaxWidth(),
                     label = {
@@ -151,6 +164,12 @@ fun EditIngredientDialog(
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
                     ),
+                    isError = quantityError != null,
+                    supportingText = {
+                        quantityError?.let { message ->
+                            Text(message)
+                        }
+                    },
                     singleLine = true
                 )
 
@@ -285,11 +304,13 @@ fun EditIngredientDialog(
                                 onClick = {
                                     manualCategoryEnabled = true
                                     selectedMainCategory = category
+
                                     selectedSubCategory =
                                         IngredientCategoryClassifier
                                             .subCategoriesFor(category)
                                             .firstOrNull()
                                             ?: "Diğer"
+
                                     mainCategoryExpanded = false
                                 }
                             )
@@ -341,7 +362,9 @@ fun EditIngredientDialog(
                                 },
                                 onClick = {
                                     manualCategoryEnabled = true
-                                    selectedSubCategory = subCategory
+                                    selectedSubCategory =
+                                        subCategory
+
                                     subCategoryExpanded = false
                                 }
                             )
@@ -380,10 +403,18 @@ fun EditIngredientDialog(
                             .replace(",", ".")
                             .toDoubleOrNull()
 
+                    if (parsedQuantity == null) {
+                        quantityError = "Geçerli bir miktar gir"
+                        return@Button
+                    }
+
+                    if (parsedQuantity <= 0) {
+                        quantityError = "Miktar 0'dan büyük olmalı"
+                        return@Button
+                    }
+
                     if (
                         name.isNotBlank() &&
-                        parsedQuantity != null &&
-                        parsedQuantity >= 0 &&
                         expirationDate.isNotBlank()
                     ) {
                         val newInitialQuantity =
@@ -435,5 +466,4 @@ fun EditIngredientDialog(
             }
         }
     )
-
 }
