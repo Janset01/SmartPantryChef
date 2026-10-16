@@ -50,7 +50,9 @@ private enum class PantryTableFilter {
 private data class PantryTableItem(
     val ingredient: Ingredient,
     val mainCategory: PantryMainCategory,
-    val subCategory: String
+    val subCategory: String,
+    val stockPercent: Int,
+    val daysLeft: Long?
 )
 
 @Composable
@@ -87,13 +89,22 @@ fun PantryInventoryTable(
                 PantryTableItem(
                     ingredient = ingredient,
                     mainCategory = category.mainCategory,
-                    subCategory = category.subCategory
+                    subCategory = category.subCategory,
+                    stockPercent = stockPercent(ingredient),
+                    daysLeft = expirationDaysLeft(
+                        ingredient.expirationDate
+                    )
                 )
             }
         }
 
     val filteredItems =
-        classifiedItems.filter { item ->
+        remember(
+            classifiedItems,
+            searchText,
+            selectedFilter
+        ) {
+            classifiedItems.filter { item ->
 
             val matchesSearch =
                 searchText.isBlank() ||
@@ -120,46 +131,39 @@ fun PantryInventoryTable(
                         true
 
                     PantryTableFilter.LOW_STOCK ->
-                        stockPercent(
-                            item.ingredient
-                        ) <= 35
+                        item.stockPercent <= 35
 
-                    PantryTableFilter.EXPIRING -> {
-                        val days =
-                            expirationDaysLeft(
-                                item.ingredient
-                                    .expirationDate
-                            )
-
-                        days != null &&
-                                days in 0L..5L
-                    }
+                    PantryTableFilter.EXPIRING ->
+                        item.daysLeft != null &&
+                                item.daysLeft in 0L..5L
                 }
 
             matchesSearch &&
                     matchesFilter
+            }
         }
 
     val groupedItems =
-        filteredItems
-            .groupBy {
-                it.mainCategory
-            }
+        remember(filteredItems) {
+            filteredItems
+                .groupBy {
+                    it.mainCategory
+                }
+        }
 
     val lowStockCount =
-        ingredients.count {
-            stockPercent(it) <= 35
+        remember(classifiedItems) {
+            classifiedItems.count {
+                it.stockPercent <= 35
+            }
         }
 
     val expiringCount =
-        ingredients.count {
-            val days =
-                expirationDaysLeft(
-                    it.expirationDate
-                )
-
-            days != null &&
-                    days in 0L..5L
+        remember(classifiedItems) {
+            classifiedItems.count {
+                it.daysLeft != null &&
+                        it.daysLeft in 0L..5L
+            }
         }
 
     Column(
@@ -536,8 +540,7 @@ private fun PantryCategoryTable(
                                     PantryTableItem
                                     > {
                                 expirationSortValue(
-                                    it.ingredient
-                                        .expirationDate
+                                    it.daysLeft
                                 )
                             }.thenBy {
                                 it.ingredient.name
@@ -674,7 +677,7 @@ private fun PantryTableRow(
 
     val freshness =
         pantryFreshnessStatus(
-            ingredient.expirationDate
+            item.daysLeft
         )
 
     Row(
@@ -902,13 +905,8 @@ private fun pantryStockStatus(
 }
 
 private fun pantryFreshnessStatus(
-    expirationDate: String
+    days: Long?
 ): Pair<String, Color> {
-
-    val days =
-        expirationDaysLeft(
-            expirationDate
-        )
 
     return when {
 
@@ -1014,13 +1012,8 @@ private fun expirationDaysLeft(
 }
 
 private fun expirationSortValue(
-    expirationDate: String
+    days: Long?
 ): Long {
-
-    val days =
-        expirationDaysLeft(
-            expirationDate
-        )
 
     return when {
         days == null ->
