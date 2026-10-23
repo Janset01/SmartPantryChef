@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.withTransaction
 import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
@@ -321,8 +322,9 @@ fun AddRecipeScreen() {
                     OutlinedTextField(
                         value =
                             preparationTime,
-                        onValueChange = {
-                            preparationTime = it
+                        onValueChange = { value ->
+                            preparationTime =
+                                value.filter { it.isDigit() }
                         },
                         modifier =
                             Modifier.weight(1f),
@@ -330,8 +332,16 @@ fun AddRecipeScreen() {
                             Text("Süre")
                         },
                         placeholder = {
-                            Text("30 dk")
+                            Text("30")
                         },
+                        suffix = {
+                            Text("dk")
+                        },
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType =
+                                    KeyboardType.Number
+                            ),
                         singleLine = true,
                         shape =
                             RoundedCornerShape(16.dp)
@@ -339,8 +349,9 @@ fun AddRecipeScreen() {
 
                     OutlinedTextField(
                         value = servings,
-                        onValueChange = {
-                            servings = it
+                        onValueChange = { value ->
+                            servings =
+                                value.filter { it.isDigit() }
                         },
                         modifier =
                             Modifier.weight(1f),
@@ -348,8 +359,16 @@ fun AddRecipeScreen() {
                             Text("Porsiyon")
                         },
                         placeholder = {
-                            Text("4 kişi")
+                            Text("4")
                         },
+                        suffix = {
+                            Text("kişi")
+                        },
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType =
+                                    KeyboardType.Number
+                            ),
                         singleLine = true,
                         shape =
                             RoundedCornerShape(16.dp)
@@ -550,17 +569,54 @@ fun AddRecipeScreen() {
                             return@Button
                         }
 
-                        recipeIngredients.add(
-                            RecipeIngredientInput(
-                                name =
-                                    ingredientName
-                                        .trim(),
-                                quantity =
-                                    quantityValue,
-                                unit =
-                                    ingredientUnit
+                        val cleanIngredientName =
+                            ingredientName.trim()
+
+                        val existingIndex =
+                            recipeIngredients
+                                .indexOfFirst {
+                                    normalizeRecipeIngredientName(
+                                        it.name
+                                    ) ==
+                                            normalizeRecipeIngredientName(
+                                                cleanIngredientName
+                                            ) &&
+                                            it.unit ==
+                                            ingredientUnit
+                                }
+
+                        if (existingIndex >= 0) {
+                            val existing =
+                                recipeIngredients[
+                                    existingIndex
+                                ]
+
+                            recipeIngredients[
+                                existingIndex
+                            ] =
+                                existing.copy(
+                                    quantity =
+                                        existing.quantity +
+                                                quantityValue
+                                )
+
+                            Toast.makeText(
+                                context,
+                                "Aynı malzeme birleştirildi ✅",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            recipeIngredients.add(
+                                RecipeIngredientInput(
+                                    name =
+                                        cleanIngredientName,
+                                    quantity =
+                                        quantityValue,
+                                    unit =
+                                        ingredientUnit
+                                )
                             )
-                        )
+                        }
 
                         ingredientName = ""
                         ingredientQuantity = ""
@@ -814,6 +870,38 @@ fun AddRecipeScreen() {
                     return@Button
                 }
 
+                val preparationMinutes =
+                    preparationTime.toIntOrNull()
+
+                if (
+                    preparationMinutes == null ||
+                    preparationMinutes <= 0
+                ) {
+                    Toast.makeText(
+                        context,
+                        "Hazırlama süresi 0'dan büyük olmalı",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@Button
+                }
+
+                val servingCount =
+                    servings.toIntOrNull()
+
+                if (
+                    servingCount == null ||
+                    servingCount <= 0
+                ) {
+                    Toast.makeText(
+                        context,
+                        "Porsiyon sayısı 0'dan büyük olmalı",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@Button
+                }
+
                 if (
                     recipeIngredients
                         .isEmpty()
@@ -847,9 +935,9 @@ fun AddRecipeScreen() {
                         category =
                             category,
                         preparationTime =
-                            preparationTime.trim(),
+                            "$preparationMinutes dk",
                         servings =
-                            servings.trim(),
+                            "$servingCount kişi",
                         ingredients =
                             ingredientsText,
                         instructions =
@@ -861,59 +949,70 @@ fun AddRecipeScreen() {
 
                 scope.launch {
 
-                    // Önce tarifi kaydet,
-                    // oluşan ID'yi al.
-                    val recipeId =
-                        recipeDao
-                            .insertRecipe(
-                                recipe
-                            )
+                    try {
+                        database.withTransaction {
 
-                    // Sonra malzemeleri
-                    // o recipeId ile kaydet.
-                    val databaseIngredients =
-                        recipeIngredients
-                            .map {
-                                    ingredient ->
+                            // Tarif ve malzemeleri tek işlemde kaydet.
+                            // Malzeme kaydı başarısız olursa yarım tarif kalmaz.
+                            val recipeId =
+                                recipeDao
+                                    .insertRecipe(
+                                        recipe
+                                    )
 
-                                RecipeIngredient(
-                                    recipeId =
-                                        recipeId.toInt(),
-                                    name =
-                                        ingredient.name,
-                                    quantity =
-                                        ingredient.quantity,
-                                    unit =
-                                        ingredient.unit
+                            val databaseIngredients =
+                                recipeIngredients
+                                    .map {
+                                            ingredient ->
+
+                                        RecipeIngredient(
+                                            recipeId =
+                                                recipeId.toInt(),
+                                            name =
+                                                ingredient.name,
+                                            quantity =
+                                                ingredient.quantity,
+                                            unit =
+                                                ingredient.unit
+                                        )
+                                    }
+
+                            recipeIngredientDao
+                                .insertRecipeIngredients(
+                                    databaseIngredients
                                 )
-                            }
+                        }
 
-                    recipeIngredientDao
-                        .insertRecipeIngredients(
-                            databaseIngredients
-                        )
+                        Toast.makeText(
+                            context,
+                            "Tarif başarıyla eklendi ✅",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
-                    Toast.makeText(
-                        context,
-                        "Tarif başarıyla eklendi ✅",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                        // Formu yalnızca başarılı kayıttan sonra temizle.
+                        recipeName = ""
+                        category =
+                            "Kategori Seç"
+                        preparationTime = ""
+                        servings = ""
+                        instructions = ""
 
-                    // Formu temizle
-                    recipeName = ""
-                    category =
-                        "Kategori Seç"
-                    preparationTime = ""
-                    servings = ""
-                    instructions = ""
+                        recipeIngredients.clear()
 
-                    recipeIngredients.clear()
+                        ingredientName = ""
+                        ingredientQuantity = ""
+                        ingredientUnit = "Adet"
 
-                    ingredientName = ""
-                    ingredientQuantity = ""
-                    ingredientUnit = "Adet"
+                        selectedImageUri = null
 
-                    selectedImageUri = null
+                    } catch (_: Exception) {
+
+                        Toast.makeText(
+                            context,
+                            "Tarif kaydedilemedi. Tekrar dene.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             },
             modifier = Modifier
@@ -960,4 +1059,20 @@ private fun formatRecipeQuantity(
 
         quantity.toString()
     }
+}
+
+private fun normalizeRecipeIngredientName(
+    value: String
+): String {
+
+    return value
+        .trim()
+        .lowercase()
+        .replace("ı", "i")
+        .replace("ş", "s")
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ö", "o")
+        .replace("ç", "c")
+        .replace(Regex("\\s+"), " ")
 }
