@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import com.smartpantry.chef.data.Ingredient
 import com.smartpantry.chef.data.IngredientCategoryClassifier
 import com.smartpantry.chef.data.PantryMainCategory
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +51,14 @@ fun EditIngredientDialog(
     }
 
     var quantityError by remember(ingredient.id) {
+        mutableStateOf<String?>(null)
+    }
+
+    var nameError by remember(ingredient.id) {
+        mutableStateOf<String?>(null)
+    }
+
+    var dateError by remember(ingredient.id) {
         mutableStateOf<String?>(null)
     }
 
@@ -121,6 +131,7 @@ fun EditIngredientDialog(
                     value = name,
                     onValueChange = { newName ->
                         name = newName
+                        nameError = null
 
                         if (!manualCategoryEnabled) {
                             val autoCategory =
@@ -137,6 +148,12 @@ fun EditIngredientDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = {
                         Text("Malzeme Adı")
+                    },
+                    isError = nameError != null,
+                    supportingText = {
+                        nameError?.let { message ->
+                            Text(message)
+                        }
                     },
                     singleLine = true
                 )
@@ -214,7 +231,26 @@ fun EditIngredientDialog(
                                     Text(unit)
                                 },
                                 onClick = {
+                                    val currentQuantity =
+                                        remainingQuantity
+                                            .replace(",", ".")
+                                            .toDoubleOrNull()
+
+                                    if (currentQuantity != null) {
+                                        editPantryConvertQuantity(
+                                            quantity = currentQuantity,
+                                            fromUnit = selectedUnit,
+                                            toUnit = unit
+                                        )?.let { converted ->
+                                            remainingQuantity =
+                                                formatIngredientQuantity(
+                                                    converted
+                                                )
+                                        }
+                                    }
+
                                     selectedUnit = unit
+                                    quantityError = null
                                     unitExpanded = false
                                 }
                             )
@@ -230,6 +266,7 @@ fun EditIngredientDialog(
                     value = expirationDate,
                     onValueChange = {
                         expirationDate = it
+                        dateError = null
                     },
                     modifier = Modifier.fillMaxWidth(),
                     label = {
@@ -237,6 +274,12 @@ fun EditIngredientDialog(
                     },
                     placeholder = {
                         Text("GG.AA.YYYY")
+                    },
+                    isError = dateError != null,
+                    supportingText = {
+                        dateError?.let { message ->
+                            Text(message)
+                        }
                     },
                     singleLine = true
                 )
@@ -413,21 +456,30 @@ fun EditIngredientDialog(
                         return@Button
                     }
 
-                    if (
-                        name.isNotBlank() &&
-                        expirationDate.isNotBlank()
-                    ) {
-                        val newInitialQuantity =
-                            if (
-                                parsedQuantity >
-                                ingredient.initialQuantity
-                            ) {
-                                parsedQuantity
-                            } else {
-                                ingredient.initialQuantity
-                            }
+                    if (name.isBlank()) {
+                        nameError = "Malzeme adı boş bırakılamaz"
+                        return@Button
+                    }
 
-                        val updatedIngredient =
+                    if (!isValidPantryExpirationDate(expirationDate)) {
+                        dateError = "Geçerli bir tarih gir (GG.AA.YYYY)"
+                        return@Button
+                    }
+
+                    val convertedInitialQuantity =
+                        editPantryConvertQuantity(
+                            quantity = ingredient.initialQuantity,
+                            fromUnit = ingredient.unit,
+                            toUnit = selectedUnit
+                        ) ?: ingredient.initialQuantity
+
+                    val newInitialQuantity =
+                        maxOf(
+                            parsedQuantity,
+                            convertedInitialQuantity
+                        )
+
+                    val updatedIngredient =
                             ingredient.copy(
                                 name = name.trim(),
                                 initialQuantity =
@@ -451,8 +503,7 @@ fun EditIngredientDialog(
                                     }
                             )
 
-                        onSave(updatedIngredient)
-                    }
+                    onSave(updatedIngredient)
                 }
             ) {
                 Text("Kaydet")
@@ -466,4 +517,101 @@ fun EditIngredientDialog(
             }
         }
     )
+}
+
+private fun isValidPantryExpirationDate(
+    value: String
+): Boolean {
+    if (!Regex("""\d{2}\.\d{2}\.\d{4}""").matches(value.trim())) {
+        return false
+    }
+
+    return try {
+        SimpleDateFormat(
+            "dd.MM.yyyy",
+            Locale.getDefault()
+        ).apply {
+            isLenient = false
+        }.parse(value.trim()) != null
+    } catch (_: Exception) {
+        false
+    }
+}
+
+private fun editPantryConvertQuantity(
+    quantity: Double,
+    fromUnit: String,
+    toUnit: String
+): Double? {
+    val from = normalizeEditPantryUnit(fromUnit)
+    val to = normalizeEditPantryUnit(toUnit)
+
+    if (from == to) {
+        return quantity
+    }
+
+    val fromFamily = editPantryUnitFamily(from)
+    val toFamily = editPantryUnitFamily(to)
+
+    if (
+        fromFamily == EditPantryUnitFamily.UNKNOWN ||
+        fromFamily != toFamily
+    ) {
+        return null
+    }
+
+    val baseQuantity =
+        when (from) {
+            "kilogram" -> quantity * 1000.0
+            "litre" -> quantity * 1000.0
+            else -> quantity
+        }
+
+    return when (to) {
+        "kilogram" -> baseQuantity / 1000.0
+        "litre" -> baseQuantity / 1000.0
+        else -> baseQuantity
+    }
+}
+
+private enum class EditPantryUnitFamily {
+    COUNT,
+    MASS,
+    VOLUME,
+    UNKNOWN
+}
+
+private fun editPantryUnitFamily(
+    normalizedUnit: String
+): EditPantryUnitFamily {
+    return when (normalizedUnit) {
+        "adet" ->
+            EditPantryUnitFamily.COUNT
+
+        "gram",
+        "kilogram" ->
+            EditPantryUnitFamily.MASS
+
+        "mililitre",
+        "litre" ->
+            EditPantryUnitFamily.VOLUME
+
+        else ->
+            EditPantryUnitFamily.UNKNOWN
+    }
+}
+
+private fun normalizeEditPantryUnit(
+    unit: String
+): String {
+    return unit
+        .trim()
+        .lowercase(Locale.forLanguageTag("tr-TR"))
+        .replace("ı", "i")
+        .replace("ş", "s")
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ö", "o")
+        .replace("ç", "c")
+        .replace(Regex("[^a-z0-9]"), "")
 }
