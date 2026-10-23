@@ -54,12 +54,6 @@ import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeIngredient
 import kotlinx.coroutines.launch
 
-data class RecipeIngredientInput(
-    val name: String,
-    val quantity: Double,
-    val unit: String
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeScreen() {
@@ -569,53 +563,39 @@ fun AddRecipeScreen() {
                             return@Button
                         }
 
-                        val cleanIngredientName =
-                            ingredientName.trim()
+                        val incomingIngredient =
+                            RecipeIngredientInput(
+                                name =
+                                    ingredientName.trim(),
+                                quantity =
+                                    quantityValue,
+                                unit =
+                                    ingredientUnit
+                            )
 
-                        val existingIndex =
-                            recipeIngredients
-                                .indexOfFirst {
-                                    normalizeRecipeIngredientName(
-                                        it.name
-                                    ) ==
-                                            normalizeRecipeIngredientName(
-                                                cleanIngredientName
-                                            ) &&
-                                            it.unit ==
-                                            ingredientUnit
-                                }
+                        val mergedIngredients =
+                            mergeRecipeIngredient(
+                                current =
+                                    recipeIngredients.toList(),
+                                incoming =
+                                    incomingIngredient
+                            )
 
-                        if (existingIndex >= 0) {
-                            val existing =
-                                recipeIngredients[
-                                    existingIndex
-                                ]
+                        val didMerge =
+                            mergedIngredients.size ==
+                                    recipeIngredients.size
 
-                            recipeIngredients[
-                                existingIndex
-                            ] =
-                                existing.copy(
-                                    quantity =
-                                        existing.quantity +
-                                                quantityValue
-                                )
+                        recipeIngredients.clear()
+                        recipeIngredients.addAll(
+                            mergedIngredients
+                        )
 
+                        if (didMerge) {
                             Toast.makeText(
                                 context,
                                 "Aynı malzeme birleştirildi ✅",
                                 Toast.LENGTH_SHORT
                             ).show()
-                        } else {
-                            recipeIngredients.add(
-                                RecipeIngredientInput(
-                                    name =
-                                        cleanIngredientName,
-                                    quantity =
-                                        quantityValue,
-                                    unit =
-                                        ingredientUnit
-                                )
-                            )
                         }
 
                         ingredientName = ""
@@ -871,7 +851,9 @@ fun AddRecipeScreen() {
                 }
 
                 val preparationMinutes =
-                    preparationTime.toIntOrNull()
+                    parsePositiveInt(
+                        preparationTime
+                    )
 
                 if (
                     preparationMinutes == null ||
@@ -887,7 +869,9 @@ fun AddRecipeScreen() {
                 }
 
                 val servingCount =
-                    servings.toIntOrNull()
+                    parsePositiveInt(
+                        servings
+                    )
 
                 if (
                     servingCount == null ||
@@ -1059,20 +1043,4 @@ private fun formatRecipeQuantity(
 
         quantity.toString()
     }
-}
-
-private fun normalizeRecipeIngredientName(
-    value: String
-): String {
-
-    return value
-        .trim()
-        .lowercase()
-        .replace("ı", "i")
-        .replace("ş", "s")
-        .replace("ğ", "g")
-        .replace("ü", "u")
-        .replace("ö", "o")
-        .replace("ç", "c")
-        .replace(Regex("\\s+"), " ")
 }
