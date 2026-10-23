@@ -86,7 +86,7 @@ class PantryFormLogicTest {
                 quantity = 1.0,
                 fromUnit = "Kilogram",
                 toUnit = "Gram"
-            ),
+            ) ?: error("Dönüşüm başarısız"),
             0.0
         )
     }
@@ -99,7 +99,7 @@ class PantryFormLogicTest {
                 quantity = 1000.0,
                 fromUnit = "Gram",
                 toUnit = "Kilogram"
-            ),
+            ) ?: error("Dönüşüm başarısız"),
             0.0
         )
     }
@@ -112,7 +112,7 @@ class PantryFormLogicTest {
                 quantity = 1.0,
                 fromUnit = "Litre",
                 toUnit = "Mililitre"
-            ),
+            ) ?: error("Dönüşüm başarısız"),
             0.0
         )
     }
@@ -132,7 +132,8 @@ class PantryFormLogicTest {
     fun positiveQuantity_acceptsCommaDecimal() {
         assertEquals(
             1.5,
-            parsePositivePantryQuantity("1,5"),
+            parsePositivePantryQuantity("1,5")
+                ?: error("Miktar ayrıştırılamadı"),
             0.0
         )
     }
