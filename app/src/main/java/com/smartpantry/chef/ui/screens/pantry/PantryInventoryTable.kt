@@ -686,7 +686,6 @@ private fun PantryCategoryTable(
                             )
                         }
                     }
-                        }
                 }
             }
         }
