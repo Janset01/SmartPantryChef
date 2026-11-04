@@ -39,16 +39,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.withTransaction
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeIngredient
 import kotlinx.coroutines.launch
-
-private data class EditRecipeIngredientInput(
-    val name: String,
-    val quantity: Double,
-    val unit: String
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +64,15 @@ fun EditRecipeScreen(
     val recipeIngredientDao =
         database.recipeIngredientDao()
 
+    val categoryList = listOf(
+        "Kahvaltı",
+        "Öğle Yemeği",
+        "Akşam Yemeği",
+        "Tatlı",
+        "Fit",
+        "Atıştırmalık"
+    )
+
     val unitList = listOf(
         "Adet",
         "Gram",
@@ -85,19 +89,29 @@ fun EditRecipeScreen(
         mutableStateOf(recipe.category)
     }
 
+    var categoryExpanded by remember {
+        mutableStateOf(false)
+    }
+
     var preparationTime by remember {
-        mutableStateOf(recipe.preparationTime)
+        mutableStateOf(
+            extractPositiveIntText(
+                recipe.preparationTime
+            )
+        )
     }
 
     var servings by remember {
-        mutableStateOf(recipe.servings)
+        mutableStateOf(
+            extractPositiveIntText(
+                recipe.servings
+            )
+        )
     }
 
     var instructions by remember {
         mutableStateOf(recipe.instructions)
     }
-
-    // Yeni malzeme ekleme alanları
 
     var ingredientName by remember {
         mutableStateOf("")
@@ -116,16 +130,12 @@ fun EditRecipeScreen(
     }
 
     val recipeIngredients = remember {
-        mutableStateListOf<EditRecipeIngredientInput>()
+        mutableStateListOf<RecipeIngredientInput>()
     }
 
     var ingredientsLoaded by remember {
         mutableStateOf(false)
     }
-
-    // -----------------------------------------
-    // TARİFİN KAYITLI MALZEMELERİNİ ROOM'DAN AL
-    // -----------------------------------------
 
     LaunchedEffect(recipe.id) {
 
@@ -137,7 +147,7 @@ fun EditRecipeScreen(
 
         recipeIngredients.addAll(
             savedIngredients.map {
-                EditRecipeIngredientInput(
+                RecipeIngredientInput(
                     name = it.name,
                     quantity = it.quantity,
                     unit = it.unit
@@ -151,8 +161,12 @@ fun EditRecipeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F6F2))
-            .verticalScroll(rememberScrollState())
+            .background(
+                Color(0xFFF8F6F2)
+            )
+            .verticalScroll(
+                rememberScrollState()
+            )
             .padding(20.dp)
     ) {
 
@@ -163,30 +177,39 @@ fun EditRecipeScreen(
         }
 
         Spacer(
-            modifier = Modifier.height(20.dp)
+            modifier =
+                Modifier.height(20.dp)
         )
 
         Text(
             text = "✏️ Tarifi Düzenle",
             fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
+            fontWeight =
+                FontWeight.Bold,
+            color =
+                Color(0xFF2F3E34)
         )
 
         Spacer(
-            modifier = Modifier.height(20.dp)
+            modifier =
+                Modifier.height(20.dp)
         )
 
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            )
+            modifier =
+                Modifier.fillMaxWidth(),
+            shape =
+                RoundedCornerShape(20.dp),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor =
+                        Color.White
+                )
         ) {
 
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier =
+                    Modifier.padding(16.dp)
             ) {
 
                 OutlinedTextField(
@@ -194,98 +217,188 @@ fun EditRecipeScreen(
                     onValueChange = {
                         recipeName = it
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     label = {
                         Text("Tarif Adı")
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(16.dp)
+                    shape =
+                        RoundedCornerShape(16.dp)
                 )
 
                 Spacer(
-                    modifier = Modifier.height(14.dp)
+                    modifier =
+                        Modifier.height(14.dp)
                 )
 
-                OutlinedTextField(
-                    value = category,
-                    onValueChange = {
-                        category = it
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = {
-                        Text("Kategori")
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp)
-                )
+                ExposedDropdownMenuBox(
+                    expanded =
+                        categoryExpanded,
+                    onExpandedChange = {
+                        categoryExpanded =
+                            !categoryExpanded
+                    }
+                ) {
+
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        label = {
+                            Text("Kategori")
+                        },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults
+                                .TrailingIcon(
+                                    expanded =
+                                        categoryExpanded
+                                )
+                        },
+                        singleLine = true,
+                        shape =
+                            RoundedCornerShape(16.dp)
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded =
+                            categoryExpanded,
+                        onDismissRequest = {
+                            categoryExpanded =
+                                false
+                        }
+                    ) {
+
+                        categoryList.forEach {
+                                item ->
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(item)
+                                },
+                                onClick = {
+                                    category = item
+                                    categoryExpanded =
+                                        false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 Spacer(
-                    modifier = Modifier.height(14.dp)
+                    modifier =
+                        Modifier.height(14.dp)
                 )
 
-                OutlinedTextField(
-                    value = preparationTime,
-                    onValueChange = {
-                        preparationTime = it
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = {
-                        Text("Hazırlama Süresi")
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp)
-                )
+                Row(
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    horizontalArrangement =
+                        Arrangement.spacedBy(
+                            10.dp
+                        )
+                ) {
+
+                    OutlinedTextField(
+                        value =
+                            preparationTime,
+                        onValueChange = {
+                                value ->
+                            preparationTime =
+                                value.filter {
+                                    it.isDigit()
+                                }
+                        },
+                        modifier =
+                            Modifier.weight(1f),
+                        label = {
+                            Text("Süre")
+                        },
+                        suffix = {
+                            Text("dk")
+                        },
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType =
+                                    KeyboardType.Number
+                            ),
+                        singleLine = true,
+                        shape =
+                            RoundedCornerShape(16.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = servings,
+                        onValueChange = {
+                                value ->
+                            servings =
+                                value.filter {
+                                    it.isDigit()
+                                }
+                        },
+                        modifier =
+                            Modifier.weight(1f),
+                        label = {
+                            Text("Porsiyon")
+                        },
+                        suffix = {
+                            Text("kişi")
+                        },
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType =
+                                    KeyboardType.Number
+                            ),
+                        singleLine = true,
+                        shape =
+                            RoundedCornerShape(16.dp)
+                    )
+                }
 
                 Spacer(
-                    modifier = Modifier.height(14.dp)
-                )
-
-                OutlinedTextField(
-                    value = servings,
-                    onValueChange = {
-                        servings = it
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = {
-                        Text("Porsiyon")
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp)
-                )
-
-                Spacer(
-                    modifier = Modifier.height(22.dp)
+                    modifier =
+                        Modifier.height(22.dp)
                 )
 
                 Text(
-                    text = "🥕 Tarif Malzemeleri",
+                    text =
+                        "🥕 Tarif Malzemeleri",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2F3E34)
+                    fontWeight =
+                        FontWeight.Bold,
+                    color =
+                        Color(0xFF2F3E34)
                 )
 
                 Spacer(
-                    modifier = Modifier.height(6.dp)
+                    modifier =
+                        Modifier.height(6.dp)
                 )
 
                 Text(
-                    text = "Tarifte kullanılan malzemeleri miktarlarıyla düzenle.",
+                    text =
+                        "Tarifte kullanılan malzemeleri miktarlarıyla düzenle.",
                     fontSize = 13.sp,
                     color = Color.Gray
                 )
 
                 Spacer(
-                    modifier = Modifier.height(14.dp)
+                    modifier =
+                        Modifier.height(14.dp)
                 )
 
-                // MALZEME ADI
-
                 OutlinedTextField(
-                    value = ingredientName,
+                    value =
+                        ingredientName,
                     onValueChange = {
                         ingredientName = it
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     label = {
                         Text("Malzeme Adı")
                     },
@@ -293,24 +406,29 @@ fun EditRecipeScreen(
                         Text("Örn: Süt")
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(16.dp)
+                    shape =
+                        RoundedCornerShape(16.dp)
                 )
 
                 Spacer(
-                    modifier = Modifier.height(10.dp)
+                    modifier =
+                        Modifier.height(10.dp)
                 )
 
-                // MİKTAR + BİRİM
-
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     horizontalArrangement =
-                        Arrangement.spacedBy(10.dp)
+                        Arrangement.spacedBy(
+                            10.dp
+                        )
                 ) {
 
                     OutlinedTextField(
-                        value = ingredientQuantity,
-                        onValueChange = { value ->
+                        value =
+                            ingredientQuantity,
+                        onValueChange = {
+                                value ->
 
                             ingredientQuantity =
                                 value.filter {
@@ -319,7 +437,8 @@ fun EditRecipeScreen(
                                             it == '.'
                                 }
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier =
+                            Modifier.weight(1f),
                         label = {
                             Text("Miktar")
                         },
@@ -329,20 +448,24 @@ fun EditRecipeScreen(
                                     KeyboardType.Text
                             ),
                         singleLine = true,
-                        shape = RoundedCornerShape(16.dp)
+                        shape =
+                            RoundedCornerShape(16.dp)
                     )
 
                     ExposedDropdownMenuBox(
-                        expanded = ingredientUnitExpanded,
+                        expanded =
+                            ingredientUnitExpanded,
                         onExpandedChange = {
                             ingredientUnitExpanded =
                                 !ingredientUnitExpanded
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier =
+                            Modifier.weight(1f)
                     ) {
 
                         OutlinedTextField(
-                            value = ingredientUnit,
+                            value =
+                                ingredientUnit,
                             onValueChange = {},
                             readOnly = true,
                             modifier = Modifier
@@ -359,24 +482,29 @@ fun EditRecipeScreen(
                                     )
                             },
                             singleLine = true,
-                            shape = RoundedCornerShape(16.dp)
+                            shape =
+                                RoundedCornerShape(16.dp)
                         )
 
                         ExposedDropdownMenu(
-                            expanded = ingredientUnitExpanded,
+                            expanded =
+                                ingredientUnitExpanded,
                             onDismissRequest = {
-                                ingredientUnitExpanded = false
+                                ingredientUnitExpanded =
+                                    false
                             }
                         ) {
 
-                            unitList.forEach { unit ->
+                            unitList.forEach {
+                                    unit ->
 
                                 DropdownMenuItem(
                                     text = {
                                         Text(unit)
                                     },
                                     onClick = {
-                                        ingredientUnit = unit
+                                        ingredientUnit =
+                                            unit
                                         ingredientUnitExpanded =
                                             false
                                     }
@@ -387,19 +515,25 @@ fun EditRecipeScreen(
                 }
 
                 Spacer(
-                    modifier = Modifier.height(10.dp)
+                    modifier =
+                        Modifier.height(10.dp)
                 )
 
                 Button(
                     onClick = {
 
-                        val quantity =
+                        val quantityValue =
                             ingredientQuantity
-                                .replace(",", ".")
+                                .replace(
+                                    ",",
+                                    "."
+                                )
                                 .toDoubleOrNull()
 
-                        if (ingredientName.isBlank()) {
-
+                        if (
+                            ingredientName
+                                .isBlank()
+                        ) {
                             Toast.makeText(
                                 context,
                                 "Malzeme adı gir",
@@ -410,10 +544,9 @@ fun EditRecipeScreen(
                         }
 
                         if (
-                            quantity == null ||
-                            quantity <= 0
+                            quantityValue == null ||
+                            quantityValue <= 0
                         ) {
-
                             Toast.makeText(
                                 context,
                                 "Geçerli bir miktar gir",
@@ -423,107 +556,158 @@ fun EditRecipeScreen(
                             return@Button
                         }
 
-                        recipeIngredients.add(
-                            EditRecipeIngredientInput(
+                        val incomingIngredient =
+                            RecipeIngredientInput(
                                 name =
                                     ingredientName.trim(),
-                                quantity = quantity,
-                                unit = ingredientUnit
+                                quantity =
+                                    quantityValue,
+                                unit =
+                                    ingredientUnit
                             )
+
+                        val mergedIngredients =
+                            mergeRecipeIngredient(
+                                current =
+                                    recipeIngredients
+                                        .toList(),
+                                incoming =
+                                    incomingIngredient
+                            )
+
+                        val didMerge =
+                            mergedIngredients.size ==
+                                    recipeIngredients.size
+
+                        recipeIngredients.clear()
+                        recipeIngredients.addAll(
+                            mergedIngredients
                         )
+
+                        if (didMerge) {
+                            Toast.makeText(
+                                context,
+                                "Aynı malzeme birleştirildi ✅",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
 
                         ingredientName = ""
                         ingredientQuantity = ""
                         ingredientUnit = "Adet"
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier =
+                        Modifier.fillMaxWidth()
                 ) {
 
                     Text("➕ Malzeme Ekle")
                 }
 
                 Spacer(
-                    modifier = Modifier.height(14.dp)
+                    modifier =
+                        Modifier.height(14.dp)
                 )
-
-                // KAYITLI MALZEMELER
 
                 if (!ingredientsLoaded) {
 
                     Text(
-                        text = "Malzemeler yükleniyor...",
-                        color = Color.Gray
+                        text =
+                            "Malzemeler yükleniyor...",
+                        color =
+                            Color.Gray
                     )
 
-                } else if (recipeIngredients.isEmpty()) {
+                } else if (
+                    recipeIngredients.isEmpty()
+                ) {
 
                     Text(
-                        text = "Henüz malzeme eklenmemiş.",
-                        color = Color.Gray
+                        text =
+                            "Henüz malzeme eklenmemiş.",
+                        color =
+                            Color.Gray
                     )
 
                 } else {
 
                     Text(
-                        text = "Tarifteki Malzemeler",
-                        fontWeight = FontWeight.SemiBold
+                        text =
+                            "Tarifteki Malzemeler",
+                        fontWeight =
+                            FontWeight.SemiBold
                     )
 
                     Spacer(
-                        modifier = Modifier.height(8.dp)
+                        modifier =
+                            Modifier.height(8.dp)
                     )
 
-                    recipeIngredients.forEachIndexed {
-                            index,
-                            ingredient ->
+                    recipeIngredients
+                        .forEachIndexed {
+                                index,
+                                ingredient ->
 
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            colors =
-                                CardDefaults.cardColors(
-                                    containerColor =
-                                        Color(0xFFF3F6F3)
-                                )
-                        ) {
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                horizontalArrangement =
-                                    Arrangement.SpaceBetween
+                            Card(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            vertical =
+                                                4.dp
+                                        ),
+                                colors =
+                                    CardDefaults
+                                        .cardColors(
+                                            containerColor =
+                                                Color(
+                                                    0xFFF3F6F3
+                                                )
+                                        )
                             ) {
 
-                                Text(
-                                    text =
-                                        "${ingredient.name} • " +
-                                                "${formatEditRecipeQuantity(ingredient.quantity)} " +
-                                                ingredient.unit,
+                                Row(
                                     modifier =
-                                        Modifier.weight(1f)
-                                )
-
-                                IconButton(
-                                    onClick = {
-                                        recipeIngredients
-                                            .removeAt(index)
-                                    }
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                    horizontalArrangement =
+                                        Arrangement
+                                            .SpaceBetween
                                 ) {
-                                    Text("🗑️")
+
+                                    Text(
+                                        text =
+                                            "${ingredient.name} • " +
+                                                    "${formatEditRecipeQuantity(ingredient.quantity)} " +
+                                                    ingredient.unit,
+                                        modifier =
+                                            Modifier
+                                                .weight(1f)
+                                    )
+
+                                    IconButton(
+                                        onClick = {
+                                            recipeIngredients
+                                                .removeAt(
+                                                    index
+                                                )
+                                        }
+                                    ) {
+                                        Text("🗑️")
+                                    }
                                 }
                             }
                         }
-                    }
                 }
 
                 Spacer(
-                    modifier = Modifier.height(20.dp)
+                    modifier =
+                        Modifier.height(20.dp)
                 )
 
                 OutlinedTextField(
-                    value = instructions,
+                    value =
+                        instructions,
                     onValueChange = {
                         instructions = it
                     },
@@ -533,13 +717,15 @@ fun EditRecipeScreen(
                     label = {
                         Text("Hazırlanışı")
                     },
-                    shape = RoundedCornerShape(16.dp)
+                    shape =
+                        RoundedCornerShape(16.dp)
                 )
             }
         }
 
         Spacer(
-            modifier = Modifier.height(24.dp)
+            modifier =
+                Modifier.height(24.dp)
         )
 
         Button(
@@ -548,11 +734,12 @@ fun EditRecipeScreen(
                 if (
                     recipeName.isBlank() ||
                     category.isBlank() ||
-                    preparationTime.isBlank() ||
+                    preparationTime
+                        .isBlank() ||
                     servings.isBlank() ||
-                    instructions.isBlank()
+                    instructions
+                        .isBlank()
                 ) {
-
                     Toast.makeText(
                         context,
                         "Lütfen tarif bilgilerini doldur",
@@ -562,8 +749,44 @@ fun EditRecipeScreen(
                     return@Button
                 }
 
-                if (recipeIngredients.isEmpty()) {
+                val preparationMinutes =
+                    parsePositiveInt(
+                        preparationTime
+                    )
 
+                if (
+                    preparationMinutes == null
+                ) {
+                    Toast.makeText(
+                        context,
+                        "Hazırlama süresi 0'dan büyük olmalı",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@Button
+                }
+
+                val servingCount =
+                    parsePositiveInt(
+                        servings
+                    )
+
+                if (
+                    servingCount == null
+                ) {
+                    Toast.makeText(
+                        context,
+                        "Porsiyon sayısı 0'dan büyük olmalı",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@Button
+                }
+
+                if (
+                    recipeIngredients
+                        .isEmpty()
+                ) {
                     Toast.makeText(
                         context,
                         "Tarifte en az bir malzeme olmalı",
@@ -573,90 +796,110 @@ fun EditRecipeScreen(
                     return@Button
                 }
 
-                // Eski Recipe.ingredients alanını da
-                // güncel tutuyoruz.
                 val ingredientsText =
-                    recipeIngredients.joinToString(
-                        separator = "\n"
-                    ) { ingredient ->
+                    recipeIngredients
+                        .joinToString(
+                            separator = "\n"
+                        ) {
+                                ingredient ->
 
-                        "${formatEditRecipeQuantity(ingredient.quantity)} " +
-                                "${ingredient.unit} " +
-                                ingredient.name
-                    }
+                            "${formatEditRecipeQuantity(ingredient.quantity)} " +
+                                    "${ingredient.unit} " +
+                                    ingredient.name
+                        }
 
                 val updatedRecipe =
                     recipe.copy(
-                        name = recipeName.trim(),
-                        category = category.trim(),
+                        name =
+                            recipeName.trim(),
+                        category =
+                            category,
                         preparationTime =
-                            preparationTime.trim(),
-                        servings = servings.trim(),
-                        ingredients = ingredientsText,
+                            "$preparationMinutes dk",
+                        servings =
+                            "$servingCount kişi",
+                        ingredients =
+                            ingredientsText,
                         instructions =
                             instructions.trim()
                     )
 
                 scope.launch {
 
-                    // Tarif ana kaydını güncelle.
-                    recipeDao.updateRecipe(
-                        updatedRecipe
-                    )
+                    try {
+                        database.withTransaction {
 
-                    // Eski yapılandırılmış
-                    // malzemeleri temizle.
-                    recipeIngredientDao
-                        .deleteIngredientsForRecipe(
-                            recipe.id
-                        )
-
-                    // Ekrandaki güncel malzemeleri
-                    // yeniden kaydet.
-                    val updatedIngredients =
-                        recipeIngredients.map {
-                                ingredient ->
-
-                            RecipeIngredient(
-                                recipeId = recipe.id,
-                                name = ingredient.name,
-                                quantity =
-                                    ingredient.quantity,
-                                unit = ingredient.unit
+                            recipeDao.updateRecipe(
+                                updatedRecipe
                             )
+
+                            recipeIngredientDao
+                                .deleteIngredientsForRecipe(
+                                    recipe.id
+                                )
+
+                            val updatedIngredients =
+                                recipeIngredients
+                                    .map {
+                                            ingredient ->
+
+                                        RecipeIngredient(
+                                            recipeId =
+                                                recipe.id,
+                                            name =
+                                                ingredient.name,
+                                            quantity =
+                                                ingredient.quantity,
+                                            unit =
+                                                ingredient.unit
+                                        )
+                                    }
+
+                            recipeIngredientDao
+                                .insertRecipeIngredients(
+                                    updatedIngredients
+                                )
                         }
 
-                    recipeIngredientDao
-                        .insertRecipeIngredients(
-                            updatedIngredients
+                        Toast.makeText(
+                            context,
+                            "Tarif ve malzemeler güncellendi ✅",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        onRecipeUpdated(
+                            updatedRecipe
                         )
 
-                    Toast.makeText(
-                        context,
-                        "Tarif ve malzemeler güncellendi ✅",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    } catch (_: Exception) {
 
-                    onRecipeUpdated(
-                        updatedRecipe
-                    )
+                        Toast.makeText(
+                            context,
+                            "Tarif güncellenemedi. Tekrar dene.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp),
-            shape = RoundedCornerShape(18.dp)
+            shape =
+                RoundedCornerShape(18.dp)
         ) {
 
             Text(
-                text = "💾 Değişiklikleri Kaydet",
+                text =
+                    "💾 Değişiklikleri Kaydet",
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight =
+                    FontWeight.Bold
             )
         }
 
         Spacer(
-            modifier = Modifier.height(30.dp)
+            modifier =
+                Modifier.height(30.dp)
         )
     }
 }
@@ -665,8 +908,12 @@ private fun formatEditRecipeQuantity(
     quantity: Double
 ): String {
 
-    return if (quantity % 1.0 == 0.0) {
-        quantity.toInt().toString()
+    return if (
+        quantity % 1.0 == 0.0
+    ) {
+        quantity
+            .toInt()
+            .toString()
     } else {
         quantity.toString()
     }
