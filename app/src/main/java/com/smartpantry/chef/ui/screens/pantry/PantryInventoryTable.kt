@@ -76,6 +76,11 @@ fun PantryInventoryTable(
             mutableStateMapOf<PantryMainCategory, Boolean>()
         }
 
+    val showAllItemsByCategory =
+        remember {
+            mutableStateMapOf<PantryMainCategory, Boolean>()
+        }
+
     val classifiedItems =
         remember(ingredients) {
             ingredients.map { ingredient ->
@@ -305,9 +310,45 @@ fun PantryInventoryTable(
             )
         }
 
+        Row(
+            modifier =
+                Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.End
+        ) {
+            TextButton(
+                onClick = {
+                    groupedItems.keys.forEach {
+                            category ->
+                        expandedCategories[
+                            category
+                        ] = true
+                    }
+                }
+            ) {
+                Text("Tümünü Aç")
+            }
+
+            TextButton(
+                onClick = {
+                    groupedItems.keys.forEach {
+                            category ->
+                        expandedCategories[
+                            category
+                        ] = false
+                        showAllItemsByCategory[
+                            category
+                        ] = false
+                    }
+                }
+            ) {
+                Text("Tümünü Kapat")
+            }
+        }
+
         Spacer(
             modifier =
-                Modifier.height(14.dp)
+                Modifier.height(8.dp)
         )
 
         if (filteredItems.isEmpty()) {
@@ -361,19 +402,44 @@ fun PantryInventoryTable(
                     categoryItems.isNotEmpty()
                 ) {
 
+                    val autoExpand =
+                        searchText.isNotBlank() ||
+                                selectedFilter !=
+                                PantryTableFilter.ALL
+
                     val expanded =
                         expandedCategories[
                             category
-                        ] ?: true
+                        ] ?: autoExpand
+
+                    val showAllItems =
+                        showAllItemsByCategory[
+                            category
+                        ] ?: false
 
                     PantryCategoryTable(
                         category = category,
                         items = categoryItems,
                         expanded = expanded,
+                        showAllItems = showAllItems,
                         onToggleExpanded = {
+                            val newExpanded =
+                                !expanded
+
                             expandedCategories[
                                 category
-                            ] = !expanded
+                            ] = newExpanded
+
+                            if (!newExpanded) {
+                                showAllItemsByCategory[
+                                    category
+                                ] = false
+                            }
+                        },
+                        onToggleShowAll = {
+                            showAllItemsByCategory[
+                                category
+                            ] = !showAllItems
                         },
                         onUseClick = onUseClick,
                         onEditClick = onEditClick,
@@ -432,7 +498,9 @@ private fun PantryCategoryTable(
     category: PantryMainCategory,
     items: List<PantryTableItem>,
     expanded: Boolean,
+    showAllItems: Boolean,
     onToggleExpanded: () -> Unit,
+    onToggleShowAll: () -> Unit,
     onUseClick: (Ingredient) -> Unit,
     onEditClick: (Ingredient) -> Unit,
     onDeleteClick: (Ingredient) -> Unit
@@ -534,8 +602,8 @@ private fun PantryCategoryTable(
                             Color(0xFFE2E6E3)
                     )
 
-                    items
-                        .sortedWith(
+                    val sortedItems =
+                        items.sortedWith(
                             compareBy<
                                     PantryTableItem
                                     > {
@@ -546,6 +614,18 @@ private fun PantryCategoryTable(
                                 it.ingredient.name
                             }
                         )
+
+                    val visibleItems =
+                        if (
+                            showAllItems ||
+                            sortedItems.size <= 3
+                        ) {
+                            sortedItems
+                        } else {
+                            sortedItems.take(3)
+                        }
+
+                    visibleItems
                         .forEachIndexed {
                                 index,
                                 item ->
@@ -563,7 +643,7 @@ private fun PantryCategoryTable(
 
                             if (
                                 index <
-                                items.lastIndex
+                                visibleItems.lastIndex
                             ) {
 
                                 HorizontalDivider(
@@ -573,6 +653,39 @@ private fun PantryCategoryTable(
                                         )
                                 )
                             }
+                        }
+
+                    if (sortedItems.size > 3) {
+
+                        HorizontalDivider(
+                            color =
+                                Color(
+                                    0xFFE2E6E3
+                                )
+                        )
+
+                        TextButton(
+                            onClick =
+                                onToggleShowAll,
+                            modifier =
+                                Modifier.width(
+                                    890.dp
+                                )
+                        ) {
+
+                            Text(
+                                text =
+                                    if (
+                                        showAllItems
+                                    ) {
+                                        "Daralt"
+                                    } else {
+                                        "Devamını gör (" +
+                                                "${sortedItems.size - 3})"
+                                    }
+                            )
+                        }
+                    }
                         }
                 }
             }
