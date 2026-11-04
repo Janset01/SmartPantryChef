@@ -1,8 +1,11 @@
 package com.smartpantry.chef.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -41,6 +45,7 @@ import com.smartpantry.chef.data.MatchStatus
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeIngredient
 import com.smartpantry.chef.data.RecipeMatch
+import com.smartpantry.chef.data.RecipeMedia
 import com.smartpantry.chef.data.RecipeMatcher
 import com.smartpantry.chef.data.ShoppingItem
 import kotlinx.coroutines.launch
@@ -62,6 +67,7 @@ fun RecipeDetailScreen(
     val recipeDao = database.recipeDao()
     val ingredientDao = database.ingredientDao()
     val recipeIngredientDao = database.recipeIngredientDao()
+    val recipeMediaDao = database.recipeMediaDao()
     val shoppingItemDao = database.shoppingItemDao()
 
     var showDeleteDialog by remember {
@@ -74,6 +80,10 @@ fun RecipeDetailScreen(
 
     var structuredIngredients by remember {
         mutableStateOf<List<RecipeIngredient>>(emptyList())
+    }
+
+    var recipeMedia by remember {
+        mutableStateOf<List<RecipeMedia>>(emptyList())
     }
 
     var pantryCheckLoading by remember {
@@ -109,8 +119,13 @@ fun RecipeDetailScreen(
         val loadedPantryIngredients =
             ingredientDao.getAllIngredients()
 
+        val loadedRecipeMedia =
+            recipeMediaDao
+                .getMediaForRecipe(recipe.id)
+
         pantryIngredients = loadedPantryIngredients
         structuredIngredients = recipeIngredients
+        recipeMedia = loadedRecipeMedia
 
         recipeMatch =
             RecipeMatcher.matchRecipe(
@@ -290,8 +305,208 @@ fun RecipeDetailScreen(
             fontSize = 15.sp
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        val recipeImages =
+            recipeMedia.filter {
+                it.mediaType ==
+                        RecipeMedia.TYPE_IMAGE
+            }
 
+        val recipeVideo =
+            recipeMedia.firstOrNull {
+                it.mediaType ==
+                        RecipeMedia.TYPE_VIDEO
+            }
+
+        if (
+            recipeImages.isNotEmpty()
+        ) {
+
+            Spacer(
+                modifier =
+                    Modifier.height(26.dp)
+            )
+
+            Text(
+                text =
+                    "📸 Yapım Aşamaları",
+                fontSize = 21.sp,
+                fontWeight =
+                    FontWeight.Bold,
+                color =
+                    Color(0xFF2F3E34)
+            )
+
+            Spacer(
+                modifier =
+                    Modifier.height(10.dp)
+            )
+
+            Text(
+                text =
+                    "Tarif hazırlanırken eklenen fotoğraflar",
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
+
+            Spacer(
+                modifier =
+                    Modifier.height(12.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(
+                        rememberScrollState()
+                    )
+            ) {
+
+                recipeImages
+                    .forEachIndexed {
+                            index,
+                            media ->
+
+                        Card(
+                            modifier = Modifier
+                                .width(240.dp)
+                                .padding(
+                                    end = 12.dp
+                                ),
+                            shape =
+                                RoundedCornerShape(
+                                    16.dp
+                                )
+                        ) {
+
+                            Column {
+
+                                Image(
+                                    painter =
+                                        rememberAsyncImagePainter(
+                                            media.uri
+                                        ),
+                                    contentDescription =
+                                        "Yapım aşaması fotoğrafı " +
+                                                "${index + 1}",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(180.dp),
+                                    contentScale =
+                                        ContentScale.Crop
+                                )
+
+                                Text(
+                                    text =
+                                        "${index + 1}. fotoğraf",
+                                    modifier =
+                                        Modifier.padding(
+                                            10.dp
+                                        ),
+                                    fontSize = 13.sp,
+                                    color =
+                                        Color(
+                                            0xFF5B665E
+                                        )
+                                )
+                            }
+                        }
+                    }
+            }
+        }
+
+        recipeVideo?.let {
+                video ->
+
+            Spacer(
+                modifier =
+                    Modifier.height(24.dp)
+            )
+
+            Card(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(18.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            Color(0xFFE7EEF9)
+                    )
+            ) {
+
+                Column(
+                    modifier =
+                        Modifier.padding(18.dp)
+                ) {
+
+                    Text(
+                        text =
+                            "🎥 Tarif Videosu",
+                        fontSize = 19.sp,
+                        fontWeight =
+                            FontWeight.Bold,
+                        color =
+                            Color(0xFF2F3E34)
+                    )
+
+                    Spacer(
+                        modifier =
+                            Modifier.height(8.dp)
+                    )
+
+                    Text(
+                        text =
+                            "Tarifin yapılış videosunu açıp izleyebilirsin.",
+                        fontSize = 13.sp,
+                        color = Color.Gray
+                    )
+
+                    Spacer(
+                        modifier =
+                            Modifier.height(12.dp)
+                    )
+
+                    Button(
+                        onClick = {
+
+                            val intent =
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(
+                                        video.uri
+                                    )
+                                ).apply {
+                                    addFlags(
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    )
+                                }
+
+                            try {
+                                context.startActivity(
+                                    intent
+                                )
+                            } catch (_: Exception) {
+                                android.widget.Toast
+                                    .makeText(
+                                        context,
+                                        "Video açılamadı.",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    )
+                                    .show()
+                            }
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "▶ Videoyu İzle"
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
         Button(
             onClick = onEdit,
             modifier = Modifier.fillMaxWidth()
