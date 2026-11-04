@@ -1,5 +1,6 @@
 package com.smartpantry.chef.ui.screens
 
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -10,12 +11,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -52,6 +55,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeIngredient
+import com.smartpantry.chef.data.RecipeMedia
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,6 +72,9 @@ fun AddRecipeScreen() {
     val recipeDao = database.recipeDao()
     val recipeIngredientDao =
         database.recipeIngredientDao()
+
+    val recipeMediaDao =
+        database.recipeMediaDao()
 
     val categoryList = listOf(
         "Kahvaltı",
@@ -133,17 +140,72 @@ fun AddRecipeScreen() {
             mutableStateListOf<RecipeIngredientInput>()
         }
 
-    var selectedImageUri by remember {
+    val selectedImageUris =
+        remember {
+            mutableStateListOf<Uri>()
+        }
+
+    var selectedVideoUri by remember {
         mutableStateOf<Uri?>(null)
     }
 
     val imagePickerLauncher =
         rememberLauncherForActivityResult(
             contract =
-                ActivityResultContracts.PickVisualMedia()
+                ActivityResultContracts.OpenMultipleDocuments()
+        ) { uris ->
+
+            val limitedUris =
+                uris.take(
+                    RecipeMedia.MAX_IMAGES
+                )
+
+            limitedUris.forEach { uri ->
+                try {
+                    context.contentResolver
+                        .takePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                } catch (_: Exception) {
+                }
+            }
+
+            selectedImageUris.clear()
+            selectedImageUris.addAll(
+                limitedUris
+            )
+
+            if (
+                uris.size >
+                RecipeMedia.MAX_IMAGES
+            ) {
+                Toast.makeText(
+                    context,
+                    "En fazla 10 fotoğraf seçebilirsin.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    val videoPickerLauncher =
+        rememberLauncherForActivityResult(
+            contract =
+                ActivityResultContracts.OpenDocument()
         ) { uri ->
 
-            selectedImageUri = uri
+            if (uri != null) {
+                try {
+                    context.contentResolver
+                        .takePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                } catch (_: Exception) {
+                }
+
+                selectedVideoUri = uri
+            }
         }
 
     Column(
@@ -738,7 +800,7 @@ fun AddRecipeScreen() {
                 Modifier.height(18.dp)
         )
 
-        // Fotoğraf
+        // Tarif medyası
 
         Card(
             modifier =
@@ -759,7 +821,7 @@ fun AddRecipeScreen() {
 
                 Text(
                     text =
-                        "📸 Tarif Fotoğrafı",
+                        "📸 Yapım Aşamaları ve Medya",
                     fontSize = 17.sp,
                     fontWeight =
                         FontWeight.Bold,
@@ -769,51 +831,144 @@ fun AddRecipeScreen() {
 
                 Spacer(
                     modifier =
+                        Modifier.height(6.dp)
+                )
+
+                Text(
+                    text =
+                        "Malzemelerin toplu hali, karıştırma, pişirme veya servis gibi istediğin aşamalardan en fazla 10 fotoğraf ve 1 video ekleyebilirsin.",
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
+
+                Spacer(
+                    modifier =
                         Modifier.height(12.dp)
                 )
 
                 OutlinedButton(
                     onClick = {
-
-                        imagePickerLauncher
-                            .launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts
-                                        .PickVisualMedia
-                                        .ImageOnly
-                                )
-                            )
+                        imagePickerLauncher.launch(
+                            arrayOf("image/*")
+                        )
                     },
                     modifier =
                         Modifier.fillMaxWidth()
                 ) {
-
                     Text(
-                        "Galeriden Fotoğraf Seç"
+                        "Fotoğraf Seç (${selectedImageUris.size}/10)"
                     )
                 }
 
-                selectedImageUri?.let {
-                        uri ->
+                if (
+                    selectedImageUris
+                        .isNotEmpty()
+                ) {
 
                     Spacer(
                         modifier =
-                            Modifier.height(14.dp)
+                            Modifier.height(12.dp)
                     )
 
-                    Image(
-                        painter =
-                            rememberAsyncImagePainter(
-                                uri
-                            ),
-                        contentDescription =
-                            "Seçilen tarif fotoğrafı",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(220.dp),
-                        contentScale =
-                            ContentScale.Crop
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(
+                                    rememberScrollState()
+                                ),
+                        horizontalArrangement =
+                            Arrangement.spacedBy(
+                                10.dp
+                            )
+                    ) {
+
+                        selectedImageUris
+                            .forEachIndexed {
+                                    index,
+                                    uri ->
+
+                                Column {
+
+                                    Image(
+                                        painter =
+                                            rememberAsyncImagePainter(
+                                                uri
+                                            ),
+                                        contentDescription =
+                                            "Tarif fotoğrafı ${index + 1}",
+                                        modifier = Modifier
+                                            .width(150.dp)
+                                            .height(120.dp),
+                                        contentScale =
+                                            ContentScale.Crop
+                                    )
+
+                                    if (index == 0) {
+                                        Text(
+                                            text =
+                                                "Kapak fotoğrafı",
+                                            fontSize = 12.sp,
+                                            color =
+                                                Color.Gray
+                                        )
+                                    }
+                                }
+                            }
+                    }
+
+                    TextButton(
+                        onClick = {
+                            selectedImageUris
+                                .clear()
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Fotoğrafları Temizle"
+                        )
+                    }
+                }
+
+                Spacer(
+                    modifier =
+                        Modifier.height(10.dp)
+                )
+
+                OutlinedButton(
+                    onClick = {
+                        videoPickerLauncher.launch(
+                            arrayOf("video/*")
+                        )
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        if (
+                            selectedVideoUri == null
+                        ) {
+                            "🎥 Video Seç (1 adet)"
+                        } else {
+                            "🎥 Video Seçildi ✓"
+                        }
                     )
+                }
+
+                if (selectedVideoUri != null) {
+
+                    TextButton(
+                        onClick = {
+                            selectedVideoUri = null
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Videoyu Kaldır"
+                        )
+                    }
                 }
             }
         }
@@ -822,7 +977,6 @@ fun AddRecipeScreen() {
             modifier =
                 Modifier.height(20.dp)
         )
-
         // ------------------------------------------------
         // TARİFİ KAYDET
         // ------------------------------------------------
@@ -927,7 +1081,8 @@ fun AddRecipeScreen() {
                         instructions =
                             instructions.trim(),
                         imageUri =
-                            selectedImageUri
+                            selectedImageUris
+                                .firstOrNull()
                                 ?.toString()
                     )
 
@@ -965,6 +1120,56 @@ fun AddRecipeScreen() {
                                 .insertRecipeIngredients(
                                     databaseIngredients
                                 )
+
+                            val databaseMedia =
+                                buildList {
+
+                                    selectedImageUris
+                                        .forEachIndexed {
+                                                index,
+                                                uri ->
+
+                                            add(
+                                                RecipeMedia(
+                                                    recipeId =
+                                                        recipeId.toInt(),
+                                                    mediaType =
+                                                        RecipeMedia.TYPE_IMAGE,
+                                                    uri =
+                                                        uri.toString(),
+                                                    sortOrder =
+                                                        index
+                                                )
+                                            )
+                                        }
+
+                                    selectedVideoUri
+                                        ?.let { uri ->
+
+                                            add(
+                                                RecipeMedia(
+                                                    recipeId =
+                                                        recipeId.toInt(),
+                                                    mediaType =
+                                                        RecipeMedia.TYPE_VIDEO,
+                                                    uri =
+                                                        uri.toString(),
+                                                    sortOrder =
+                                                        RecipeMedia.MAX_IMAGES
+                                                )
+                                            )
+                                        }
+                                }
+
+                            if (
+                                databaseMedia
+                                    .isNotEmpty()
+                            ) {
+                                recipeMediaDao
+                                    .insertMedia(
+                                        databaseMedia
+                                    )
+                            }
                         }
 
                         Toast.makeText(
@@ -987,7 +1192,8 @@ fun AddRecipeScreen() {
                         ingredientQuantity = ""
                         ingredientUnit = "Adet"
 
-                        selectedImageUri = null
+                        selectedImageUris.clear()
+                        selectedVideoUri = null
 
                     } catch (_: Exception) {
 
