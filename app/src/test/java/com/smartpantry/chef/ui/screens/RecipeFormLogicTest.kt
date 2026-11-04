@@ -77,4 +77,23 @@ class RecipeFormLogicTest {
         assertNull(parsePositiveInt("abc"))
         assertEquals(30, parsePositiveInt("30"))
     }
+    @Test
+    fun storedRecipeNumbers_areConvertedForEditing() {
+        assertEquals(
+            "30",
+            extractPositiveIntText("30 dk")
+        )
+        assertEquals(
+            "4",
+            extractPositiveIntText("4 kişi")
+        )
+        assertEquals(
+            "",
+            extractPositiveIntText("0 dk")
+        )
+        assertEquals(
+            "",
+            extractPositiveIntText("bilinmiyor")
+        )
+    }
 }
