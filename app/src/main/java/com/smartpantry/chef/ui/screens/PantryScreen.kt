@@ -2,9 +2,7 @@ package com.smartpantry.chef.ui.screens
 
 import android.Manifest
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -42,17 +40,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
-import coil3.compose.AsyncImage
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Ingredient
 import com.smartpantry.chef.data.processIngredientExpirations
@@ -62,7 +56,6 @@ import com.smartpantry.chef.ui.screens.pantry.EditIngredientDialog
 import com.smartpantry.chef.ui.screens.pantry.PantryInventoryTable
 import com.smartpantry.chef.ui.screens.pantry.formatIngredientQuantity
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -107,14 +100,6 @@ fun PantryScreen(
 
     var expirationDate by remember {
         mutableStateOf("")
-    }
-
-    var selectedImageUri by remember {
-        mutableStateOf<Uri?>(null)
-    }
-
-    var pendingCameraUri by remember {
-        mutableStateOf<Uri?>(null)
     }
 
     // Dialoglarda kullanılacak malzemeler
@@ -189,70 +174,6 @@ fun PantryScreen(
             ).show()
         }
     }
-
-    // ------------------------------------------------
-    // GALERİ
-    // ------------------------------------------------
-
-    val galleryLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.OpenDocument()
-        ) { uri ->
-
-            if (uri != null) {
-
-                try {
-                    context.contentResolver
-                        .takePersistableUriPermission(
-                            uri,
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        )
-                } catch (_: Exception) {
-                }
-
-                selectedImageUri = uri
-            }
-        }
-
-    // ------------------------------------------------
-    // KAMERA
-    // ------------------------------------------------
-
-    val cameraLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.TakePicture()
-        ) { success ->
-
-            if (success) {
-                selectedImageUri = pendingCameraUri
-            } else {
-                pendingCameraUri = null
-            }
-        }
-
-    val cameraPermissionLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission()
-        ) { granted ->
-
-            if (granted) {
-
-                val uri =
-                    createIngredientImageUri(context)
-
-                pendingCameraUri = uri
-
-                cameraLauncher.launch(uri)
-
-            } else {
-
-                Toast.makeText(
-                    context,
-                    "Fotoğraf çekmek için kamera izni gerekli",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
 
     // ------------------------------------------------
     // TARİH
@@ -376,105 +297,6 @@ fun PantryScreen(
 
                 Spacer(
                     modifier = Modifier.height(16.dp)
-                )
-
-                // ------------------------------------------------
-                // FOTOĞRAF ÖNİZLEME
-                // ------------------------------------------------
-
-                if (selectedImageUri != null) {
-
-                    AsyncImage(
-                        model = selectedImageUri,
-                        contentDescription = "Malzeme fotoğrafı",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(190.dp)
-                            .clip(
-                                RoundedCornerShape(18.dp)
-                            ),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    Spacer(
-                        modifier = Modifier.height(12.dp)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement =
-                        Arrangement.spacedBy(10.dp)
-                ) {
-
-                    OutlinedButton(
-                        onClick = {
-
-                            val hasPermission =
-                                ContextCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.CAMERA
-                                ) == PackageManager.PERMISSION_GRANTED
-
-                            if (hasPermission) {
-
-                                val uri =
-                                    createIngredientImageUri(
-                                        context
-                                    )
-
-                                pendingCameraUri = uri
-
-                                cameraLauncher.launch(uri)
-
-                            } else {
-
-                                cameraPermissionLauncher.launch(
-                                    Manifest.permission.CAMERA
-                                )
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-
-                        Text(
-                            text = "📷 Fotoğraf Çek"
-                        )
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-
-                            galleryLauncher.launch(
-                                arrayOf("image/*")
-                            )
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-
-                        Text(
-                            text = "🖼️ Galeriden Seç"
-                        )
-                    }
-                }
-
-                if (selectedImageUri != null) {
-
-                    TextButton(
-                        onClick = {
-                            selectedImageUri = null
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-
-                        Text(
-                            text = "Fotoğrafı Kaldır"
-                        )
-                    }
-                }
-
-                Spacer(
-                    modifier = Modifier.height(10.dp)
                 )
 
                 // ------------------------------------------------
@@ -678,10 +500,7 @@ fun PantryScreen(
                                     incomingName = name.trim(),
                                     incomingQuantity = parsedQuantity,
                                     incomingUnit = selectedUnit,
-                                    incomingExpirationDate = expirationDate,
-                                    incomingImageUri =
-                                        selectedImageUri
-                                            ?.toString()
+                                    incomingExpirationDate = expirationDate
                                 )
 
                             ingredients =
@@ -692,8 +511,6 @@ fun PantryScreen(
                             quantity = ""
                             selectedUnit = "Adet"
                             expirationDate = ""
-                            selectedImageUri = null
-                            pendingCameraUri = null
 
                             Toast.makeText(
                                 context,
@@ -1053,8 +870,7 @@ private suspend fun addOrMergePantryIngredient(
     incomingName: String,
     incomingQuantity: Double,
     incomingUnit: String,
-    incomingExpirationDate: String,
-    incomingImageUri: String?
+    incomingExpirationDate: String
 ): Boolean {
 
     val matchingIngredients =
@@ -1083,8 +899,7 @@ private suspend fun addOrMergePantryIngredient(
                 initialQuantity = incomingQuantity,
                 remainingQuantity = incomingQuantity,
                 unit = incomingUnit,
-                expirationDate = incomingExpirationDate,
-                imageUri = incomingImageUri
+                expirationDate = incomingExpirationDate
             )
         )
 
@@ -1137,13 +952,6 @@ private suspend fun addOrMergePantryIngredient(
             incomingUnit,
             mainIngredient.unit
         ) ?: incomingQuantity
-
-    if (
-        finalImageUri.isNullOrBlank() &&
-        !incomingImageUri.isNullOrBlank()
-    ) {
-        finalImageUri = incomingImageUri
-    }
 
     ingredientDao.updateIngredient(
         mainIngredient.copy(
@@ -1307,36 +1115,4 @@ private fun pantryExpiryWarningText(
         else ->
             "⚠️ ${warning.ingredientName} son kullanma tarihine 5 gün kaldı."
     }
-}
-
-// ------------------------------------------------
-// KAMERA FOTOĞRAFI URI OLUŞTUR
-// ------------------------------------------------
-
-private fun createIngredientImageUri(
-    context: android.content.Context
-): Uri {
-
-    val imagesDirectory =
-        File(
-            context.filesDir,
-            "images"
-        )
-
-    if (!imagesDirectory.exists()) {
-
-        imagesDirectory.mkdirs()
-    }
-
-    val imageFile =
-        File(
-            imagesDirectory,
-            "ingredient_${System.currentTimeMillis()}.jpg"
-        )
-
-    return FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        imageFile
-    )
 }
