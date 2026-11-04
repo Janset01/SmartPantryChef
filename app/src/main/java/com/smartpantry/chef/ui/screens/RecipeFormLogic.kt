@@ -68,3 +68,14 @@ internal fun parsePositiveInt(
         .toIntOrNull()
         ?.takeIf { it > 0 }
 }
+
+
+internal fun extractPositiveIntText(
+    value: String
+): String {
+    return Regex("\\d+")
+        .find(value)
+        ?.value
+        ?.takeIf { parsePositiveInt(it) != null }
+        ?: ""
+}
