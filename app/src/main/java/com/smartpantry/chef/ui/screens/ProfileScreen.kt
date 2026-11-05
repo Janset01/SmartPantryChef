@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -814,17 +815,45 @@ private fun ProfileRecipeCard(
                         )
                 )
 
-                Text(
-                    text =
-                        "💬 " +
-                                engagement.commentCount +
-                                " yorum",
-                    fontSize = 10.sp,
-                    color =
-                        Color(
-                            0xFF7A817C
-                        )
-                )
+                Row(
+                    verticalAlignment =
+                        Alignment.CenterVertically
+                ) {
+
+                    Icon(
+                        imageVector =
+                            Icons.Default.Comment,
+                        contentDescription =
+                            "Yorumlar",
+                        modifier =
+                            Modifier.size(
+                                13.dp
+                            ),
+                        tint =
+                            Color(
+                                0xFF7A817C
+                            )
+                    )
+
+                    Spacer(
+                        modifier =
+                            Modifier.size(
+                                4.dp
+                            )
+                    )
+
+                    Text(
+                        text =
+                            engagement.commentCount
+                                .toString() +
+                                    " yorum",
+                        fontSize = 10.sp,
+                        color =
+                            Color(
+                                0xFF7A817C
+                            )
+                    )
+                }
 
             }
         }
