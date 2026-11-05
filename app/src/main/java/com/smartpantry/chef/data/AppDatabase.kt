@@ -13,9 +13,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         Ingredient::class,
         RecipeIngredient::class,
         RecipeMedia::class,
+        RecipeEngagement::class,
         ShoppingItem::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,6 +28,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recipeIngredientDao(): RecipeIngredientDao
 
     abstract fun recipeMediaDao(): RecipeMediaDao
+
+    abstract fun recipeEngagementDao(): RecipeEngagementDao
 
     abstract fun shoppingItemDao(): ShoppingItemDao
 
@@ -76,6 +79,25 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
+        private val MIGRATION_7_8 =
+            object : Migration(7, 8) {
+
+                override fun migrate(database: SupportSQLiteDatabase) {
+
+                    database.execSQL(
+                        "CREATE TABLE IF NOT EXISTS recipe_engagement (" +
+                                "recipeId INTEGER NOT NULL PRIMARY KEY, " +
+                                "averageRating REAL NOT NULL, " +
+                                "ratingCount INTEGER NOT NULL, " +
+                                "favoriteCount INTEGER NOT NULL, " +
+                                "likeCount INTEGER NOT NULL, " +
+                                "commentCount INTEGER NOT NULL, " +
+                                "FOREIGN KEY(recipeId) REFERENCES recipes(id) " +
+                                "ON UPDATE NO ACTION ON DELETE CASCADE)"
+                    )
+                }
+            }
+
         fun getDatabase(context: Context): AppDatabase {
 
             return INSTANCE ?: synchronized(this) {
@@ -88,7 +110,8 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                         .addMigrations(
                             MIGRATION_5_6,
-                            MIGRATION_6_7
+                            MIGRATION_6_7,
+                            MIGRATION_7_8
                         )
                         .fallbackToDestructiveMigration()
                         .build()
