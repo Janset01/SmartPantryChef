@@ -79,3 +79,29 @@ internal fun extractPositiveIntText(
         ?.takeIf { parsePositiveInt(it) != null }
         ?: ""
 }
+
+
+internal fun mergeRecipeImageUris(
+    current: List<String>,
+    incoming: List<String>,
+    maxImages: Int = 10
+): List<String> {
+    if (maxImages <= 0) {
+        return emptyList()
+    }
+
+    return (current + incoming)
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .distinct()
+        .take(maxImages)
+}
+
+internal fun recipeCoverImageUri(
+    imageUris: List<String>
+): String? {
+    return imageUris
+        .firstOrNull {
+            it.isNotBlank()
+        }
+}
