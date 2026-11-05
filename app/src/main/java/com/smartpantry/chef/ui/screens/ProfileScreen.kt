@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +19,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -40,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +57,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
+import kotlinx.coroutines.launch
 
 private enum class ProfileRecipeFilter(
     val label: String
@@ -72,6 +75,7 @@ fun ProfileScreen(
 ) {
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val database =
         remember {
@@ -176,11 +180,11 @@ fun ProfileScreen(
 
             ProfileRecipeFilter.FAVORITES ->
                 filteredRecipes
-                    .sortedByDescending {
+                    .filter {
                         engagementByRecipe[
                             it.id
-                        ]?.favoriteCount
-                            ?: 0
+                        ]?.isFavorite ==
+                                true
                     }
 
             ProfileRecipeFilter.LIKES ->
@@ -628,6 +632,34 @@ fun ProfileScreen(
                             onRecipeClick(
                                 recipe
                             )
+                        },
+                        onFavoriteToggle = {
+
+                            val current =
+                                engagementByRecipe[
+                                    recipe.id
+                                ]
+                                    ?: RecipeEngagement(
+                                        recipeId =
+                                            recipe.id
+                                    )
+
+                            val updated =
+                                current.copy(
+                                    isFavorite =
+                                        !current.isFavorite
+                                )
+
+                            engagementByRecipe[
+                                recipe.id
+                            ] = updated
+
+                            scope.launch {
+                                engagementDao
+                                    .upsert(
+                                        updated
+                                    )
+                            }
                         }
                     )
                 }
@@ -640,12 +672,14 @@ fun ProfileScreen(
 private fun ProfileRecipeCard(
     recipe: Recipe,
     engagement: RecipeEngagement,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onFavoriteToggle: () -> Unit
 ) {
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(210.dp)
             .clickable {
                 onClick()
             },
@@ -668,9 +702,7 @@ private fun ProfileRecipeCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(
-                        1f
-                    )
+                    .height(118.dp)
                     .background(
                         Color(
                             0xFFE8ECE9
@@ -695,42 +727,46 @@ private fun ProfileRecipeCard(
                         )
                     }
 
-                Box(
+                IconButton(
+                    onClick = {
+                        onFavoriteToggle()
+                    },
                     modifier = Modifier
                         .align(
                             Alignment.TopEnd
                         )
-                        .padding(6.dp)
-                        .clip(
-                            RoundedCornerShape(
-                                10.dp
-                            )
-                        )
+                        .padding(4.dp)
+                        .size(34.dp)
+                        .clip(CircleShape)
                         .background(
                             Color.White.copy(
-                                alpha =
-                                    0.92f
+                                alpha = 0.92f
                             )
-                        )
-                        .padding(
-                            horizontal =
-                                6.dp,
-                            vertical =
-                                4.dp
                         )
                 ) {
 
-                    Text(
-                        text =
-                            "🍲 " +
-                                    engagement
-                                        .favoriteCount,
-                        fontSize = 11.sp,
-                        fontWeight =
-                            FontWeight.Bold,
-                        color =
+                    Icon(
+                        imageVector =
+                            if (
+                                engagement
+                                    .isFavorite
+                            ) {
+                                Icons.Default.Bookmark
+                            } else {
+                                Icons.Default.BookmarkBorder
+                            },
+                        contentDescription =
+                            if (
+                                engagement
+                                    .isFavorite
+                            ) {
+                                "Favoriden çıkar"
+                            } else {
+                                "Favoriye ekle"
+                            },
+                        tint =
                             Color(
-                                0xFF5D4B33
+                                0xFFB06F3C
                             )
                     )
                 }
@@ -746,6 +782,10 @@ private fun ProfileRecipeCard(
                 Text(
                     text =
                         recipe.name,
+                    modifier =
+                        Modifier.height(
+                            34.dp
+                        ),
                     maxLines = 2,
                     overflow =
                         TextOverflow.Ellipsis,
@@ -779,25 +819,6 @@ private fun ProfileRecipeCard(
                         )
                 )
 
-                Spacer(
-                    modifier =
-                        Modifier.height(
-                            4.dp
-                        )
-                )
-
-                Text(
-                    text =
-                        "♥ " +
-                                engagement.likeCount +
-                                "   💬 " +
-                                engagement.commentCount,
-                    fontSize = 10.sp,
-                    color =
-                        Color(
-                            0xFF7A817C
-                        )
-                )
             }
         }
     }
