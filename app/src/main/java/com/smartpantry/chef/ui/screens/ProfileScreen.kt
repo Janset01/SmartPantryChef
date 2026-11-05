@@ -20,20 +20,20 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,34 +48,56 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
-import com.smartpantry.chef.data.RecipeMedia
+import com.smartpantry.chef.data.RecipeEngagement
+
+private enum class ProfileRecipeFilter(
+    val label: String
+) {
+    DEFAULT("Varsayılan"),
+    FAVORITES("Favoriler"),
+    LIKES("Beğeniler"),
+    COMMENTS_ASC("En az yorum"),
+    COMMENTS_DESC("En çok yorum")
+}
 
 @Composable
 fun ProfileScreen(
     onRecipeClick: (Recipe) -> Unit
 ) {
+
     val context = LocalContext.current
 
-    val database = remember {
-        AppDatabase.getDatabase(context)
-    }
+    val database =
+        remember {
+            AppDatabase.getDatabase(
+                context
+            )
+        }
 
-    val recipeDao = database.recipeDao()
-    val recipeMediaDao =
-        database.recipeMediaDao()
+    val recipeDao =
+        database.recipeDao()
+
+    val engagementDao =
+        database.recipeEngagementDao()
 
     var recipes by remember {
-        mutableStateOf<List<Recipe>>(emptyList())
+        mutableStateOf<List<Recipe>>(
+            emptyList()
+        )
     }
 
-    val recipeHasVideo =
+    val engagementByRecipe =
         remember {
-            mutableStateMapOf<Int, Boolean>()
+            mutableStateMapOf<
+                    Int,
+                    RecipeEngagement
+                    >()
         }
 
     var searchText by remember {
@@ -90,8 +112,14 @@ fun ProfileScreen(
         mutableStateOf(false)
     }
 
-    var videoOnly by remember {
+    var filterMenuOpen by remember {
         mutableStateOf(false)
+    }
+
+    var selectedFilter by remember {
+        mutableStateOf(
+            ProfileRecipeFilter.DEFAULT
+        )
     }
 
     val categories =
@@ -106,50 +134,81 @@ fun ProfileScreen(
         )
 
     LaunchedEffect(Unit) {
-        val loadedRecipes =
+
+        recipes =
             recipeDao.getAllRecipes()
 
-        recipes = loadedRecipes
-
-        loadedRecipes.forEach { recipe ->
-            val media =
-                recipeMediaDao
-                    .getMediaForRecipe(
-                        recipe.id
-                    )
-
-            recipeHasVideo[recipe.id] =
-                media.any {
-                    it.mediaType ==
-                            RecipeMedia.TYPE_VIDEO
-                }
-        }
+        engagementDao
+            .getAll()
+            .forEach {
+                engagementByRecipe[
+                    it.recipeId
+                ] = it
+            }
     }
 
-    val visibleRecipes =
+    val filteredRecipes =
         recipes.filter { recipe ->
 
             val matchesSearch =
                 searchText.isBlank() ||
-                        recipe.name.contains(
-                            searchText,
-                            ignoreCase = true
-                        )
+                        recipe.name
+                            .contains(
+                                searchText,
+                                ignoreCase = true
+                            )
 
             val matchesCategory =
-                selectedCategory == "Tümü" ||
+                selectedCategory ==
+                        "Tümü" ||
                         recipe.category ==
                         selectedCategory
 
-            val matchesVideo =
-                !videoOnly ||
-                        recipeHasVideo[
-                            recipe.id
-                        ] == true
-
             matchesSearch &&
-                    matchesCategory &&
-                    matchesVideo
+                    matchesCategory
+        }
+
+    val visibleRecipes =
+        when (selectedFilter) {
+
+            ProfileRecipeFilter.DEFAULT ->
+                filteredRecipes
+
+            ProfileRecipeFilter.FAVORITES ->
+                filteredRecipes
+                    .sortedByDescending {
+                        engagementByRecipe[
+                            it.id
+                        ]?.favoriteCount
+                            ?: 0
+                    }
+
+            ProfileRecipeFilter.LIKES ->
+                filteredRecipes
+                    .sortedByDescending {
+                        engagementByRecipe[
+                            it.id
+                        ]?.likeCount
+                            ?: 0
+                    }
+
+            ProfileRecipeFilter.COMMENTS_ASC ->
+                filteredRecipes
+                    .sortedBy {
+                        engagementByRecipe[
+                            it.id
+                        ]?.commentCount
+                            ?: 0
+                    }
+
+            ProfileRecipeFilter.COMMENTS_DESC ->
+                filteredRecipes
+                    .sortedByDescending {
+                        engagementByRecipe[
+                            it.id
+                        ]?.commentCount
+                            ?: 0
+                    }
         }
 
     Column(
@@ -165,7 +224,7 @@ fun ProfileScreen(
 
         Spacer(
             modifier =
-                Modifier.height(24.dp)
+                Modifier.height(22.dp)
         )
 
         Row(
@@ -177,7 +236,7 @@ fun ProfileScreen(
 
             Box(
                 modifier = Modifier
-                    .size(82.dp)
+                    .size(78.dp)
                     .clip(CircleShape)
                     .background(
                         Color(0xFFDDE9DF)
@@ -185,9 +244,10 @@ fun ProfileScreen(
                 contentAlignment =
                     Alignment.Center
             ) {
+
                 Text(
                     text = "👩‍🍳",
-                    fontSize = 34.sp
+                    fontSize = 32.sp
                 )
             }
 
@@ -200,8 +260,7 @@ fun ProfileScreen(
             ) {
 
                 Text(
-                    text =
-                        "Bugün Ne Pişirsem?",
+                    text = "@nickname",
                     fontSize = 22.sp,
                     fontWeight =
                         FontWeight.Bold,
@@ -213,7 +272,26 @@ fun ProfileScreen(
 
                 Spacer(
                     modifier =
-                        Modifier.height(4.dp)
+                        Modifier.height(
+                            3.dp
+                        )
+                )
+
+                Text(
+                    text =
+                        "Bugün ne pişirsem?",
+                    fontSize = 14.sp,
+                    color =
+                        Color(
+                            0xFF68736C
+                        )
+                )
+
+                Spacer(
+                    modifier =
+                        Modifier.height(
+                            3.dp
+                        )
                 )
 
                 Text(
@@ -221,17 +299,17 @@ fun ProfileScreen(
                         recipes.size
                             .toString() +
                                 " tarif",
-                    fontSize = 13.sp,
-                    color =
-                        Color.Gray
+                    fontSize = 12.sp,
+                    color = Color.Gray
                 )
             }
 
             IconButton(
                 onClick = {
-                    // Ayarlar ekranı daha sonra bağlanacak.
+                    // Hesap ayarları daha sonra bağlanacak.
                 }
             ) {
+
                 Icon(
                     imageVector =
                         Icons.Default.Settings,
@@ -243,21 +321,7 @@ fun ProfileScreen(
 
         Spacer(
             modifier =
-                Modifier.height(20.dp)
-        )
-
-        Text(
-            text = "Tarif Defterim",
-            fontSize = 21.sp,
-            fontWeight =
-                FontWeight.Bold,
-            color =
-                Color(0xFF2F3E34)
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(10.dp)
+                Modifier.height(18.dp)
         )
 
         OutlinedTextField(
@@ -283,7 +347,7 @@ fun ProfileScreen(
             singleLine = true,
             shape =
                 RoundedCornerShape(
-                    14.dp
+                    16.dp
                 ),
             colors =
                 OutlinedTextFieldDefaults
@@ -291,71 +355,70 @@ fun ProfileScreen(
                         focusedContainerColor =
                             Color.White,
                         unfocusedContainerColor =
-                            Color.White
+                            Color.White,
+                        focusedBorderColor =
+                            Color(
+                                0xFF7A9E7E
+                            ),
+                        unfocusedBorderColor =
+                            Color(
+                                0xFFE3E4E1
+                            )
                     )
         )
 
         Spacer(
             modifier =
-                Modifier.height(12.dp)
+                Modifier.height(18.dp)
         )
 
         Row(
             modifier =
                 Modifier.fillMaxWidth(),
-            horizontalArrangement =
-                Arrangement.spacedBy(
-                    8.dp
-                ),
             verticalAlignment =
                 Alignment.CenterVertically
         ) {
 
-            Card(
+            Text(
+                text =
+                    "TARİF DEFTERİM",
                 modifier =
-                    Modifier.clickable {
+                    Modifier.weight(1f),
+                fontSize = 20.sp,
+                fontWeight =
+                    FontWeight.ExtraBold,
+                color =
+                    Color(
+                        0xFF2F3E34
+                    )
+            )
+
+            Box {
+
+                TextButton(
+                    onClick = {
                         categoryMenuOpen =
                             true
-                    },
-                shape =
-                    RoundedCornerShape(
-                        12.dp
-                    ),
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor =
-                            Color.White
-                    )
-            ) {
-
-                Row(
-                    modifier =
-                        Modifier.padding(
-                            horizontal =
-                                12.dp,
-                            vertical =
-                                10.dp
-                        ),
-                    verticalAlignment =
-                        Alignment.CenterVertically
+                    }
                 ) {
-
-                    Icon(
-                        imageVector =
-                            Icons.Default.Menu,
-                        contentDescription =
-                            "Filtre"
-                    )
-
-                    Spacer(
-                        modifier =
-                            Modifier.size(6.dp)
-                    )
 
                     Text(
                         text =
-                            selectedCategory,
-                        fontSize = 13.sp
+                            if (
+                                selectedCategory ==
+                                "Tümü"
+                            ) {
+                                "Kategoriler"
+                            } else {
+                                selectedCategory
+                            },
+                        fontSize = 13.sp,
+                        fontWeight =
+                            FontWeight.SemiBold,
+                        color =
+                            Color(
+                                0xFF4F6F5A
+                            )
                     )
                 }
 
@@ -388,32 +451,112 @@ fun ProfileScreen(
                 }
             }
 
-            FilterChip(
-                selected =
-                    videoOnly,
-                onClick = {
-                    videoOnly =
-                        !videoOnly
-                },
-                leadingIcon = {
+            Box {
+
+                IconButton(
+                    onClick = {
+                        filterMenuOpen =
+                            true
+                    }
+                ) {
+
                     Icon(
                         imageVector =
-                            Icons.Default.Videocam,
+                            Icons.Default.FilterList,
                         contentDescription =
-                            "Videolu tarifler"
-                    )
-                },
-                label = {
-                    Text(
-                        "Videolu"
+                            "Tarifleri filtrele",
+                        tint =
+                            Color(
+                                0xFF4F6F5A
+                            )
                     )
                 }
+
+                DropdownMenu(
+                    expanded =
+                        filterMenuOpen,
+                    onDismissRequest = {
+                        filterMenuOpen =
+                            false
+                    }
+                ) {
+
+                    ProfileRecipeFilter
+                        .entries
+                        .forEach {
+                                filter ->
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        filter.label
+                                    )
+                                },
+                                onClick = {
+                                    selectedFilter =
+                                        filter
+                                    filterMenuOpen =
+                                        false
+                                }
+                            )
+                        }
+                }
+            }
+        }
+
+        if (
+            selectedCategory != "Tümü" ||
+            selectedFilter !=
+            ProfileRecipeFilter.DEFAULT
+        ) {
+
+            Text(
+                text =
+                    buildString {
+
+                        if (
+                            selectedCategory !=
+                            "Tümü"
+                        ) {
+                            append(
+                                selectedCategory
+                            )
+                        }
+
+                        if (
+                            selectedFilter !=
+                            ProfileRecipeFilter.DEFAULT
+                        ) {
+
+                            if (isNotEmpty()) {
+                                append(" • ")
+                            }
+
+                            append(
+                                selectedFilter.label
+                            )
+                        }
+                    },
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+
+            Spacer(
+                modifier =
+                    Modifier.height(8.dp)
             )
         }
 
+        HorizontalDivider(
+            color =
+                Color(
+                    0xFFD7DDD8
+                )
+        )
+
         Spacer(
             modifier =
-                Modifier.height(16.dp)
+                Modifier.height(14.dp)
         )
 
         if (
@@ -424,6 +567,10 @@ fun ProfileScreen(
             Card(
                 modifier =
                     Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(
+                        16.dp
+                    ),
                 colors =
                     CardDefaults.cardColors(
                         containerColor =
@@ -433,13 +580,12 @@ fun ProfileScreen(
 
                 Text(
                     text =
-                        "Bu filtreye uygun tarif bulunamadı.",
+                        "Bu seçimlere uygun tarif bulunamadı.",
                     modifier =
                         Modifier.padding(
                             18.dp
                         ),
-                    color =
-                        Color.Gray
+                    color = Color.Gray
                 )
             }
 
@@ -452,11 +598,11 @@ fun ProfileScreen(
                     Modifier.fillMaxSize(),
                 horizontalArrangement =
                     Arrangement.spacedBy(
-                        6.dp
+                        9.dp
                     ),
                 verticalArrangement =
                     Arrangement.spacedBy(
-                        10.dp
+                        12.dp
                     )
             ) {
 
@@ -468,13 +614,16 @@ fun ProfileScreen(
                     }
                 ) { recipe ->
 
-                    ProfileRecipeTile(
-                        recipe =
-                            recipe,
-                        hasVideo =
-                            recipeHasVideo[
+                    ProfileRecipeCard(
+                        recipe = recipe,
+                        engagement =
+                            engagementByRecipe[
                                 recipe.id
-                            ] == true,
+                            ]
+                                ?: RecipeEngagement(
+                                    recipeId =
+                                        recipe.id
+                                ),
                         onClick = {
                             onRecipeClick(
                                 recipe
@@ -488,51 +637,64 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileRecipeTile(
+private fun ProfileRecipeCard(
     recipe: Recipe,
-    hasVideo: Boolean,
+    engagement: RecipeEngagement,
     onClick: () -> Unit
 ) {
 
-    Column(
-        modifier =
-            Modifier.clickable {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
                 onClick()
-            }
+            },
+        shape =
+            RoundedCornerShape(16.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    Color.White
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation =
+                    6.dp
+            )
     ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(
-                    RoundedCornerShape(
-                        12.dp
+        Column {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(
+                        1f
                     )
-                )
-                .background(
-                    Color(0xFFE8ECE9)
-                )
-        ) {
-
-            recipe.imageUri
-                ?.let { uri ->
-
-                    Image(
-                        painter =
-                            rememberAsyncImagePainter(
-                                uri
-                            ),
-                        contentDescription =
-                            recipe.name,
-                        modifier =
-                            Modifier.fillMaxSize(),
-                        contentScale =
-                            ContentScale.Crop
+                    .background(
+                        Color(
+                            0xFFE8ECE9
+                        )
                     )
-                }
+            ) {
 
-            if (hasVideo) {
+                recipe.imageUri
+                    ?.let { uri ->
+
+                        Image(
+                            painter =
+                                rememberAsyncImagePainter(
+                                    uri
+                                ),
+                            contentDescription =
+                                recipe.name,
+                            modifier =
+                                Modifier.fillMaxSize(),
+                            contentScale =
+                                ContentScale.Crop
+                        )
+                    }
+
                 Box(
                     modifier = Modifier
                         .align(
@@ -541,46 +703,128 @@ private fun ProfileRecipeTile(
                         .padding(6.dp)
                         .clip(
                             RoundedCornerShape(
-                                8.dp
+                                10.dp
                             )
                         )
                         .background(
-                            Color.Black.copy(
-                                alpha = 0.55f
+                            Color.White.copy(
+                                alpha =
+                                    0.92f
                             )
                         )
-                        .padding(5.dp)
+                        .padding(
+                            horizontal =
+                                6.dp,
+                            vertical =
+                                4.dp
+                        )
                 ) {
-                    Icon(
-                        imageVector =
-                            Icons.Default.Videocam,
-                        contentDescription =
-                            "Videolu tarif",
-                        tint =
-                            Color.White,
-                        modifier =
-                            Modifier.size(
-                                16.dp
+
+                    Text(
+                        text =
+                            "🍲 " +
+                                    engagement
+                                        .favoriteCount,
+                        fontSize = 11.sp,
+                        fontWeight =
+                            FontWeight.Bold,
+                        color =
+                            Color(
+                                0xFF5D4B33
                             )
                     )
                 }
             }
+
+            Column(
+                modifier =
+                    Modifier.padding(
+                        9.dp
+                    )
+            ) {
+
+                Text(
+                    text =
+                        recipe.name,
+                    maxLines = 2,
+                    overflow =
+                        TextOverflow.Ellipsis,
+                    fontSize = 13.sp,
+                    lineHeight = 15.sp,
+                    fontWeight =
+                        FontWeight.ExtraBold,
+                    color =
+                        Color(
+                            0xFF26352B
+                        )
+                )
+
+                Spacer(
+                    modifier =
+                        Modifier.height(
+                            5.dp
+                        )
+                )
+
+                Text(
+                    text =
+                        ratingStars(
+                            engagement
+                                .averageRating
+                        ),
+                    fontSize = 13.sp,
+                    color =
+                        Color(
+                            0xFFE2A72E
+                        )
+                )
+
+                Spacer(
+                    modifier =
+                        Modifier.height(
+                            4.dp
+                        )
+                )
+
+                Text(
+                    text =
+                        "♥ " +
+                                engagement.likeCount +
+                                "   💬 " +
+                                engagement.commentCount,
+                    fontSize = 10.sp,
+                    color =
+                        Color(
+                            0xFF7A817C
+                        )
+                )
+            }
+        }
+    }
+}
+
+private fun ratingStars(
+    rating: Double
+): String {
+
+    val fullStars =
+        rating
+            .toInt()
+            .coerceIn(
+                0,
+                5
+            )
+
+    return buildString {
+
+        repeat(fullStars) {
+            append("★")
         }
 
-        Spacer(
-            modifier =
-                Modifier.height(5.dp)
-        )
-
-        Text(
-            text =
-                recipe.name,
-            maxLines = 2,
-            fontSize = 12.sp,
-            fontWeight =
-                FontWeight.SemiBold,
-            color =
-                Color(0xFF2F3E34)
-        )
+        repeat(
+            5 - fullStars
+        ) {
+            append("☆")
+        }
     }
 }
