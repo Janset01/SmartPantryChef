@@ -19,8 +19,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -727,47 +725,37 @@ private fun ProfileRecipeCard(
                         )
                     }
 
-                IconButton(
-                    onClick = {
-                        onFavoriteToggle()
-                    },
+                Box(
                     modifier = Modifier
                         .align(
                             Alignment.TopEnd
                         )
-                        .padding(4.dp)
-                        .size(34.dp)
+                        .padding(5.dp)
+                        .size(28.dp)
                         .clip(CircleShape)
                         .background(
                             Color.White.copy(
-                                alpha = 0.92f
+                                alpha = 0.94f
                             )
                         )
+                        .clickable {
+                            onFavoriteToggle()
+                        },
+                    contentAlignment =
+                        Alignment.Center
                 ) {
 
-                    Icon(
-                        imageVector =
+                    Text(
+                        text =
                             if (
                                 engagement
                                     .isFavorite
                             ) {
-                                Icons.Default.Bookmark
+                                "🍲"
                             } else {
-                                Icons.Default.BookmarkBorder
+                                "🥣"
                             },
-                        contentDescription =
-                            if (
-                                engagement
-                                    .isFavorite
-                            ) {
-                                "Favoriden çıkar"
-                            } else {
-                                "Favoriye ekle"
-                            },
-                        tint =
-                            Color(
-                                0xFFB06F3C
-                            )
+                        fontSize = 14.sp
                     )
                 }
             }
@@ -816,6 +804,25 @@ private fun ProfileRecipeCard(
                     color =
                         Color(
                             0xFFE2A72E
+                        )
+                )
+
+                Spacer(
+                    modifier =
+                        Modifier.height(
+                            4.dp
+                        )
+                )
+
+                Text(
+                    text =
+                        "💬 " +
+                                engagement.commentCount +
+                                " yorum",
+                    fontSize = 10.sp,
+                    color =
+                        Color(
+                            0xFF7A817C
                         )
                 )
 
