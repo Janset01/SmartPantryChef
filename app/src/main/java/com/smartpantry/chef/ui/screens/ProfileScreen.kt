@@ -3,6 +3,7 @@ package com.smartpantry.chef.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,14 +14,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -33,7 +38,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,16 +62,21 @@ import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
 import kotlinx.coroutines.launch
 
-private enum class ProfileRecipeFilter(
+private enum class PersonalRecipeFilter(
+    val label: String
+) {
+    LIKED("Beğendiklerim"),
+    FAVORITED("Favorilerim")
+}
+
+private enum class ProfileRecipeSort(
     val label: String
 ) {
     DEFAULT("Varsayılan"),
-    MY_LIKES("Beğendiklerim"),
-    MY_FAVORITES("Favorilerim"),
     RECEIVED_LIKES("En çok beğenilen tariflerim"),
     RECEIVED_FAVORITES("En çok favorilenen tariflerim"),
-    COMMENTS_ASC("En az yorumlanan"),
-    COMMENTS_DESC("En çok yorumlanan")
+    COMMENTS_DESC("En çok yorumlanan"),
+    COMMENTS_ASC("En az yorumlanan")
 }
 
 @Composable
@@ -121,9 +130,17 @@ fun ProfileScreen(
         mutableStateOf(false)
     }
 
-    var selectedFilter by remember {
+    var personalFilters by remember {
         mutableStateOf(
-            ProfileRecipeFilter.DEFAULT
+            emptySet<
+                    PersonalRecipeFilter
+                    >()
+        )
+    }
+
+    var selectedSort by remember {
+        mutableStateOf(
+            ProfileRecipeSort.DEFAULT
         )
     }
 
@@ -155,6 +172,11 @@ fun ProfileScreen(
     val filteredRecipes =
         recipes.filter { recipe ->
 
+            val engagement =
+                engagementByRecipe[
+                    recipe.id
+                ]
+
             val matchesSearch =
                 searchText.isBlank() ||
                         recipe.name
@@ -169,35 +191,38 @@ fun ProfileScreen(
                         recipe.category ==
                         selectedCategory
 
+            val matchesPersonalFilters =
+                personalFilters
+                    .isEmpty() ||
+                        personalFilters
+                            .any { filter ->
+
+                                when (filter) {
+
+                                    PersonalRecipeFilter.LIKED ->
+                                        engagement
+                                            ?.isLiked ==
+                                                true
+
+                                    PersonalRecipeFilter.FAVORITED ->
+                                        engagement
+                                            ?.isFavorite ==
+                                                true
+                                }
+                            }
+
             matchesSearch &&
-                    matchesCategory
+                    matchesCategory &&
+                    matchesPersonalFilters
         }
 
     val visibleRecipes =
-        when (selectedFilter) {
+        when (selectedSort) {
 
-            ProfileRecipeFilter.DEFAULT ->
+            ProfileRecipeSort.DEFAULT ->
                 filteredRecipes
 
-            ProfileRecipeFilter.MY_LIKES ->
-                filteredRecipes
-                    .filter {
-                        engagementByRecipe[
-                            it.id
-                        ]?.isLiked ==
-                                true
-                    }
-
-            ProfileRecipeFilter.MY_FAVORITES ->
-                filteredRecipes
-                    .filter {
-                        engagementByRecipe[
-                            it.id
-                        ]?.isFavorite ==
-                                true
-                    }
-
-            ProfileRecipeFilter.RECEIVED_LIKES ->
+            ProfileRecipeSort.RECEIVED_LIKES ->
                 filteredRecipes
                     .sortedByDescending {
                         engagementByRecipe[
@@ -206,7 +231,7 @@ fun ProfileScreen(
                             ?: 0
                     }
 
-            ProfileRecipeFilter.RECEIVED_FAVORITES ->
+            ProfileRecipeSort.RECEIVED_FAVORITES ->
                 filteredRecipes
                     .sortedByDescending {
                         engagementByRecipe[
@@ -215,18 +240,18 @@ fun ProfileScreen(
                             ?: 0
                     }
 
-            ProfileRecipeFilter.COMMENTS_ASC ->
+            ProfileRecipeSort.COMMENTS_DESC ->
                 filteredRecipes
-                    .sortedBy {
+                    .sortedByDescending {
                         engagementByRecipe[
                             it.id
                         ]?.commentCount
                             ?: 0
                     }
 
-            ProfileRecipeFilter.COMMENTS_DESC ->
+            ProfileRecipeSort.COMMENTS_ASC ->
                 filteredRecipes
-                    .sortedByDescending {
+                    .sortedBy {
                         engagementByRecipe[
                             it.id
                         ]?.commentCount
@@ -418,31 +443,76 @@ fun ProfileScreen(
 
             Box {
 
-                TextButton(
-                    onClick = {
-                        categoryMenuOpen =
-                            true
-                    }
+                Card(
+                    modifier =
+                        Modifier.clickable {
+                            categoryMenuOpen =
+                                true
+                        },
+                    shape =
+                        RoundedCornerShape(
+                            14.dp
+                        ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                Color(
+                                    0xFFF0F4F1
+                                )
+                        ),
+                    elevation =
+                        CardDefaults.cardElevation(
+                            defaultElevation =
+                                0.dp
+                        )
                 ) {
 
-                    Text(
-                        text =
-                            if (
-                                selectedCategory ==
-                                "Tümü"
-                            ) {
-                                "Kategoriler"
-                            } else {
-                                selectedCategory
-                            },
-                        fontSize = 13.sp,
-                        fontWeight =
-                            FontWeight.SemiBold,
-                        color =
-                            Color(
-                                0xFF4F6F5A
-                            )
-                    )
+                    Row(
+                        modifier =
+                            Modifier.padding(
+                                horizontal =
+                                    11.dp,
+                                vertical =
+                                    8.dp
+                            ),
+                        verticalAlignment =
+                            Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            text =
+                                "Kategoriler",
+                            fontSize = 12.sp,
+                            fontWeight =
+                                FontWeight.SemiBold,
+                            color =
+                                Color(
+                                    0xFF4F6F5A
+                                )
+                        )
+
+                        Spacer(
+                            modifier =
+                                Modifier.size(
+                                    2.dp
+                                )
+                        )
+
+                        Icon(
+                            imageVector =
+                                Icons.Default.KeyboardArrowDown,
+                            contentDescription =
+                                null,
+                            modifier =
+                                Modifier.size(
+                                    16.dp
+                                ),
+                            tint =
+                                Color(
+                                    0xFF4F6F5A
+                                )
+                        )
+                    }
                 }
 
                 DropdownMenu(
@@ -451,8 +521,29 @@ fun ProfileScreen(
                     onDismissRequest = {
                         categoryMenuOpen =
                             false
-                    }
+                    },
+                    modifier =
+                        Modifier.width(
+                            210.dp
+                        )
                 ) {
+
+                    Text(
+                        text =
+                            "Kategori seç",
+                        modifier =
+                            Modifier.padding(
+                                horizontal =
+                                    16.dp,
+                                vertical =
+                                    8.dp
+                            ),
+                        fontSize = 12.sp,
+                        fontWeight =
+                            FontWeight.Bold,
+                        color =
+                            Color.Gray
+                    )
 
                     categories.forEach {
                             category ->
@@ -460,8 +551,36 @@ fun ProfileScreen(
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    category
+                                    category,
+                                    fontWeight =
+                                        if (
+                                            selectedCategory ==
+                                            category
+                                        ) {
+                                            FontWeight.Bold
+                                        } else {
+                                            FontWeight.Normal
+                                        }
                                 )
+                            },
+                            leadingIcon = {
+
+                                if (
+                                    selectedCategory ==
+                                    category
+                                ) {
+
+                                    Icon(
+                                        imageVector =
+                                            Icons.Default.Check,
+                                        contentDescription =
+                                            null,
+                                        tint =
+                                            Color(
+                                                0xFF4F7F65
+                                            )
+                                    )
+                                }
                             },
                             onClick = {
                                 selectedCategory =
@@ -474,25 +593,104 @@ fun ProfileScreen(
                 }
             }
 
+            Spacer(
+                modifier =
+                    Modifier.size(
+                        8.dp
+                    )
+            )
+
             Box {
 
-                IconButton(
-                    onClick = {
-                        filterMenuOpen =
-                            true
-                    }
+                Card(
+                    modifier =
+                        Modifier.clickable {
+                            filterMenuOpen =
+                                true
+                        },
+                    shape =
+                        RoundedCornerShape(
+                            14.dp
+                        ),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                if (
+                                    personalFilters
+                                        .isNotEmpty() ||
+                                    selectedSort !=
+                                    ProfileRecipeSort.DEFAULT
+                                ) {
+                                    Color(
+                                        0xFFDDE9DF
+                                    )
+                                } else {
+                                    Color(
+                                        0xFFF0F4F1
+                                    )
+                                }
+                        ),
+                    elevation =
+                        CardDefaults.cardElevation(
+                            defaultElevation =
+                                0.dp
+                        )
                 ) {
 
-                    Icon(
-                        imageVector =
-                            Icons.Default.FilterList,
-                        contentDescription =
-                            "Tarifleri filtrele",
-                        tint =
-                            Color(
-                                0xFF4F6F5A
+                    Row(
+                        modifier =
+                            Modifier.padding(
+                                horizontal =
+                                    10.dp,
+                                vertical =
+                                    8.dp
+                            ),
+                        verticalAlignment =
+                            Alignment.CenterVertically
+                    ) {
+
+                        Icon(
+                            imageVector =
+                                Icons.Default.FilterList,
+                            contentDescription =
+                                "Filtre",
+                            modifier =
+                                Modifier.size(
+                                    17.dp
+                                ),
+                            tint =
+                                Color(
+                                    0xFF4F6F5A
+                                )
+                        )
+
+                        if (
+                            personalFilters
+                                .isNotEmpty()
+                        ) {
+
+                            Spacer(
+                                modifier =
+                                    Modifier.size(
+                                        4.dp
+                                    )
                             )
-                    )
+
+                            Text(
+                                text =
+                                    personalFilters
+                                        .size
+                                        .toString(),
+                                fontSize = 11.sp,
+                                fontWeight =
+                                    FontWeight.Bold,
+                                color =
+                                    Color(
+                                        0xFF4F6F5A
+                                    )
+                            )
+                        }
+                    }
                 }
 
                 DropdownMenu(
@@ -501,74 +699,300 @@ fun ProfileScreen(
                     onDismissRequest = {
                         filterMenuOpen =
                             false
-                    }
+                    },
+                    modifier =
+                        Modifier.width(
+                            280.dp
+                        )
                 ) {
 
-                    ProfileRecipeFilter
+                    Text(
+                        text =
+                            "Benim seçimlerim",
+                        modifier =
+                            Modifier.padding(
+                                horizontal =
+                                    16.dp,
+                                vertical =
+                                    8.dp
+                            ),
+                        fontSize = 12.sp,
+                        fontWeight =
+                            FontWeight.Bold,
+                        color =
+                            Color(
+                                0xFF5D685F
+                            )
+                    )
+
+                    PersonalRecipeFilter
                         .entries
                         .forEach {
                                 filter ->
 
+                            val selected =
+                                filter in
+                                        personalFilters
+
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        filter.label
+                                        filter.label,
+                                        fontWeight =
+                                            if (
+                                                selected
+                                            ) {
+                                                FontWeight.Bold
+                                            } else {
+                                                FontWeight.Normal
+                                            }
                                     )
                                 },
+                                leadingIcon = {
+
+                                    Box(
+                                        modifier = Modifier
+                                            .size(
+                                                22.dp
+                                            )
+                                            .clip(
+                                                CircleShape
+                                            )
+                                            .background(
+                                                if (
+                                                    selected
+                                                ) {
+                                                    Color(
+                                                        0xFF7A9E7E
+                                                    )
+                                                } else {
+                                                    Color(
+                                                        0xFFE9ECEA
+                                                    )
+                                                }
+                                            ),
+                                        contentAlignment =
+                                            Alignment.Center
+                                    ) {
+
+                                        if (
+                                            selected
+                                        ) {
+
+                                            Icon(
+                                                imageVector =
+                                                    Icons.Default.Check,
+                                                contentDescription =
+                                                    null,
+                                                modifier =
+                                                    Modifier.size(
+                                                        15.dp
+                                                    ),
+                                                tint =
+                                                    Color.White
+                                            )
+                                        }
+                                    }
+                                },
                                 onClick = {
-                                    selectedFilter =
-                                        filter
-                                    filterMenuOpen =
-                                        false
+
+                                    personalFilters =
+                                        if (
+                                            selected
+                                        ) {
+                                            personalFilters -
+                                                    filter
+                                        } else {
+                                            personalFilters +
+                                                    filter
+                                        }
                                 }
                             )
                         }
+
+                    HorizontalDivider(
+                        modifier =
+                            Modifier.padding(
+                                vertical =
+                                    6.dp
+                            ),
+                        color =
+                            Color(
+                                0xFFE2E7E3
+                            )
+                    )
+
+                    Text(
+                        text =
+                            "Sırala",
+                        modifier =
+                            Modifier.padding(
+                                horizontal =
+                                    16.dp,
+                                vertical =
+                                    8.dp
+                            ),
+                        fontSize = 12.sp,
+                        fontWeight =
+                            FontWeight.Bold,
+                        color =
+                            Color(
+                                0xFF5D685F
+                            )
+                    )
+
+                    ProfileRecipeSort
+                        .entries
+                        .forEach {
+                                sort ->
+
+                            val selected =
+                                selectedSort ==
+                                        sort
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        sort.label,
+                                        fontWeight =
+                                            if (
+                                                selected
+                                            ) {
+                                                FontWeight.Bold
+                                            } else {
+                                                FontWeight.Normal
+                                            }
+                                    )
+                                },
+                                trailingIcon = {
+
+                                    if (
+                                        selected
+                                    ) {
+
+                                        Icon(
+                                            imageVector =
+                                                Icons.Default.Check,
+                                            contentDescription =
+                                                null,
+                                            tint =
+                                                Color(
+                                                    0xFF4F7F65
+                                                )
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    selectedSort =
+                                        sort
+                                }
+                            )
+                        }
+
+                    HorizontalDivider(
+                        modifier =
+                            Modifier.padding(
+                                top =
+                                    6.dp
+                            ),
+                        color =
+                            Color(
+                                0xFFE2E7E3
+                            )
+                    )
+
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "Filtreleri temizle",
+                                fontWeight =
+                                    FontWeight.SemiBold,
+                                color =
+                                    Color(
+                                        0xFF8A5A44
+                                    )
+                            )
+                        },
+                        onClick = {
+                            personalFilters =
+                                emptySet()
+                            selectedSort =
+                                ProfileRecipeSort.DEFAULT
+                            filterMenuOpen =
+                                false
+                        }
+                    )
                 }
             }
         }
 
         if (
-            selectedCategory != "Tümü" ||
-            selectedFilter !=
-            ProfileRecipeFilter.DEFAULT
+            selectedCategory !=
+            "Tümü" ||
+            personalFilters
+                .isNotEmpty() ||
+            selectedSort !=
+            ProfileRecipeSort.DEFAULT
         ) {
-
-            Text(
-                text =
-                    buildString {
-
-                        if (
-                            selectedCategory !=
-                            "Tümü"
-                        ) {
-                            append(
-                                selectedCategory
-                            )
-                        }
-
-                        if (
-                            selectedFilter !=
-                            ProfileRecipeFilter.DEFAULT
-                        ) {
-
-                            if (isNotEmpty()) {
-                                append(" • ")
-                            }
-
-                            append(
-                                selectedFilter.label
-                            )
-                        }
-                    },
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
 
             Spacer(
                 modifier =
-                    Modifier.height(8.dp)
+                    Modifier.height(
+                        10.dp
+                    )
             )
+
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(
+                            rememberScrollState()
+                        ),
+                horizontalArrangement =
+                    Arrangement.spacedBy(
+                        6.dp
+                    )
+            ) {
+
+                if (
+                    selectedCategory !=
+                    "Tümü"
+                ) {
+
+                    ActiveFilterPill(
+                        text =
+                            selectedCategory
+                    )
+                }
+
+                personalFilters
+                    .forEach {
+                        filter ->
+
+                        ActiveFilterPill(
+                            text =
+                                filter.label
+                        )
+                    }
+
+                if (
+                    selectedSort !=
+                    ProfileRecipeSort.DEFAULT
+                ) {
+
+                    ActiveFilterPill(
+                        text =
+                            selectedSort.label
+                    )
+                }
+            }
         }
+
+        Spacer(
+            modifier =
+                Modifier.height(10.dp)
+        )
 
         HorizontalDivider(
             color =
@@ -679,34 +1103,6 @@ fun ProfileScreen(
                                         updated
                                     )
                             }
-                        },
-                        onLikedToggle = {
-
-                            val current =
-                                engagementByRecipe[
-                                    recipe.id
-                                ]
-                                    ?: RecipeEngagement(
-                                        recipeId =
-                                            recipe.id
-                                    )
-
-                            val updated =
-                                current.copy(
-                                    isLiked =
-                                        !current.isLiked
-                                )
-
-                            engagementByRecipe[
-                                recipe.id
-                            ] = updated
-
-                            scope.launch {
-                                engagementDao
-                                    .upsert(
-                                        updated
-                                    )
-                            }
                         }
                     )
                 }
@@ -716,18 +1112,61 @@ fun ProfileScreen(
 }
 
 @Composable
+private fun ActiveFilterPill(
+    text: String
+) {
+
+    Card(
+        shape =
+            RoundedCornerShape(
+                50.dp
+            ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    Color(
+                        0xFFE8F0EA
+                    )
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation =
+                    0.dp
+            )
+    ) {
+
+        Text(
+            text = text,
+            modifier =
+                Modifier.padding(
+                    horizontal =
+                        10.dp,
+                    vertical =
+                        5.dp
+                ),
+            fontSize = 11.sp,
+            fontWeight =
+                FontWeight.SemiBold,
+            color =
+                Color(
+                    0xFF4F6F5A
+                )
+        )
+    }
+}
+
+@Composable
 private fun ProfileRecipeCard(
     recipe: Recipe,
     engagement: RecipeEngagement,
     onClick: () -> Unit,
-    onFavoriteToggle: () -> Unit,
-    onLikedToggle: () -> Unit
+    onFavoriteToggle: () -> Unit
 ) {
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(230.dp)
+            .height(214.dp)
             .clickable {
                 onClick()
             },
@@ -808,53 +1247,6 @@ private fun ProfileRecipeCard(
                         fontSize = 14.sp
                     )
                 }
-
-                Box(
-                    modifier = Modifier
-                        .align(
-                            Alignment.BottomStart
-                        )
-                        .padding(5.dp)
-                        .clip(
-                            RoundedCornerShape(
-                                10.dp
-                            )
-                        )
-                        .background(
-                            Color.White.copy(
-                                alpha = 0.94f
-                            )
-                        )
-                        .clickable {
-                            onLikedToggle()
-                        }
-                        .padding(
-                            horizontal = 7.dp,
-                            vertical = 4.dp
-                        ),
-                    contentAlignment =
-                        Alignment.Center
-                ) {
-
-                    Text(
-                        text =
-                            if (
-                                engagement
-                                    .isLiked
-                            ) {
-                                "★ Beğendim"
-                            } else {
-                                "☆ Beğen"
-                            },
-                        fontSize = 10.sp,
-                        fontWeight =
-                            FontWeight.SemiBold,
-                        color =
-                            Color(
-                                0xFF6A5A42
-                            )
-                    )
-                }
             }
 
             Column(
@@ -914,82 +1306,46 @@ private fun ProfileRecipeCard(
                 )
 
                 Row(
-                    modifier =
-                        Modifier.fillMaxWidth(),
                     verticalAlignment =
-                        Alignment.CenterVertically,
-                    horizontalArrangement =
-                        Arrangement.SpaceBetween
+                        Alignment.CenterVertically
                 ) {
 
-                    Row(
-                        verticalAlignment =
-                            Alignment.CenterVertically
-                    ) {
-
-                        Icon(
-                            imageVector =
-                                Icons.Default.Comment,
-                            contentDescription =
-                                "Yorumlar",
-                            modifier =
-                                Modifier.size(
-                                    16.dp
-                                ),
-                            tint =
-                                Color(
-                                    0xFF68736C
-                                )
-                        )
-
-                        Spacer(
-                            modifier =
-                                Modifier.size(
-                                    4.dp
-                                )
-                        )
-
-                        Text(
-                            text =
-                                engagement.commentCount
-                                    .toString(),
-                            fontSize = 11.sp,
-                            fontWeight =
-                                FontWeight.SemiBold,
-                            color =
-                                Color(
-                                    0xFF68736C
-                                )
-                        )
-                    }
-
-                    Text(
-                        text =
-                            "👍 " +
-                                    engagement.likeCount,
-                        fontSize = 11.sp,
-                        fontWeight =
-                            FontWeight.SemiBold,
-                        color =
+                    Icon(
+                        imageVector =
+                            Icons.Default.Comment,
+                        contentDescription =
+                            "Yorumlar",
+                        modifier =
+                            Modifier.size(
+                                17.dp
+                            ),
+                        tint =
                             Color(
                                 0xFF68736C
                             )
                     )
 
+                    Spacer(
+                        modifier =
+                            Modifier.size(
+                                5.dp
+                            )
+                    )
+
                     Text(
                         text =
-                            "🥣 " +
-                                    engagement.favoriteCount,
-                        fontSize = 11.sp,
+                            engagement.commentCount
+                                .toString() +
+                                    " yorum",
+                        fontSize = 12.sp,
                         fontWeight =
-                            FontWeight.SemiBold,
+                            FontWeight.Medium,
                         color =
                             Color(
                                 0xFF68736C
                             )
                     )
                 }
-
             }
         }
     }
