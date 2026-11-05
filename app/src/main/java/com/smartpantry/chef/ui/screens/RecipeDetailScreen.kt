@@ -4,6 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -21,7 +24,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -43,6 +49,8 @@ import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Ingredient
 import com.smartpantry.chef.data.MatchStatus
 import com.smartpantry.chef.data.Recipe
+import com.smartpantry.chef.data.RecipeComment
+import com.smartpantry.chef.data.RecipeEngagement
 import com.smartpantry.chef.data.RecipeIngredient
 import com.smartpantry.chef.data.RecipeMatch
 import com.smartpantry.chef.data.RecipeMedia
@@ -68,6 +76,8 @@ fun RecipeDetailScreen(
     val ingredientDao = database.ingredientDao()
     val recipeIngredientDao = database.recipeIngredientDao()
     val recipeMediaDao = database.recipeMediaDao()
+    val recipeEngagementDao = database.recipeEngagementDao()
+    val recipeCommentDao = database.recipeCommentDao()
     val shoppingItemDao = database.shoppingItemDao()
 
     var showDeleteDialog by remember {
@@ -110,6 +120,24 @@ fun RecipeDetailScreen(
         mutableStateOf<String?>(null)
     }
 
+    var engagement by remember {
+        mutableStateOf(
+            RecipeEngagement(
+                recipeId = recipe.id
+            )
+        )
+    }
+
+    var comments by remember {
+        mutableStateOf<List<RecipeComment>>(
+            emptyList()
+        )
+    }
+
+    var newComment by remember {
+        mutableStateOf("")
+    }
+
     LaunchedEffect(recipe.id, refreshPantry) {
         pantryCheckLoading = true
 
@@ -123,9 +151,24 @@ fun RecipeDetailScreen(
             recipeMediaDao
                 .getMediaForRecipe(recipe.id)
 
+        val loadedEngagement =
+            recipeEngagementDao
+                .getForRecipe(recipe.id)
+                ?: RecipeEngagement(
+                    recipeId = recipe.id
+                )
+
+        val loadedComments =
+            recipeCommentDao
+                .getCommentsForRecipe(
+                    recipe.id
+                )
+
         pantryIngredients = loadedPantryIngredients
         structuredIngredients = recipeIngredients
         recipeMedia = loadedRecipeMedia
+        engagement = loadedEngagement
+        comments = loadedComments
 
         recipeMatch =
             RecipeMatcher.matchRecipe(
@@ -145,10 +188,57 @@ fun RecipeDetailScreen(
             .padding(20.dp)
     ) {
 
-        Button(
-            onClick = onBack
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("← Geri")
+
+            OutlinedButton(
+                onClick = onBack
+            ) {
+                Text("← Geri")
+            }
+
+            Spacer(
+                modifier = Modifier.weight(1f)
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .clickable {
+
+                        val updated =
+                            engagement.copy(
+                                isFavorite =
+                                    !engagement.isFavorite
+                            )
+
+                        engagement = updated
+
+                        scope.launch {
+                            recipeEngagementDao
+                                .upsert(updated)
+                        }
+                    },
+                contentAlignment =
+                    Alignment.Center
+            ) {
+
+                Text(
+                    text =
+                        if (
+                            engagement.isFavorite
+                        ) {
+                            "🍲"
+                        } else {
+                            "🥣"
+                        },
+                    fontSize = 20.sp
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(18.dp))
@@ -205,72 +295,6 @@ fun RecipeDetailScreen(
                     fontSize = 15.sp
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        PantryCompatibilitySection(
-            recipeMatch = recipeMatch,
-            structuredIngredients = structuredIngredients,
-            isLoading = pantryCheckLoading,
-            onAddMissingToShoppingList = {
-                scope.launch {
-                    addMissingIngredientsToShoppingList(
-                        missingItems = recipeMatch?.missingIngredients.orEmpty().map { missing ->
-                            ShoppingItem(
-                                name = missing.name,
-                                quantity = missing.missingQuantity,
-                                unit = missing.unit
-                            )
-                        },
-                        currentShoppingItems = shoppingItemDao.getAllShoppingItems(),
-                        insertShoppingItem = { item ->
-                            shoppingItemDao.insertShoppingItem(item)
-                        },
-                        updateShoppingItem = { item ->
-                            shoppingItemDao.updateShoppingItem(item)
-                        }
-                    )
-                    shoppingMessage =
-                        "✅ Eksik malzemeler alışveriş listene eklendi."
-                }
-            }
-        )
-
-        shoppingMessage?.let { message ->
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = message,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF3F6F52)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        Button(
-            onClick = {
-                showCookDialog = true
-            },
-            enabled = recipeMatch?.status == MatchStatus.CAN_MAKE &&
-                    structuredIngredients.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "🍽️ Yemeği Yaptım",
-                fontSize = 16.sp
-            )
-        }
-
-        stockMessage?.let { message ->
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = message,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF3F6F52)
-            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -506,32 +530,238 @@ fun RecipeDetailScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-            onClick = onEdit,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Spacer(modifier = Modifier.height(30.dp))
+
+        RecipeRatingSection(
+            selectedRating =
+                engagement.myRating,
+            averageRating =
+                engagement.averageRating,
+            ratingCount =
+                engagement.ratingCount,
+            onRatingSelected = { rating ->
+
+                val oldPersonalRating =
+                    engagement.myRating
+
+                val newCount =
+                    if (
+                        oldPersonalRating == 0
+                    ) {
+                        engagement.ratingCount + 1
+                    } else {
+                        engagement.ratingCount
+                    }
+
+                val oldTotal =
+                    engagement.averageRating *
+                            engagement.ratingCount
+
+                val adjustedTotal =
+                    oldTotal -
+                            oldPersonalRating +
+                            rating
+
+                val updated =
+                    engagement.copy(
+                        myRating = rating,
+                        ratingCount = newCount,
+                        averageRating =
+                            if (newCount > 0) {
+                                adjustedTotal /
+                                        newCount
+                            } else {
+                                0.0
+                            }
+                    )
+
+                engagement = updated
+
+                scope.launch {
+                    recipeEngagementDao
+                        .upsert(updated)
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(26.dp))
+
+        RecipeCommentsSection(
+            comments = comments,
+            commentText = newComment,
+            onCommentTextChange = {
+                newComment = it
+            },
+            onSubmit = {
+
+                val cleanText =
+                    newComment.trim()
+
+                if (cleanText.isNotEmpty()) {
+
+                    scope.launch {
+
+                        recipeCommentDao
+                            .insertComment(
+                                RecipeComment(
+                                    recipeId =
+                                        recipe.id,
+                                    authorNickname =
+                                        "@nickname",
+                                    text =
+                                        cleanText,
+                                    createdAt =
+                                        System.currentTimeMillis()
+                                )
+                            )
+
+                        comments =
+                            recipeCommentDao
+                                .getCommentsForRecipe(
+                                    recipe.id
+                                )
+
+                        val updated =
+                            engagement.copy(
+                                commentCount =
+                                    comments.size
+                            )
+
+                        engagement = updated
+
+                        recipeEngagementDao
+                            .upsert(updated)
+
+                        newComment = ""
+                    }
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        PantryCompatibilitySection(
+            recipeMatch = recipeMatch,
+            structuredIngredients = structuredIngredients,
+            isLoading = pantryCheckLoading,
+            onAddMissingToShoppingList = {
+                scope.launch {
+                    addMissingIngredientsToShoppingList(
+                        missingItems = recipeMatch
+                            ?.missingIngredients
+                            .orEmpty()
+                            .map { missing ->
+                                ShoppingItem(
+                                    name = missing.name,
+                                    quantity =
+                                        missing.missingQuantity,
+                                    unit = missing.unit
+                                )
+                            },
+                        currentShoppingItems =
+                            shoppingItemDao
+                                .getAllShoppingItems(),
+                        insertShoppingItem = { item ->
+                            shoppingItemDao
+                                .insertShoppingItem(item)
+                        },
+                        updateShoppingItem = { item ->
+                            shoppingItemDao
+                                .updateShoppingItem(item)
+                        }
+                    )
+
+                    shoppingMessage =
+                        "✅ Eksik malzemeler alışveriş listene eklendi."
+                }
+            }
+        )
+
+        shoppingMessage?.let { message ->
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
-                text = "✏️ Tarifi Düzenle",
-                fontSize = 16.sp
+                text = message,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF3F6F52)
             )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Button(
             onClick = {
-                showDeleteDialog = true
+                showCookDialog = true
             },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFB3261E)
-            )
+            enabled =
+                recipeMatch?.status ==
+                        MatchStatus.CAN_MAKE &&
+                        structuredIngredients
+                            .isNotEmpty(),
+            modifier = Modifier.fillMaxWidth()
         ) {
+
             Text(
-                text = "🗑️ Tarifi Sil",
-                color = Color.White
+                text = "🍽️ Yemeği Yaptım",
+                fontSize = 15.sp
             )
+        }
+
+        stockMessage?.let { message ->
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = message,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF3F6F52)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        HorizontalDivider(
+            color = Color(0xFFD9DED9)
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                androidx.compose.foundation.layout.Arrangement.Center,
+            verticalAlignment =
+                Alignment.CenterVertically
+        ) {
+
+            OutlinedButton(
+                onClick = onEdit,
+                shape = RoundedCornerShape(14.dp)
+            ) {
+
+                Text(
+                    text = "✏️ Düzenle",
+                    fontSize = 13.sp
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.width(10.dp)
+            )
+
+            TextButton(
+                onClick = {
+                    showDeleteDialog = true
+                }
+            ) {
+
+                Text(
+                    text = "🗑️ Tarifi Sil",
+                    fontSize = 13.sp,
+                    color = Color(0xFFB3261E)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(25.dp))
