@@ -62,10 +62,12 @@ private enum class ProfileRecipeFilter(
     val label: String
 ) {
     DEFAULT("Varsayılan"),
-    FAVORITES("Favoriler"),
-    LIKES("Beğeniler"),
-    COMMENTS_ASC("En az yorum"),
-    COMMENTS_DESC("En çok yorum")
+    MY_LIKES("Beğendiklerim"),
+    MY_FAVORITES("Favorilerim"),
+    RECEIVED_LIKES("En çok beğenilen tariflerim"),
+    RECEIVED_FAVORITES("En çok favorilenen tariflerim"),
+    COMMENTS_ASC("En az yorumlanan"),
+    COMMENTS_DESC("En çok yorumlanan")
 }
 
 @Composable
@@ -177,7 +179,16 @@ fun ProfileScreen(
             ProfileRecipeFilter.DEFAULT ->
                 filteredRecipes
 
-            ProfileRecipeFilter.FAVORITES ->
+            ProfileRecipeFilter.MY_LIKES ->
+                filteredRecipes
+                    .filter {
+                        engagementByRecipe[
+                            it.id
+                        ]?.isLiked ==
+                                true
+                    }
+
+            ProfileRecipeFilter.MY_FAVORITES ->
                 filteredRecipes
                     .filter {
                         engagementByRecipe[
@@ -186,12 +197,21 @@ fun ProfileScreen(
                                 true
                     }
 
-            ProfileRecipeFilter.LIKES ->
+            ProfileRecipeFilter.RECEIVED_LIKES ->
                 filteredRecipes
                     .sortedByDescending {
                         engagementByRecipe[
                             it.id
                         ]?.likeCount
+                            ?: 0
+                    }
+
+            ProfileRecipeFilter.RECEIVED_FAVORITES ->
+                filteredRecipes
+                    .sortedByDescending {
+                        engagementByRecipe[
+                            it.id
+                        ]?.favoriteCount
                             ?: 0
                     }
 
@@ -659,6 +679,34 @@ fun ProfileScreen(
                                         updated
                                     )
                             }
+                        },
+                        onLikedToggle = {
+
+                            val current =
+                                engagementByRecipe[
+                                    recipe.id
+                                ]
+                                    ?: RecipeEngagement(
+                                        recipeId =
+                                            recipe.id
+                                    )
+
+                            val updated =
+                                current.copy(
+                                    isLiked =
+                                        !current.isLiked
+                                )
+
+                            engagementByRecipe[
+                                recipe.id
+                            ] = updated
+
+                            scope.launch {
+                                engagementDao
+                                    .upsert(
+                                        updated
+                                    )
+                            }
                         }
                     )
                 }
@@ -672,13 +720,14 @@ private fun ProfileRecipeCard(
     recipe: Recipe,
     engagement: RecipeEngagement,
     onClick: () -> Unit,
-    onFavoriteToggle: () -> Unit
+    onFavoriteToggle: () -> Unit,
+    onLikedToggle: () -> Unit
 ) {
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(210.dp)
+            .height(230.dp)
             .clickable {
                 onClick()
             },
@@ -759,6 +808,53 @@ private fun ProfileRecipeCard(
                         fontSize = 14.sp
                     )
                 }
+
+                Box(
+                    modifier = Modifier
+                        .align(
+                            Alignment.BottomStart
+                        )
+                        .padding(5.dp)
+                        .clip(
+                            RoundedCornerShape(
+                                10.dp
+                            )
+                        )
+                        .background(
+                            Color.White.copy(
+                                alpha = 0.94f
+                            )
+                        )
+                        .clickable {
+                            onLikedToggle()
+                        }
+                        .padding(
+                            horizontal = 7.dp,
+                            vertical = 4.dp
+                        ),
+                    contentAlignment =
+                        Alignment.Center
+                ) {
+
+                    Text(
+                        text =
+                            if (
+                                engagement
+                                    .isLiked
+                            ) {
+                                "★ Beğendim"
+                            } else {
+                                "☆ Beğen"
+                            },
+                        fontSize = 10.sp,
+                        fontWeight =
+                            FontWeight.SemiBold,
+                        color =
+                            Color(
+                                0xFF6A5A42
+                            )
+                    )
+                }
             }
 
             Column(
@@ -818,40 +914,75 @@ private fun ProfileRecipeCard(
                 )
 
                 Row(
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     verticalAlignment =
-                        Alignment.CenterVertically
+                        Alignment.CenterVertically,
+                    horizontalArrangement =
+                        Arrangement.SpaceBetween
                 ) {
 
-                    Icon(
-                        imageVector =
-                            Icons.Default.Comment,
-                        contentDescription =
-                            "Yorumlar",
-                        modifier =
-                            Modifier.size(
-                                17.dp
-                            ),
-                        tint =
-                            Color(
-                                0xFF7A817C
-                            )
-                    )
+                    Row(
+                        verticalAlignment =
+                            Alignment.CenterVertically
+                    ) {
 
-                    Spacer(
-                        modifier =
-                            Modifier.size(
-                                6.dp
+                        Icon(
+                            imageVector =
+                                Icons.Default.Comment,
+                            contentDescription =
+                                "Yorumlar",
+                            modifier =
+                                Modifier.size(
+                                    16.dp
+                                ),
+                            tint =
+                                Color(
+                                    0xFF68736C
+                                )
+                        )
+
+                        Spacer(
+                            modifier =
+                                Modifier.size(
+                                    4.dp
+                                )
+                        )
+
+                        Text(
+                            text =
+                                engagement.commentCount
+                                    .toString(),
+                            fontSize = 11.sp,
+                            fontWeight =
+                                FontWeight.SemiBold,
+                            color =
+                                Color(
+                                    0xFF68736C
+                                )
+                        )
+                    }
+
+                    Text(
+                        text =
+                            "👍 " +
+                                    engagement.likeCount,
+                        fontSize = 11.sp,
+                        fontWeight =
+                            FontWeight.SemiBold,
+                        color =
+                            Color(
+                                0xFF68736C
                             )
                     )
 
                     Text(
                         text =
-                            engagement.commentCount
-                                .toString() +
-                                    " yorum",
-                        fontSize = 12.sp,
+                            "🥣 " +
+                                    engagement.favoriteCount,
+                        fontSize = 11.sp,
                         fontWeight =
-                            FontWeight.Medium,
+                            FontWeight.SemiBold,
                         color =
                             Color(
                                 0xFF68736C
