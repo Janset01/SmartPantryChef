@@ -23,5 +23,6 @@ data class RecipeEngagement(
     val favoriteCount: Int = 0,
     val likeCount: Int = 0,
     val commentCount: Int = 0,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val isLiked: Boolean = false
 )
