@@ -230,11 +230,7 @@ fun MainScreen() {
 
                     when (selectedIndex) {
 
-                        0 -> HomeScreen(
-                            onRecipeClick = { recipe ->
-                                selectedRecipe = recipe
-                            }
-                        )
+                        0 -> HomeScreen()
 
                         1 -> ExploreScreen(
                             onRecipeClick = { recipe ->
@@ -253,7 +249,11 @@ fun MainScreen() {
                             }
                         )
 
-                        4 -> ProfileScreen()
+                        4 -> ProfileScreen(
+                            onRecipeClick = { recipe ->
+                                selectedRecipe = recipe
+                            }
+                        )
                     }
                 }
             }
