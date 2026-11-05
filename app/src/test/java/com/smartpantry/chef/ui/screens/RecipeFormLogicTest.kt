@@ -96,4 +96,68 @@ class RecipeFormLogicTest {
             extractPositiveIntText("bilinmiyor")
         )
     }
+    @Test
+    fun recipeImages_respectTenImageLimit() {
+        val current =
+            (1..8).map {
+                "image-$it"
+            }
+
+        val incoming =
+            listOf(
+                "image-9",
+                "image-10",
+                "image-11"
+            )
+
+        val result =
+            mergeRecipeImageUris(
+                current = current,
+                incoming = incoming
+            )
+
+        assertEquals(10, result.size)
+        assertEquals("image-10", result.last())
+    }
+
+    @Test
+    fun recipeImages_doNotDuplicateSameUri() {
+        val result =
+            mergeRecipeImageUris(
+                current =
+                    listOf("image-1"),
+                incoming =
+                    listOf(
+                        "image-1",
+                        "image-2"
+                    )
+            )
+
+        assertEquals(
+            listOf(
+                "image-1",
+                "image-2"
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun firstRecipeImage_isCoverImage() {
+        assertEquals(
+            "image-1",
+            recipeCoverImageUri(
+                listOf(
+                    "image-1",
+                    "image-2"
+                )
+            )
+        )
+
+        assertNull(
+            recipeCoverImageUri(
+                emptyList()
+            )
+        )
+    }
 }
