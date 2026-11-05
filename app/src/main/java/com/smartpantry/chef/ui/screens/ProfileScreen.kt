@@ -801,7 +801,9 @@ private fun ProfileRecipeCard(
                             engagement
                                 .averageRating
                         ),
-                    fontSize = 13.sp,
+                    fontSize = 15.sp,
+                    fontWeight =
+                        FontWeight.SemiBold,
                     color =
                         Color(
                             0xFFE2A72E
@@ -811,7 +813,7 @@ private fun ProfileRecipeCard(
                 Spacer(
                     modifier =
                         Modifier.height(
-                            4.dp
+                            6.dp
                         )
                 )
 
@@ -827,7 +829,7 @@ private fun ProfileRecipeCard(
                             "Yorumlar",
                         modifier =
                             Modifier.size(
-                                13.dp
+                                17.dp
                             ),
                         tint =
                             Color(
@@ -838,7 +840,7 @@ private fun ProfileRecipeCard(
                     Spacer(
                         modifier =
                             Modifier.size(
-                                4.dp
+                                6.dp
                             )
                     )
 
@@ -847,10 +849,12 @@ private fun ProfileRecipeCard(
                             engagement.commentCount
                                 .toString() +
                                     " yorum",
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
+                        fontWeight =
+                            FontWeight.Medium,
                         color =
                             Color(
-                                0xFF7A817C
+                                0xFF68736C
                             )
                     )
                 }
