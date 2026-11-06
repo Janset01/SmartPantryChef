@@ -297,56 +297,43 @@ fun RecipeDetailScreen(
             }
         }
         Spacer(Modifier.height(24.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)) {
-            Column(Modifier.weight(1f)) {
-                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF4D7D35)).padding(12.dp),
-                    contentAlignment = Alignment.Center) {
-                    Text("🥕 Malzemeler", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
-                Spacer(Modifier.height(8.dp))
-                Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                    Column(Modifier.padding(10.dp)) {
-                        recipe.ingredients.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
-                            var checked by androidx.compose.runtime.remember(recipe.id, index) { androidx.compose.runtime.mutableStateOf(false) }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                androidx.compose.material3.Checkbox(
-                                    checked = checked, onCheckedChange = { checked = it },
-                                    modifier = Modifier.size(36.dp),
-                                    colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = Color(0xFF4D7D35))
-                                )
-                                Text(line.trim(), fontSize = 13.sp, lineHeight = 18.sp,
-                                    modifier = Modifier.weight(1f), color = Color(0xFF2F3E34))
-                            }
+        Column(Modifier.fillMaxWidth(), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
+            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                Column(Modifier.padding(18.dp)) {
+                    Text("🥕 Malzemeler", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF345D36))
+                    Spacer(Modifier.height(12.dp))
+                    recipe.ingredients.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
+                        var checked by androidx.compose.runtime.remember(recipe.id, index) { androidx.compose.runtime.mutableStateOf(false) }
+                        Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.material3.Checkbox(checked = checked, onCheckedChange = { checked = it },
+                                colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = Color(0xFF4D7D35)))
+                            Text(line.trim(), modifier = Modifier.weight(1f), fontSize = 15.sp, lineHeight = 21.sp,
+                                color = Color(0xFF2F3E34))
                         }
                     }
                 }
             }
-            Column(Modifier.weight(1f)) {
-                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFFEFEEE7)).padding(12.dp),
-                    contentAlignment = Alignment.Center) {
-                    Text("☰ Hazırlanış", color = Color(0xFF2F3E34), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
-                Spacer(Modifier.height(8.dp))
-                Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                    Column(Modifier.padding(12.dp)) {
-                        recipe.instructions.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
-                            Row(Modifier.padding(bottom = 10.dp), verticalAlignment = Alignment.Top) {
-                                Box(Modifier.size(24.dp).clip(CircleShape).background(Color(0xFF4D7D35)),
-                                    contentAlignment = Alignment.Center) {
-                                    Text((index + 1).toString(), fontSize = 12.sp, color = Color.White)
-                                }
-                                Spacer(Modifier.width(6.dp))
-                                Text(line.trim(), fontSize = 13.sp, lineHeight = 18.sp,
-                                    modifier = Modifier.weight(1f), color = Color(0xFF2F3E34))
+            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                Column(Modifier.padding(18.dp)) {
+                    Text("👩‍🍳 Hazırlanış", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF345D36))
+                    Spacer(Modifier.height(14.dp))
+                    recipe.instructions.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
+                        Row(Modifier.fillMaxWidth().padding(bottom = 14.dp), verticalAlignment = Alignment.Top) {
+                            Box(Modifier.size(30.dp).clip(CircleShape).background(Color(0xFF4D7D35)),
+                                contentAlignment = Alignment.Center) {
+                                Text((index + 1).toString(), color = Color.White, fontWeight = FontWeight.Bold)
                             }
+                            Spacer(Modifier.width(12.dp))
+                            Text(line.trim(), modifier = Modifier.weight(1f), fontSize = 15.sp,
+                                lineHeight = 23.sp, color = Color(0xFF2F3E34))
                         }
                     }
                 }
             }
         }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
 
         val recipeImages =
             recipeMedia.filter {
@@ -411,7 +398,7 @@ fun RecipeDetailScreen(
 
                         Card(
                             modifier = Modifier
-                                .width(240.dp)
+                                .width(158.dp)
                                 .padding(
                                     end = 12.dp
                                 ),
@@ -433,7 +420,7 @@ fun RecipeDetailScreen(
                                                 "${index + 1}",
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(180.dp),
+                                        .height(128.dp),
                                     contentScale =
                                         ContentScale.Crop
                                 )
@@ -678,46 +665,6 @@ fun RecipeDetailScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        if (pantryExpanded) {
-        PantryCompatibilitySection(
-            recipeMatch = recipeMatch,
-            structuredIngredients = structuredIngredients,
-            isLoading = pantryCheckLoading,
-            onAddMissingToShoppingList = {
-                scope.launch {
-                    addMissingIngredientsToShoppingList(
-                        missingItems = recipeMatch
-                            ?.missingIngredients
-                            .orEmpty()
-                            .map { missing ->
-                                ShoppingItem(
-                                    name = missing.name,
-                                    quantity =
-                                        missing.missingQuantity,
-                                    unit = missing.unit
-                                )
-                            },
-                        currentShoppingItems =
-                            shoppingItemDao
-                                .getAllShoppingItems(),
-                        insertShoppingItem = { item ->
-                            shoppingItemDao
-                                .insertShoppingItem(item)
-                        },
-                        updateShoppingItem = { item ->
-                            shoppingItemDao
-                                .updateShoppingItem(item)
-                        }
-                    )
-
-                    shoppingMessage =
-                        "✅ Eksik malzemeler alışveriş listene eklendi."
-                }
-            }
-        )
-
-        }
-
         shoppingMessage?.let { message ->
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -806,6 +753,58 @@ fun RecipeDetailScreen(
         }
 
         Spacer(modifier = Modifier.height(25.dp))
+    }
+
+    if (pantryExpanded) {
+        AlertDialog(
+            onDismissRequest = { pantryExpanded = false },
+            confirmButton = { TextButton(onClick = { pantryExpanded = false }) { Text("Kapat") } },
+            title = { Text("🧊 Buzdolabımda var mı?") },
+            text = {
+                Column(Modifier.height(420.dp).verticalScroll(rememberScrollState())) {
+        PantryCompatibilitySection(
+            recipeMatch = recipeMatch,
+            structuredIngredients = structuredIngredients,
+            isLoading = pantryCheckLoading,
+            onAddMissingToShoppingList = {
+                scope.launch {
+                    addMissingIngredientsToShoppingList(
+                        missingItems = recipeMatch
+                            ?.missingIngredients
+                            .orEmpty()
+                            .map { missing ->
+                                ShoppingItem(
+                                    name = missing.name,
+                                    quantity =
+                                        missing.missingQuantity,
+                                    unit = missing.unit
+                                )
+                            },
+                        currentShoppingItems =
+                            shoppingItemDao
+                                .getAllShoppingItems(),
+                        insertShoppingItem = { item ->
+                            shoppingItemDao
+                                .insertShoppingItem(item)
+                        },
+                        updateShoppingItem = { item ->
+                            shoppingItemDao
+                                .updateShoppingItem(item)
+                        }
+                    )
+
+                    shoppingMessage =
+                        "✅ Eksik malzemeler alışveriş listene eklendi."
+                }
+            }
+        )
+
+        }
+
+
+                }
+            }
+        )
     }
 
     if (showCookDialog) {
