@@ -734,6 +734,7 @@ fun RecipeDetailScreen(
         }
 
         Spacer(modifier = Modifier.height(25.dp))
+        }
     }
 
     if (pantryExpanded) {
