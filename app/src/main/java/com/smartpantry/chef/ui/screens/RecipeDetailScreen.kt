@@ -287,61 +287,66 @@ fun RecipeDetailScreen(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(18.dp)
-            ) {
-                Text(
-                    text = "⏱️ Süre: ${recipe.preparationTime}",
-                    fontSize = 15.sp
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "🍽️ Porsiyon: ${recipe.servings}",
-                    fontSize = 15.sp
-                )
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+            listOf("⏱ " + recipe.preparationTime, "🍽 " + recipe.servings + " kişilik", "👨‍🍳 " + recipe.category).forEach { item ->
+                Card(shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFEEE7))) {
+                    Text(item, Modifier.padding(horizontal = 12.dp, vertical = 9.dp), fontSize = 13.sp, color = Color(0xFF34582B))
+                }
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "🥕 Malzemeler",
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = recipe.ingredients,
-            fontSize = 15.sp
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "👩‍🍳 Hazırlanışı",
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = recipe.instructions,
-            fontSize = 15.sp
-        )
+        Spacer(Modifier.height(24.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.weight(1f)) {
+                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF4D7D35)).padding(12.dp),
+                    contentAlignment = Alignment.Center) {
+                    Text("🥕 Malzemeler", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+                Spacer(Modifier.height(8.dp))
+                Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Column(Modifier.padding(10.dp)) {
+                        recipe.ingredients.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
+                            var checked by androidx.compose.runtime.remember(recipe.id, index) { androidx.compose.runtime.mutableStateOf(false) }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                androidx.compose.material3.Checkbox(
+                                    checked = checked, onCheckedChange = { checked = it },
+                                    modifier = Modifier.size(36.dp),
+                                    colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = Color(0xFF4D7D35))
+                                )
+                                Text(line.trim(), fontSize = 13.sp, lineHeight = 18.sp,
+                                    modifier = Modifier.weight(1f), color = Color(0xFF2F3E34))
+                            }
+                        }
+                    }
+                }
+            }
+            Column(Modifier.weight(1f)) {
+                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFFEFEEE7)).padding(12.dp),
+                    contentAlignment = Alignment.Center) {
+                    Text("☰ Hazırlanış", color = Color(0xFF2F3E34), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+                Spacer(Modifier.height(8.dp))
+                Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Column(Modifier.padding(12.dp)) {
+                        recipe.instructions.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
+                            Row(Modifier.padding(bottom = 10.dp), verticalAlignment = Alignment.Top) {
+                                Box(Modifier.size(24.dp).clip(CircleShape).background(Color(0xFF4D7D35)),
+                                    contentAlignment = Alignment.Center) {
+                                    Text((index + 1).toString(), fontSize = 12.sp, color = Color.White)
+                                }
+                                Spacer(Modifier.width(6.dp))
+                                Text(line.trim(), fontSize = 13.sp, lineHeight = 18.sp,
+                                    modifier = Modifier.weight(1f), color = Color(0xFF2F3E34))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(24.dp))
 
         val recipeImages =
             recipeMedia.filter {
