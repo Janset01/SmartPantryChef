@@ -1162,191 +1162,70 @@ private fun ProfileRecipeCard(
     onClick: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
-
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(214.dp)
-            .clickable {
-                onClick()
-            },
-        shape =
-            RoundedCornerShape(16.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor =
-                    Color.White
-            ),
-        elevation =
-            CardDefaults.cardElevation(
-                defaultElevation =
-                    6.dp
-            )
+        modifier = Modifier.fillMaxWidth().height(176.dp).clickable { onClick() },
+        shape = RoundedCornerShape(15.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF394839)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
-
-        Column {
-
+        Box(modifier = Modifier.fillMaxSize()) {
+            recipe.imageUri?.let { uri ->
+                Image(
+                    painter = rememberAsyncImagePainter(uri),
+                    contentDescription = recipe.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(118.dp)
-                    .background(
-                        Color(
-                            0xFFE8ECE9
-                        )
+                modifier = Modifier.fillMaxSize().background(
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        0.0f to Color.Black.copy(alpha = 0.55f),
+                        0.32f to Color.Transparent,
+                        0.52f to Color.Transparent,
+                        1.0f to Color.Black.copy(alpha = 0.82f)
                     )
-            ) {
-
-                recipe.imageUri
-                    ?.let { uri ->
-
-                        Image(
-                            painter =
-                                rememberAsyncImagePainter(
-                                    uri
-                                ),
-                            contentDescription =
-                                recipe.name,
-                            modifier =
-                                Modifier.fillMaxSize(),
-                            contentScale =
-                                ContentScale.Crop
-                        )
-                    }
-
-                Box(
-                    modifier = Modifier
-                        .align(
-                            Alignment.TopEnd
-                        )
-                        .padding(5.dp)
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Color.White.copy(
-                                alpha = 0.94f
-                            )
-                        )
-                        .clickable {
-                            onFavoriteToggle()
-                        },
-                    contentAlignment =
-                        Alignment.Center
-                ) {
-
-                    Text(
-                        text =
-                            if (
-                                engagement
-                                    .isFavorite
-                            ) {
-                                "🍲"
-                            } else {
-                                "🥣"
-                            },
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
+                )
+            )
             Column(
-                modifier =
-                    Modifier.padding(
-                        9.dp
-                    )
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 8.dp, top = 8.dp, end = 30.dp)
             ) {
-
                 Text(
-                    text =
-                        recipe.name,
-                    modifier =
-                        Modifier.height(
-                            34.dp
-                        ),
-                    maxLines = 2,
-                    overflow =
-                        TextOverflow.Ellipsis,
-                    fontSize = 13.sp,
-                    lineHeight = 15.sp,
-                    fontWeight =
-                        FontWeight.ExtraBold,
-                    color =
-                        Color(
-                            0xFF26352B
-                        )
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(
-                            5.dp
-                        )
-                )
-
-                Text(
-                    text =
-                        ratingStars(
-                            engagement
-                                .averageRating
-                        ),
+                    text = ratingStars(engagement.averageRating),
                     fontSize = 15.sp,
-                    fontWeight =
-                        FontWeight.SemiBold,
-                    color =
-                        Color(
-                            0xFFE2A72E
-                        )
+                    lineHeight = 16.sp,
+                    color = Color(0xFFFFCA58),
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
                 )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(
-                            6.dp
-                        )
+                Text(
+                    text = "⏱ " + recipe.preparationTime,
+                    fontSize = 10.sp,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-
-                Row(
-                    verticalAlignment =
-                        Alignment.CenterVertically
-                ) {
-
-                    Icon(
-                        imageVector =
-                            Icons.Default.Comment,
-                        contentDescription =
-                            "Yorumlar",
-                        modifier =
-                            Modifier.size(
-                                17.dp
-                            ),
-                        tint =
-                            Color(
-                                0xFF68736C
-                            )
-                    )
-
-                    Spacer(
-                        modifier =
-                            Modifier.size(
-                                5.dp
-                            )
-                    )
-
-                    Text(
-                        text =
-                            engagement.commentCount
-                                .toString() +
-                                    " yorum",
-                        fontSize = 12.sp,
-                        fontWeight =
-                            FontWeight.Medium,
-                        color =
-                            Color(
-                                0xFF68736C
-                            )
-                    )
-                }
             }
+            Box(
+                modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)
+                    .size(27.dp).clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.94f))
+                    .clickable { onFavoriteToggle() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(if (engagement.isFavorite) "🍲" else "🥣", fontSize = 14.sp)
+            }
+            Text(
+                text = recipe.name,
+                modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()
+                    .padding(horizontal = 9.dp, vertical = 11.dp),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 14.sp,
+                lineHeight = 16.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White
+            )
         }
     }
 }
