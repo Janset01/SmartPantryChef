@@ -135,6 +135,8 @@ fun RecipeDetailScreen(
         )
     }
 
+    var pantryExpanded by remember { mutableStateOf(false) }
+
     var newComment by remember {
         mutableStateOf("")
     }
@@ -271,6 +273,15 @@ fun RecipeDetailScreen(
             fontSize = 16.sp,
             color = Color.Gray
         )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        OutlinedButton(
+            onClick = { pantryExpanded = !pantryExpanded },
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(if (pantryExpanded) "🥕 Buzdolabı kontrolünü gizle" else "🥕 Buzdolabımda var mı?")
+        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -593,6 +604,25 @@ fun RecipeDetailScreen(
             onCommentTextChange = {
                 newComment = it
             },
+            onReply = { parentId, replyText ->
+                scope.launch {
+                    recipeCommentDao.insertComment(RecipeComment(recipeId = recipe.id, authorNickname = "@nickname", text = replyText, createdAt = System.currentTimeMillis(), parentCommentId = parentId))
+                    comments = recipeCommentDao.getCommentsForRecipe(recipe.id)
+                    val updated = engagement.copy(commentCount = comments.size)
+                    engagement = updated
+                    recipeEngagementDao.upsert(updated)
+                }
+            },
+            onReact = { comment, reaction ->
+                scope.launch {
+                    val old = comment.myReaction
+                    val newValue = if (old == reaction) 0 else reaction
+                    val likes = (comment.likeCount + (if (newValue == 1) 1 else 0) - (if (old == 1) 1 else 0)).coerceAtLeast(0)
+                    val dislikes = (comment.dislikeCount + (if (newValue == -1) 1 else 0) - (if (old == -1) 1 else 0)).coerceAtLeast(0)
+                    recipeCommentDao.updateReaction(comment.id, likes, dislikes, newValue)
+                    comments = recipeCommentDao.getCommentsForRecipe(recipe.id)
+                }
+            },
             onSubmit = {
 
                 val cleanText =
@@ -641,6 +671,7 @@ fun RecipeDetailScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
+        if (pantryExpanded) {
         PantryCompatibilitySection(
             recipeMatch = recipeMatch,
             structuredIngredients = structuredIngredients,
@@ -677,6 +708,8 @@ fun RecipeDetailScreen(
                 }
             }
         )
+
+        }
 
         shoppingMessage?.let { message ->
             Spacer(modifier = Modifier.height(10.dp))
