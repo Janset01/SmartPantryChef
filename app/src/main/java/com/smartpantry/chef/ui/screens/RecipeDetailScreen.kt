@@ -798,10 +798,6 @@ fun RecipeDetailScreen(
                 }
             }
         )
-
-        }
-
-
                 }
             }
         )
