@@ -16,7 +16,8 @@ import androidx.room.PrimaryKey
         )
     ],
     indices = [
-        Index("recipeId")
+        Index("recipeId"),
+        Index("parentCommentId")
     ]
 )
 data class RecipeComment(
@@ -25,5 +26,9 @@ data class RecipeComment(
     val recipeId: Int,
     val authorNickname: String,
     val text: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val parentCommentId: Int? = null,
+    val likeCount: Int = 0,
+    val dislikeCount: Int = 0,
+    val myReaction: Int = 0
 )
