@@ -3,6 +3,10 @@ package com.smartpantry.chef.ui.screens
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -136,6 +140,7 @@ fun RecipeDetailScreen(
     }
 
     var pantryExpanded by remember { mutableStateOf(false) }
+    var selectedTab by remember(recipe.id) { mutableStateOf(0) }
 
     var newComment by remember {
         mutableStateOf("")
@@ -183,158 +188,131 @@ fun RecipeDetailScreen(
         pantryCheckLoading = false
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8F6F2))
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            OutlinedButton(
-                onClick = onBack
-            ) {
-                Text("← Geri")
+    val forest = Color(0xFF315D34)
+    val ink = Color(0xFF28382B)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF8F5EE)).verticalScroll(rememberScrollState())) {
+        Box(Modifier.fillMaxWidth()) {
+            if (!recipe.imageUri.isNullOrBlank()) {
+                Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
+                    Modifier.fillMaxWidth().height(310.dp), contentScale = ContentScale.Crop)
+                Box(Modifier.fillMaxWidth().height(310.dp).background(
+                    Brush.verticalGradient(listOf(Color(0x77000000), Color.Transparent, Color(0xDD000000)))))
+            } else {
+                Box(Modifier.fillMaxWidth().height(260.dp).background(forest))
             }
-
-            Spacer(
-                modifier = Modifier.weight(1f)
-            )
-
-            OutlinedButton(
-                onClick = { pantryExpanded = !pantryExpanded },
-                modifier = Modifier.padding(end = 8.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Text("🧊 Uygunluk", fontSize = 12.sp)
+            Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(44.dp).clip(CircleShape).background(Color(0xBB18251B)).clickable { onBack() },
+                    contentAlignment = Alignment.Center) { Text("←", color = Color.White, fontSize = 25.sp) }
+                Spacer(Modifier.weight(1f))
+                Box(Modifier.clip(RoundedCornerShape(20.dp)).background(Color.White)
+                    .clickable { pantryExpanded = true }.padding(horizontal = 13.dp, vertical = 11.dp)) {
+                    Text("🧊 Uygunluk", color = forest, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.width(8.dp))
+                Box(Modifier.size(44.dp).clip(CircleShape).background(Color.White).clickable {
+                    val updated = engagement.copy(isFavorite = !engagement.isFavorite)
+                    engagement = updated
+                    scope.launch { recipeEngagementDao.upsert(updated) }
+                }, contentAlignment = Alignment.Center) {
+                    Text(if (engagement.isFavorite) "♥" else "♡", color = Color(0xFFDB583D), fontSize = 30.sp)
+                }
             }
-
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-                    .clickable {
-
-                        val updated =
-                            engagement.copy(
-                                isFavorite =
-                                    !engagement.isFavorite
-                            )
-
-                        engagement = updated
-
-                        scope.launch {
-                            recipeEngagementDao
-                                .upsert(updated)
-                        }
-                    },
-                contentAlignment =
-                    Alignment.Center
-            ) {
-
-                Text(
-                    text =
-                        if (
-                            engagement.isFavorite
-                        ) {
-                            "🍲"
-                        } else {
-                            "🥣"
-                        },
-                    fontSize = 20.sp
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        recipe.imageUri?.let { uri ->
-            Image(
-                painter = rememberAsyncImagePainter(uri),
-                contentDescription = recipe.name,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-
-        Text(
-            text = recipe.name,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = recipe.category,
-            fontSize = 16.sp,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-            listOf("⏱ " + recipe.preparationTime, "🍽 " + recipe.servings + " kişilik", "👨‍🍳 " + recipe.category).forEach { item ->
-                Card(shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFEEE7))) {
-                    Text(item, Modifier.padding(horizontal = 12.dp, vertical = 9.dp), fontSize = 13.sp, color = Color(0xFF34582B))
+            Column(Modifier.align(Alignment.BottomStart).padding(20.dp)) {
+                Text(recipe.category, color = Color.White, fontSize = 13.sp,
+                    modifier = Modifier.clip(RoundedCornerShape(16.dp)).background(Color(0xFFE4A62D))
+                        .padding(horizontal = 12.dp, vertical = 7.dp))
+                Spacer(Modifier.height(9.dp))
+                Text(recipe.name, color = Color.White, fontWeight = FontWeight.ExtraBold,
+                    fontSize = 29.sp, lineHeight = 33.sp)
+                if (engagement.ratingCount > 0) {
+                    Text("⭐ " + String.format(Locale.getDefault(), "%.1f", engagement.averageRating)
+                        + " (" + engagement.ratingCount + " değerlendirme)",
+                        color = Color.White, fontSize = 13.sp)
                 }
             }
         }
-        Spacer(Modifier.height(24.dp))
-        Column(Modifier.fillMaxWidth(), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
-            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                Column(Modifier.padding(18.dp)) {
-                    Text("🥕 Malzemeler", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF345D36))
-                    Spacer(Modifier.height(12.dp))
-                    recipe.ingredients.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
-                        var checked by androidx.compose.runtime.remember(recipe.id, index) { androidx.compose.runtime.mutableStateOf(false) }
-                        Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                            androidx.compose.material3.Checkbox(checked = checked, onCheckedChange = { checked = it },
-                                colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = Color(0xFF4D7D35)))
-                            Text(line.trim(), modifier = Modifier.weight(1f), fontSize = 15.sp, lineHeight = 21.sp,
-                                color = Color(0xFF2F3E34))
+        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp)) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("◷ " + recipe.preparationTime, "♟ " + recipe.servings + " kişilik",
+                    "🍴 " + recipe.category).forEach { item ->
+                    Box(Modifier.clip(RoundedCornerShape(22.dp)).background(Color.White)
+                        .padding(horizontal = 13.dp, vertical = 11.dp)) {
+                        Text(item, color = forest, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    }
+                }
+            }
+            Spacer(Modifier.height(17.dp))
+            Card(shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+                Row(Modifier.fillMaxWidth().padding(6.dp), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    listOf("▤ Malzemeler", "♨ Hazırlanış", "♧ Yorumlar").forEachIndexed { index, label ->
+                        Box(Modifier.weight(1f).clip(RoundedCornerShape(16.dp))
+                            .background(if (selectedTab == index) forest else Color.Transparent)
+                            .clickable { selectedTab = index }.padding(vertical = 13.dp),
+                            contentAlignment = Alignment.Center) {
+                            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                                color = if (selectedTab == index) Color.White else ink)
                         }
                     }
                 }
             }
-            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                Column(Modifier.padding(18.dp)) {
-                    Text("👩‍🍳 Hazırlanış", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF345D36))
-                    Spacer(Modifier.height(14.dp))
-                    recipe.instructions.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
-                        Row(Modifier.fillMaxWidth().padding(bottom = 14.dp), verticalAlignment = Alignment.Top) {
-                            Box(Modifier.size(30.dp).clip(CircleShape).background(Color(0xFF4D7D35)),
-                                contentAlignment = Alignment.Center) {
-                                Text((index + 1).toString(), color = Color.White, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(18.dp))
+            if (selectedTab == 0) {
+                Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+                    Column(Modifier.padding(19.dp)) {
+                        Text("🥬  Gerekli Malzemeler", color = ink, fontSize = 21.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(12.dp))
+                        recipe.ingredients.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
+                            var checked by remember(recipe.id, index) { mutableStateOf(false) }
+                            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+                                androidx.compose.material3.Checkbox(checked = checked,
+                                    onCheckedChange = { checked = it },
+                                    colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = forest))
+                                Text(line.trim(), Modifier.weight(1f), color = if (checked) Color.Gray else ink,
+                                    fontSize = 15.sp, lineHeight = 22.sp,
+                                    textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None)
                             }
-                            Spacer(Modifier.width(12.dp))
-                            Text(line.trim(), modifier = Modifier.weight(1f), fontSize = 15.sp,
-                                lineHeight = 23.sp, color = Color(0xFF2F3E34))
+                            HorizontalDivider(color = Color(0xFFF1EFE8))
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = { selectedTab = 1 }, modifier = Modifier.fillMaxWidth().height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = forest),
+                    shape = RoundedCornerShape(22.dp)) {
+                    Text("Hazırlanışa Geç  →", fontSize = 15.sp)
+                }
+            }
+            if (selectedTab == 1) {
+                Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+                    Column(Modifier.padding(19.dp)) {
+                        Text("👩‍🍳  Hazırlanış Aşamaları", color = ink, fontSize = 21.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(15.dp))
+                        recipe.instructions.lines().filter { it.isNotBlank() }.forEachIndexed { index, line ->
+                            Row(Modifier.fillMaxWidth().padding(vertical = 9.dp), verticalAlignment = Alignment.Top) {
+                                Box(Modifier.size(34.dp).clip(CircleShape).background(forest),
+                                    contentAlignment = Alignment.Center) {
+                                    Text((index + 1).toString(), color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                                Spacer(Modifier.width(13.dp))
+                                Text(line.trim(), Modifier.weight(1f).padding(top = 5.dp),
+                                    fontSize = 15.sp, lineHeight = 23.sp, color = ink)
+                            }
+                            HorizontalDivider(color = Color(0xFFF1EFE8))
                         }
                     }
                 }
             }
-        }
-        Spacer(Modifier.height(16.dp))
-
+            if (selectedTab == 2) {
+                Text("💬  Yorumlar ve Değerlendirmeler", fontSize = 21.sp,
+                    color = ink, fontWeight = FontWeight.Bold)
+            }
         val recipeImages =
             recipeMedia.filter {
                 it.mediaType ==
@@ -398,7 +376,7 @@ fun RecipeDetailScreen(
 
                         Card(
                             modifier = Modifier
-                                .width(158.dp)
+                                .width(148.dp)
                                 .padding(
                                     end = 12.dp
                                 ),
@@ -420,7 +398,7 @@ fun RecipeDetailScreen(
                                                 "${index + 1}",
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(128.dp),
+                                        .height(118.dp),
                                     contentScale =
                                         ContentScale.Crop
                                 )
@@ -536,7 +514,8 @@ fun RecipeDetailScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        if (selectedTab == 2) {
+        Spacer(modifier = Modifier.height(20.dp))
 
         RecipeRatingSection(
             selectedRating =
@@ -662,6 +641,8 @@ fun RecipeDetailScreen(
                 }
             }
         )
+
+        }
 
         Spacer(modifier = Modifier.height(30.dp))
 
