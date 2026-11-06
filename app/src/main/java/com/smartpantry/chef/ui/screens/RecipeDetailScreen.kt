@@ -206,6 +206,15 @@ fun RecipeDetailScreen(
                 modifier = Modifier.weight(1f)
             )
 
+            OutlinedButton(
+                onClick = { pantryExpanded = !pantryExpanded },
+                modifier = Modifier.padding(end = 8.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("🧊 Uygunluk", fontSize = 12.sp)
+            }
+
             Box(
                 modifier = Modifier
                     .size(42.dp)
@@ -275,13 +284,6 @@ fun RecipeDetailScreen(
         )
 
         Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedButton(
-            onClick = { pantryExpanded = !pantryExpanded },
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(if (pantryExpanded) "🥕 Buzdolabı kontrolünü gizle" else "🥕 Buzdolabımda var mı?")
-        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
