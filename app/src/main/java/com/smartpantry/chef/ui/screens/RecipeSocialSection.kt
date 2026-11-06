@@ -117,203 +117,94 @@ internal fun RecipeCommentsSection(
     comments: List<RecipeComment>,
     commentText: String,
     onCommentTextChange: (String) -> Unit,
-    onSubmit: () -> Unit
+    onSubmit: () -> Unit,
+    onReply: (Int, String) -> Unit,
+    onReact: (RecipeComment, Int) -> Unit
 ) {
-
-    Column {
-
-        Text(
-            text =
-                "Yorumlar (" +
-                        comments.size +
-                        ")",
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            )
-        ) {
-
-            Column(
-                modifier = Modifier.padding(14.dp)
-            ) {
-
+    var newestFirst by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text("Yorumlar (" + comments.size + ")", fontSize = 21.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2F3E34))
+        Spacer(Modifier.height(10.dp))
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)) {
+            Column(Modifier.padding(14.dp)) {
                 OutlinedTextField(
-                    value = commentText,
-                    onValueChange =
-                        onCommentTextChange,
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                    placeholder = {
-                        Text(
-                            "Tarif hakkında ne düşünüyorsun?"
-                        )
-                    },
-                    minLines = 2,
-                    maxLines = 4,
-                    shape =
-                        RoundedCornerShape(16.dp)
+                    value = commentText, onValueChange = onCommentTextChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Tarif hakkında ne düşünüyorsun?") },
+                    minLines = 2, maxLines = 4, shape = RoundedCornerShape(16.dp)
                 )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(10.dp)
-                )
-
-                Row(
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                    horizontalArrangement =
-                        Arrangement.End
-                ) {
-
-                    Button(
-                        onClick = onSubmit,
-                        enabled =
-                            commentText
-                                .trim()
-                                .isNotEmpty(),
-                        shape =
-                            RoundedCornerShape(14.dp)
-                    ) {
-                        Text("Yorumu Gönder")
-                    }
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Button(onClick = onSubmit, enabled = commentText.isNotBlank()) { Text("Yorumu Gönder") }
                 }
             }
         }
-
-        if (comments.isEmpty()) {
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text =
-                    "Henüz yorum yok. İlk yorumu sen bırakabilirsin.",
-                fontSize = 13.sp,
-                color = Color.Gray
-            )
-
-        } else {
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            comments.forEach { comment ->
-
-                RecipeCommentCard(
-                    comment = comment
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(10.dp)
-                )
-            }
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            androidx.compose.material3.FilterChip(selected = newestFirst, onClick = { newestFirst = true }, label = { Text("En yeni") })
+            androidx.compose.material3.FilterChip(selected = !newestFirst, onClick = { newestFirst = false }, label = { Text("En eski") })
         }
+        val parents = comments.filter { it.parentCommentId == null }
+            .let { if (newestFirst) it.sortedWith(compareByDescending<RecipeComment> { c -> c.createdAt }.thenByDescending { c -> c.id }) else it.sortedWith(compareBy<RecipeComment> { c -> c.createdAt }.thenBy { c -> c.id }) }
+        parents.forEach { parent ->
+            RecipeCommentCard(parent, onReply, onReact)
+            comments.filter { it.parentCommentId == parent.id }.sortedWith(compareBy<RecipeComment> { it.createdAt }.thenBy { it.id }).forEach { reply ->
+                Box(Modifier.fillMaxWidth().padding(start = 22.dp, top = 6.dp)) {
+                    RecipeCommentCard(reply, onReply, onReact)
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+        }
+        if (comments.isEmpty()) Text("Henüz yorum yok. İlk yorumu sen bırakabilirsin.", fontSize = 13.sp, color = Color.Gray)
     }
 }
 
 @Composable
 private fun RecipeCommentCard(
-    comment: RecipeComment
+    comment: RecipeComment,
+    onReply: (Int, String) -> Unit,
+    onReact: (RecipeComment, Int) -> Unit
 ) {
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor =
-                Color(0xFFFEFEFC)
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        )
-    ) {
-
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment =
-                Alignment.Top
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Color(0xFFDDE9DF)
-                    ),
-                contentAlignment =
-                    Alignment.Center
-            ) {
-
-                Text(
-                    text = "👤",
-                    fontSize = 17.sp
-                )
+    var replyOpen by androidx.compose.runtime.remember(comment.id) { androidx.compose.runtime.mutableStateOf(false) }
+    var replyText by androidx.compose.runtime.remember(comment.id) { androidx.compose.runtime.mutableStateOf("") }
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)) {
+        Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.Top) {
+            Box(Modifier.size(34.dp).clip(CircleShape).background(Color(0xFFDDE9DF)), contentAlignment = Alignment.Center) {
+                Text("👤", fontSize = 16.sp)
             }
-
-            Spacer(
-                modifier =
-                    Modifier.width(10.dp)
-            )
-
-            Column(
-                modifier =
-                    Modifier.weight(1f)
-            ) {
-
-                Row(
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                    verticalAlignment =
-                        Alignment.CenterVertically
-                ) {
-
-                    Text(
-                        text =
-                            comment.authorNickname,
-                        fontSize = 13.sp,
-                        fontWeight =
-                            FontWeight.Bold,
-                        color =
-                            Color(0xFF2F3E34)
-                    )
-
-                    Spacer(
-                        modifier =
-                            Modifier.weight(1f)
-                    )
-
-                    Text(
-                        text =
-                            formatRecipeCommentTime(
-                                comment.createdAt
-                            ),
-                        fontSize = 11.sp,
-                        color = Color.Gray
-                    )
+            Spacer(Modifier.width(9.dp))
+            Column(Modifier.weight(1f)) {
+                Text(comment.authorNickname, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2F3E34), maxLines = 2)
+                Text(formatRecipeCommentTime(comment.createdAt), fontSize = 11.sp, color = Color.Gray)
+                Spacer(Modifier.height(6.dp))
+                Text(comment.text, modifier = Modifier.fillMaxWidth(), fontSize = 14.sp, lineHeight = 20.sp, color = Color(0xFF465149), softWrap = true, overflow = androidx.compose.ui.text.style.TextOverflow.Clip)
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(if (comment.myReaction == 1) "👍 " + comment.likeCount else "👍 " + comment.likeCount,
+                        modifier = Modifier.clickable { onReact(comment, 1) }, fontSize = 13.sp,
+                        color = if (comment.myReaction == 1) Color(0xFF287A4B) else Color.Gray)
+                    Text("👎 " + comment.dislikeCount, modifier = Modifier.clickable { onReact(comment, -1) }, fontSize = 13.sp,
+                        color = if (comment.myReaction == -1) Color(0xFFB3261E) else Color.Gray)
+                    Text("Yanıtla", modifier = Modifier.clickable { replyOpen = !replyOpen }, fontSize = 12.sp, color = Color(0xFF287A4B), fontWeight = FontWeight.SemiBold)
                 }
-
-                Spacer(
-                    modifier =
-                        Modifier.height(5.dp)
-                )
-
-                Text(
-                    text = comment.text,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color =
-                        Color(0xFF465149)
-                )
+                if (replyOpen) {
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(value = replyText, onValueChange = { replyText = it },
+                        modifier = Modifier.fillMaxWidth(), placeholder = { Text("Yanıtını yaz...") },
+                        maxLines = 4, shape = RoundedCornerShape(12.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        androidx.compose.material3.TextButton(onClick = { replyOpen = false }) { Text("Vazgeç") }
+                        androidx.compose.material3.TextButton(onClick = {
+                            if (replyText.isNotBlank()) {
+                                onReply(comment.parentCommentId ?: comment.id, replyText.trim())
+                                replyText = ""
+                                replyOpen = false
+                            }
+                        }, enabled = replyText.isNotBlank()) { Text("Gönder") }
+                    }
+                }
             }
         }
     }
