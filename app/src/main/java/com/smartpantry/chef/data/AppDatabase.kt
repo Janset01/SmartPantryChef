@@ -17,7 +17,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RecipeComment::class,
         ShoppingItem::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -154,6 +154,16 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE recipe_comments ADD COLUMN parentCommentId INTEGER")
+                database.execSQL("ALTER TABLE recipe_comments ADD COLUMN likeCount INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE recipe_comments ADD COLUMN dislikeCount INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE recipe_comments ADD COLUMN myReaction INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_recipe_comments_parentCommentId ON recipe_comments(parentCommentId)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
 
             return INSTANCE ?: synchronized(this) {
@@ -170,7 +180,8 @@ abstract class AppDatabase : RoomDatabase() {
                             MIGRATION_7_8,
                             MIGRATION_8_9,
                             MIGRATION_9_10,
-                            MIGRATION_10_11
+                            MIGRATION_10_11,
+                            MIGRATION_11_12
                         )
                         .fallbackToDestructiveMigration()
                         .build()
