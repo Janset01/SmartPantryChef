@@ -12,6 +12,9 @@ interface RecipeCommentDao {
         comment: RecipeComment
     ): Long
 
+    @Query("UPDATE recipe_comments SET likeCount = :likes, dislikeCount = :dislikes, myReaction = :reaction WHERE id = :commentId")
+    suspend fun updateReaction(commentId: Int, likes: Int, dislikes: Int, reaction: Int)
+
     @Query(
         "SELECT * FROM recipe_comments " +
                 "WHERE recipeId = :recipeId " +
