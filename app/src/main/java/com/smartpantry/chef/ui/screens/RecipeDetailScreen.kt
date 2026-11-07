@@ -214,7 +214,7 @@ fun RecipeDetailScreen(
                     engagement = updated
                     scope.launch { recipeEngagementDao.upsert(updated) }
                 }, contentAlignment = Alignment.Center) {
-                    Text(if (engagement.isFavorite) "♥" else "♡", color = Color(0xFFDB583D), fontSize = 30.sp)
+                    Text(if (engagement.isFavorite) "🍲" else "🥣", fontSize = 22.sp)
                 }
             }
             Column(Modifier.align(Alignment.BottomStart).padding(20.dp)) {
