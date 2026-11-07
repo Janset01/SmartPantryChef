@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,15 +13,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -31,460 +33,259 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
-import com.smartpantry.chef.R
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
+import com.smartpantry.chef.data.RecipeEngagement
+
+private val exploreGreen = Color(0xFF315D34)
+private val exploreInk = Color(0xFF27382B)
+private val exploreCream = Color(0xFFF8F5EE)
 
 @Composable
-fun ExploreScreen(
-    onRecipeClick: (Recipe) -> Unit
-) {
-
-    var searchText by remember {
-        mutableStateOf("")
-    }
-
-    var selectedCategory by remember {
-        mutableStateOf("Tümü")
-    }
-
-    var savedRecipes by remember {
-        mutableStateOf<List<Recipe>>(emptyList())
-    }
-
+fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
     val context = LocalContext.current
-
-    val database = remember {
-        AppDatabase.getDatabase(context)
-    }
-
-    val recipeDao = database.recipeDao()
+    val database = remember(context) { AppDatabase.getDatabase(context) }
+    var recipes by remember { mutableStateOf<List<Recipe>>(emptyList()) }
+    var engagements by remember { mutableStateOf<Map<Int, RecipeEngagement>>(emptyMap()) }
+    var search by remember { mutableStateOf("") }
+    var tab by remember { mutableStateOf(0) }
+    var category by remember { mutableStateOf("Tümü") }
 
     LaunchedEffect(Unit) {
-        savedRecipes = recipeDao.getAllRecipes()
+        recipes = database.recipeDao().getAllRecipes()
+        engagements = database.recipeEngagementDao().getAll().associateBy { it.recipeId }
     }
 
-    val categories = listOf(
-        "Tümü",
-        "Kahvaltı",
-        "Öğle Yemeği",
-        "Akşam Yemeği",
-        "Tatlı",
-        "Fit",
-        "Atıştırmalık"
-    )
-
-    val filteredRecipes = savedRecipes.filter { recipe ->
-
-        val matchesSearch =
-            recipe.name.contains(searchText, ignoreCase = true)
-
-        val matchesCategory =
-            selectedCategory == "Tümü" ||
-                    recipe.category == selectedCategory
-
-        matchesSearch && matchesCategory
+    val searched = recipes.filter {
+        (it.name.contains(search, ignoreCase = true) ||
+            it.category.contains(search, ignoreCase = true) ||
+            it.ingredients.contains(search, ignoreCase = true)) &&
+            (category == "Tümü" || it.category == category)
     }
+    val shown = when (tab) {
+        0 -> searched.sortedWith(
+            compareByDescending<Recipe> { engagements[it.id]?.myRating ?: 0 }
+                .thenByDescending { engagements[it.id]?.isFavorite == true }
+        )
+        1 -> searched.sortedWith(
+            compareByDescending<Recipe> { engagements[it.id]?.averageRating ?: 0.0 }
+                .thenByDescending { engagements[it.id]?.ratingCount ?: 0 }
+        )
+        else -> searched.sortedByDescending { it.id }
+    }
+    val categories = listOf("Tümü", "Kahvaltı", "Öğle Yemeği", "Akşam Yemeği", "Tatlı", "Fit", "Atıştırmalık")
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8F6F2))
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp)
+        Modifier.fillMaxSize().background(exploreCream)
+            .verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)
     ) {
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        Text(
-            text = "Keşfet 🔍",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = "Yeni lezzetler keşfet",
-            fontSize = 15.sp,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
+        Spacer(Modifier.height(25.dp))
+        Text("Keşfet", fontSize = 31.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+        Spacer(Modifier.height(5.dp))
+        Text("Bugün hangi lezzeti keşfedeceksin?", fontSize = 14.sp, color = Color(0xFF85877F))
+        Spacer(Modifier.height(17.dp))
         OutlinedTextField(
-            value = searchText,
-            onValueChange = {
-                searchText = it
-            },
+            value = search, onValueChange = { search = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text("Tarif ara...")
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Tarif ara"
-                )
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(18.dp),
+            placeholder = { Text("Tarif, malzeme veya kategori ara...", fontSize = 13.sp) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = exploreGreen) },
+            singleLine = true, shape = RoundedCornerShape(20.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedBorderColor = Color(0xFF7A9E7E),
-                unfocusedBorderColor = Color(0xFFE0E0E0)
+                focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
+                focusedBorderColor = exploreGreen, unfocusedBorderColor = Color(0xFFE7E5DF)
             )
         )
-
-        Spacer(modifier = Modifier.height(22.dp))
-
+        Spacer(Modifier.height(20.dp))
         Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
-
-            categories.forEach { category ->
-
-                FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = {
-                        selectedCategory = category
-                    },
-                    label = {
-                        Text(category)
-                    }
-                )
+            listOf("✨ Sana Özel", "🔥 Trendler", "🌿 Yeni Tarifler").forEachIndexed { index, label ->
+                Box(
+                    Modifier.clip(RoundedCornerShape(24.dp))
+                        .background(if (tab == index) exploreGreen else Color.White)
+                        .clickable { tab = index }
+                        .padding(horizontal = 17.dp, vertical = 13.dp)
+                ) {
+                    Text(label, color = if (tab == index) Color.White else exploreInk,
+                        fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        // -----------------------------
-        // KAYITLI TARİFLER
-        // -----------------------------
-
+        Spacer(Modifier.height(27.dp))
         Text(
-            text = "🍽️ Senin Tariflerin",
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
+            when (tab) {
+                0 -> "Sana Özel Öneriler ✨"
+                1 -> "🔥 Trend Tarifler"
+                else -> "🌿 Yeni Tarifler"
+            },
+            fontSize = 23.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black
         )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        if (filteredRecipes.isEmpty()) {
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFDDE9DF)
-                )
-            ) {
-
-                Text(
-                    text = "Henüz bu alanda tarif bulunmuyor.",
-                    modifier = Modifier.padding(18.dp),
-                    fontSize = 14.sp,
-                    color = Color(0xFF55645A)
-                )
-            }
-
+        Spacer(Modifier.height(5.dp))
+        Text(
+            when (tab) {
+                0 -> "Puanlarına ve favorilerine göre sıralandı."
+                1 -> "Tariflerin aldığı puanlara göre sıralandı."
+                else -> "En son eklenen tariflere göz at."
+            },
+            fontSize = 12.sp, color = Color(0xFF777D73)
+        )
+        Spacer(Modifier.height(15.dp))
+        if (shown.isEmpty()) {
+            ExploreEmpty("Henüz bu bölümde tarif bulunmuyor.")
         } else {
-
-            filteredRecipes.forEach { recipe ->
-
-                SavedRecipeCard(
-                    recipe = recipe,
-                    onClick = {
-                        onRecipeClick(recipe)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                shown.forEach { recipe ->
+                    ExplorePhotoCard(recipe, engagements[recipe.id], onClick = { onRecipeClick(recipe) })
+                }
             }
         }
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        // -----------------------------
-        // TREND TARİFLER
-        // -----------------------------
-
-        Text(
-            text = "🔥 Trend Tarifler",
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        RecipeCard(
-            imageRes = R.drawable.pasta_chicken,
-            title = "Kremalı Tavuklu Makarna",
-            description = "Pratik • 30 dk",
-            rating = "⭐ 4.9",
-            likes = "❤️ 1.2K"
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        RecipeCard(
-            imageRes = R.drawable.pasta_chicken,
-            title = "San Sebastian Cheesecake",
-            description = "Tatlı • 45 dk",
-            rating = "⭐ 4.8",
-            likes = "❤️ 2.6K"
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        // -----------------------------
-        // DÜNYA MUTFAĞI
-        // -----------------------------
-
-        Text(
-            text = "🌍 Dünya Mutfağı",
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        WorldCuisineCard(
-            flag = "🇹🇷",
-            country = "Türkiye",
-            description = "Mantı, kebap, sarma ve daha fazlası"
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        WorldCuisineCard(
-            flag = "🇮🇹",
-            country = "İtalya",
-            description = "Pizza, makarna ve klasik İtalyan lezzetleri"
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        WorldCuisineCard(
-            flag = "🇯🇵",
-            country = "Japonya",
-            description = "Sushi, ramen ve geleneksel Japon mutfağı"
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(Modifier.height(24.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(23.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3EBD5))
+        ) {
+            Row(
+                Modifier.fillMaxWidth().padding(17.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("🥬", fontSize = 38.sp)
+                Spacer(Modifier.width(13.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Elindeki Malzemelerle Keşfet", fontWeight = FontWeight.ExtraBold,
+                        color = exploreInk, fontSize = 16.sp)
+                    Spacer(Modifier.height(5.dp))
+                    Text("Malzemeni arat, uygun tarifleri bul.",
+                        color = exploreInk, fontSize = 12.sp)
+                }
+                Text("✨", fontSize = 24.sp)
+            }
+        }
+        Spacer(Modifier.height(25.dp))
+        Text("🔥 Bu Hafta Popüler", fontSize = 22.sp,
+            fontWeight = FontWeight.ExtraBold, color = Color.Black)
+        Spacer(Modifier.height(13.dp))
+        val popular = searched.filter { (engagements[it.id]?.ratingCount ?: 0) > 0 }
+            .sortedByDescending { engagements[it.id]?.averageRating ?: 0.0 }
+        if (popular.isEmpty()) {
+            ExploreEmpty("Puanlanan tarifler burada görünecek.")
+        } else {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                popular.forEachIndexed { index, recipe ->
+                    Box {
+                        ExplorePhotoCard(recipe, engagements[recipe.id]) { onRecipeClick(recipe) }
+                        Box(Modifier.padding(7.dp).size(30.dp).clip(CircleShape)
+                            .background(Color(0xFFFFCA40)), contentAlignment = Alignment.Center) {
+                            Text((index + 1).toString(), fontWeight = FontWeight.ExtraBold)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(27.dp))
+        Text("🥬 Temalara Göre Keşfet", fontSize = 22.sp,
+            fontWeight = FontWeight.ExtraBold, color = Color.Black)
+        Spacer(Modifier.height(12.dp))
+        Row(Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            categories.drop(1).forEachIndexed { index, name ->
+                val shades = listOf(0xFFE4EDD6, 0xFFFFEAD2, 0xFFE8EBD4, 0xFFF5E2D8)
+                Column(
+                    Modifier.width(132.dp).clip(RoundedCornerShape(20.dp))
+                        .background(Color(shades[index % shades.size]))
+                        .clickable { category = if (category == name) "Tümü" else name }
+                        .padding(vertical = 19.dp, horizontal = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(listOf("🥐", "🍲", "🍝", "🍰", "🥗", "🥪")[index], fontSize = 32.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Text(name, fontWeight = FontWeight.Bold, color = exploreInk,
+                        fontSize = 13.sp, maxLines = 1)
+                    if (category == name) Text("✓ Seçili", color = exploreGreen, fontSize = 11.sp)
+                }
+            }
+        }
+        Spacer(Modifier.height(30.dp))
     }
 }
 
 @Composable
-private fun SavedRecipeCard(
+private fun ExplorePhotoCard(
     recipe: Recipe,
+    engagement: RecipeEngagement?,
     onClick: () -> Unit
 ) {
-
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onClick()
-            },
+        Modifier.width(182.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 3.dp
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-
-            if (recipe.imageUri != null) {
-
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        recipe.imageUri
-                    ),
-                    contentDescription = recipe.name,
-                    modifier = Modifier
-                        .width(110.dp)
-                        .height(95.dp),
-                    contentScale = ContentScale.Crop
-                )
-
-            } else {
-
-                Image(
-                    painter = painterResource(
-                        id = R.drawable.pasta_chicken
-                    ),
-                    contentDescription = recipe.name,
-                    modifier = Modifier
-                        .width(110.dp)
-                        .height(95.dp),
-                    contentScale = ContentScale.Crop
-                )
+        Column {
+            Box(Modifier.fillMaxWidth().height(157.dp)) {
+                if (!recipe.imageUri.isNullOrBlank()) {
+                    Image(
+                        painter = rememberAsyncImagePainter(recipe.imageUri),
+                        contentDescription = recipe.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(Modifier.fillMaxSize().background(Color(0xFFDCE6D5)),
+                        contentAlignment = Alignment.Center) {
+                        Text("🍽️", fontSize = 44.sp)
+                    }
+                }
+                Box(
+                    Modifier.align(Alignment.BottomStart).padding(8.dp)
+                        .clip(RoundedCornerShape(13.dp)).background(Color(0xFFFCE8AE))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    val score = engagement?.averageRating ?: 0.0
+                    Text(if ((engagement?.ratingCount ?: 0) > 0)
+                        "⭐ " + String.format(java.util.Locale.getDefault(), "%.1f", score)
+                    else "Yeni tarif", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+                if (engagement?.isFavorite == true) {
+                    Text("🍲", modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                        .clip(CircleShape).background(Color.White).padding(6.dp), fontSize = 17.sp)
+                }
             }
-
-            Column(
-                modifier = Modifier.padding(start = 14.dp)
-            ) {
-
-                Text(
-                    text = recipe.name,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2F3E34)
-                )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Text(
-                    text = recipe.category,
-                    fontSize = 13.sp,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Text(
-                    text = "⏱️ ${recipe.preparationTime}   🍽️ ${recipe.servings}",
-                    fontSize = 13.sp,
-                    color = Color(0xFF55645A)
-                )
+            Column(Modifier.padding(11.dp)) {
+                Text(recipe.name, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                    color = exploreInk, maxLines = 2, minLines = 2,
+                    overflow = TextOverflow.Ellipsis, lineHeight = 18.sp)
+                Spacer(Modifier.height(8.dp))
+                Text("◷ " + recipe.preparationTime, fontSize = 12.sp,
+                    color = Color(0xFF626B61), maxLines = 1)
             }
         }
     }
 }
 
 @Composable
-private fun RecipeCard(
-    imageRes: Int,
-    title: String,
-    description: String,
-    rating: String,
-    likes: String
-) {
-
+private fun ExploreEmpty(message: String) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 3.dp
-        )
+        Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = title,
-                modifier = Modifier
-                    .width(110.dp)
-                    .height(95.dp),
-                contentScale = ContentScale.Crop
-            )
-
-            Column(
-                modifier = Modifier.padding(start = 14.dp)
-            ) {
-
-                Text(
-                    text = title,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2F3E34)
-                )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Text(
-                    text = description,
-                    fontSize = 13.sp,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "$rating     $likes",
-                    fontSize = 13.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorldCuisineCard(
-    flag: String,
-    country: String,
-    description: String
-) {
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFDDE9DF)
-        )
-    ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp)
-        ) {
-
-            Text(
-                text = flag,
-                fontSize = 35.sp
-            )
-
-            Column(
-                modifier = Modifier.padding(start = 15.dp)
-            ) {
-
-                Text(
-                    text = country,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2F3E34)
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = description,
-                    fontSize = 13.sp,
-                    color = Color(0xFF55645A)
-                )
-            }
-        }
+        Text(message, Modifier.padding(19.dp), color = Color(0xFF6E786C), fontSize = 13.sp)
     }
 }
