@@ -65,7 +65,7 @@ import kotlinx.coroutines.launch
 private enum class PersonalRecipeFilter(
     val label: String
 ) {
-    LIKED("Beğendiklerim"),
+    LIKED("Beğendiklerim (4–5 yıldız)"),
     FAVORITED("Favorilerim")
 }
 
@@ -73,7 +73,7 @@ private enum class ProfileRecipeSort(
     val label: String
 ) {
     DEFAULT("Varsayılan"),
-    RECEIVED_LIKES("En çok beğenilen tariflerim"),
+    RECEIVED_LIKES("En beğendiklerim (yıldızıma göre)"),
     RECEIVED_FAVORITES("En çok favorilenen tariflerim"),
     COMMENTS_DESC("En çok yorumlanan"),
     COMMENTS_ASC("En az yorumlanan")
@@ -200,9 +200,7 @@ fun ProfileScreen(
                                 when (filter) {
 
                                     PersonalRecipeFilter.LIKED ->
-                                        engagement
-                                            ?.isLiked ==
-                                                true
+                                        (engagement?.myRating ?: 0) >= 4
 
                                     PersonalRecipeFilter.FAVORITED ->
                                         engagement
@@ -224,12 +222,8 @@ fun ProfileScreen(
 
             ProfileRecipeSort.RECEIVED_LIKES ->
                 filteredRecipes
-                    .sortedByDescending {
-                        engagementByRecipe[
-                            it.id
-                        ]?.likeCount
-                            ?: 0
-                    }
+                    .filter { (engagementByRecipe[it.id]?.myRating ?: 0) >= 4 }
+                    .sortedByDescending { engagementByRecipe[it.id]?.myRating ?: 0 }
 
             ProfileRecipeSort.RECEIVED_FAVORITES ->
                 filteredRecipes
