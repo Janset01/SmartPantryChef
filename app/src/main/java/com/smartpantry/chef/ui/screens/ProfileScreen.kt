@@ -195,7 +195,7 @@ fun ProfileScreen(
                 personalFilters
                     .isEmpty() ||
                         personalFilters
-                            .any { filter ->
+                            .all { filter ->
 
                                 when (filter) {
 
@@ -227,11 +227,9 @@ fun ProfileScreen(
 
             ProfileRecipeSort.RECEIVED_FAVORITES ->
                 filteredRecipes
+                    .filter { engagementByRecipe[it.id]?.isFavorite == true }
                     .sortedByDescending {
-                        engagementByRecipe[
-                            it.id
-                        ]?.favoriteCount
-                            ?: 0
+                        engagementByRecipe[it.id]?.favoriteCount ?: 0
                     }
 
             ProfileRecipeSort.COMMENTS_DESC ->
