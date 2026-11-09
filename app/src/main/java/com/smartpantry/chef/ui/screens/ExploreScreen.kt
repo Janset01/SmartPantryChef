@@ -51,7 +51,7 @@ import com.smartpantry.chef.data.RecipeEngagement
 
 private val exploreGreen = Color(0xFF226515)
 private val exploreInk = Color(0xFF27382B)
-private val exploreCream = Color(0xFFF1EEE8)
+private val exploreCream = Color(0xFFF7F8F6)
 
 @Composable
 fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
@@ -126,7 +126,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
             listOf("✨ Sana Özel", "🔥 Trendler", "🌿 Yeni Tarifler").forEachIndexed { index, label ->
                 Box(
                     Modifier.clip(RoundedCornerShape(24.dp))
-                        .background(if (tab == index) exploreGreen else Color(0xFFF9F7F2))
+                        .background(if (tab == index) exploreGreen else Color(0xFFFFFFFF))
                         .clickable { tab = index }
                         .padding(horizontal = 17.dp, vertical = 13.dp)
                 ) {
@@ -182,13 +182,13 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 showAllRecommendations = true
             },
             shape = RoundedCornerShape(19.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3EAD9)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F1E2)),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth().background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFFEAEDE2), Color(0xFFE3EAD9), Color(0xFFDCE7D0))
+                        listOf(Color(0xFFF0F6ED), Color(0xFFE6F1E2), Color(0xFFDDEBD7))
                     )
                 ).padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -299,7 +299,7 @@ private fun ExplorePhotoCard(
                 }
                 Box(
                     Modifier.align(Alignment.BottomStart).padding(8.dp)
-                        .clip(RoundedCornerShape(13.dp)).background(Color(0xFFE8E4CE))
+                        .clip(RoundedCornerShape(13.dp)).background(Color(0xFFE6F0DE))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     val score = engagement?.averageRating ?: 0.0
