@@ -51,7 +51,7 @@ import com.smartpantry.chef.data.RecipeEngagement
 
 private val exploreGreen = Color(0xFF226515)
 private val exploreInk = Color(0xFF27382B)
-private val exploreCream = Color(0xFFFFF8ED)
+private val exploreCream = Color(0xFFFAF6EF)
 
 @Composable
 fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
@@ -181,39 +181,38 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 category = "Tümü"
                 showAllRecommendations = true
             },
-            shape = RoundedCornerShape(23.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFDDEBC4)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            shape = RoundedCornerShape(19.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F3DF)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth().background(
-                    Brush.linearGradient(listOf(Color(0xFFF5F6C6), Color(0xFFC7E894), Color(0xFF7DAE43)))
-                ).padding(horizontal = 16.dp, vertical = 20.dp),
+                    Brush.horizontalGradient(
+                        listOf(Color(0xFFF8F4DF), Color(0xFFF0F3DF), Color(0xFFE1EBD0))
+                    )
+                ).padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(Modifier.width(76.dp).height(91.dp), contentAlignment = Alignment.Center) {
-                    Box(Modifier.size(69.dp).clip(RoundedCornerShape(17.dp))
-                        .background(Color(0xFFF6FAE9)), contentAlignment = Alignment.Center) {
-                        Text("🧊", fontSize = 44.sp)
-                    }
-                    Text("🥕🥬", fontSize = 21.sp,
-                        modifier = Modifier.align(Alignment.BottomStart))
+                Box(Modifier.width(58.dp).height(59.dp), contentAlignment = Alignment.Center) {
+                    Text("🥕🥬", fontSize = 26.sp, modifier = Modifier.align(Alignment.BottomStart))
+                    Text("🧊", fontSize = 34.sp, modifier = Modifier.align(Alignment.TopEnd))
                 }
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(9.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Elindeki Malzemelerle Keşfet ✨", fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF173E17), fontSize = 16.sp, lineHeight = 20.sp)
-                    Spacer(Modifier.height(6.dp))
+                    Text("Elindeki Malzemelerle Keşfet", fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF1B341C), fontSize = 13.sp, lineHeight = 16.sp)
+                    Spacer(Modifier.height(3.dp))
                     Text(if (ingredientMode) "Malzemeni yaz, tarifleri keşfet."
                         else "Buzdolabındaki malzemelerle tarif bul.",
-                        color = Color(0xFF365B30), fontSize = 12.sp)
+                        color = Color(0xFF52664D), fontSize = 10.sp, lineHeight = 13.sp)
                 }
+                Spacer(Modifier.width(6.dp))
                 Box(
-                    Modifier.size(42.dp).clip(CircleShape)
-                        .background(Brush.verticalGradient(listOf(Color(0xFF378C17), Color(0xFF0C450B)))),
+                    Modifier.size(34.dp).clip(CircleShape)
+                        .background(Color(0xFF236817)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("➜", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("➜", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
