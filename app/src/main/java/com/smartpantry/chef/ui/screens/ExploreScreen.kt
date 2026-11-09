@@ -51,7 +51,8 @@ import com.smartpantry.chef.data.RecipeEngagement
 
 private val exploreGreen = Color(0xFF226515)
 private val exploreInk = Color(0xFF27382B)
-private val exploreCream = Color(0xFFF7F8F6)
+private val exploreCream = Color(0xFFFFFAF5)
+private val exploreCard = Color(0xFFFFFDF9)
 
 @Composable
 fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
@@ -144,7 +145,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                     else -> "🌿 Yeni Tarifler"
                 },
                 modifier = Modifier.weight(1f),
-                fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black
+                fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black
             )
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
                 showAllRecommendations = !showAllRecommendations
@@ -157,7 +158,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 1 -> "Tariflerin aldığı puanlara göre sıralandı."
                 else -> "En son eklenen tariflere göz at."
             },
-            fontSize = 12.sp, color = Color(0xFF777D73)
+            fontSize = 13.sp, color = Color(0xFF5F695D)
         )
         Spacer(Modifier.height(15.dp))
         if (shown.isEmpty()) {
@@ -234,7 +235,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 (if (showAllPopular) popular else popular.take(5)).forEachIndexed { index, recipe ->
                     Box {
-                        ExplorePhotoCard(recipe, engagements[recipe.id]) { onRecipeClick(recipe) }
+                        ExplorePhotoCard(recipe, engagements[recipe.id], isPopular = true) { onRecipeClick(recipe) }
                         Box(Modifier.padding(7.dp).size(30.dp).clip(CircleShape)
                             .background(Color(0xFFFFCA40)), contentAlignment = Alignment.Center) {
                             Text((index + 1).toString(), fontWeight = FontWeight.ExtraBold)
@@ -274,16 +275,17 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
 private fun ExplorePhotoCard(
     recipe: Recipe,
     engagement: RecipeEngagement?,
+    isPopular: Boolean = false,
     onClick: () -> Unit
 ) {
     Card(
-        Modifier.width(143.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = exploreCream),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        Modifier.width(146.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(17.dp),
+        colors = CardDefaults.cardColors(containerColor = exploreCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column {
-            Box(Modifier.fillMaxWidth().height(115.dp)) {
+            Box(Modifier.fillMaxWidth().height(if (isPopular) 107.dp else 120.dp)) {
                 if (!recipe.imageUri.isNullOrBlank()) {
                     Image(
                         painter = rememberAsyncImagePainter(recipe.imageUri),
@@ -297,9 +299,9 @@ private fun ExplorePhotoCard(
                         Text("🍽️", fontSize = 36.sp)
                     }
                 }
-                Box(
+                if (!isPopular) Box(
                     Modifier.align(Alignment.BottomStart).padding(8.dp)
-                        .clip(RoundedCornerShape(13.dp)).background(Color(0xFFE6F0DE))
+                        .clip(RoundedCornerShape(13.dp)).background(Color(0xFFFFF5D8))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     val score = engagement?.averageRating ?: 0.0
@@ -312,13 +314,24 @@ private fun ExplorePhotoCard(
                         .clip(CircleShape).background(Color.White).padding(6.dp), fontSize = 17.sp)
                 }
             }
-            Column(Modifier.padding(11.dp)) {
-                Text(recipe.name, fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                    color = exploreInk, maxLines = 2, minLines = 2,
+            Column(Modifier.padding(horizontal = 11.dp, vertical = 10.dp)) {
+                Text(recipe.name, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF172419), maxLines = 2, minLines = 2,
                     overflow = TextOverflow.Ellipsis, lineHeight = 18.sp)
-                Spacer(Modifier.height(5.dp))
-                Text("◷ " + recipe.preparationTime, fontSize = 12.sp,
-                    color = Color(0xFF626B61), maxLines = 1)
+                Spacer(Modifier.height(7.dp))
+                if (isPopular) {
+                    val count = engagement?.ratingCount ?: 0
+                    val score = engagement?.averageRating ?: 0.0
+                    Text(if (count > 0) "⭐ " +
+                        String.format(java.util.Locale.getDefault(), "%.1f", score)
+                        else "☆ Henüz puan yok",
+                        fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2A3628), maxLines = 1)
+                } else {
+                    Text("◷  " + recipe.preparationTime, fontSize = 13.sp,
+                        color = Color(0xFF384438), maxLines = 1,
+                        fontWeight = FontWeight.Medium)
+                }
             }
         }
     }
