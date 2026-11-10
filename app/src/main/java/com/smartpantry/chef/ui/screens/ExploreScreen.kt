@@ -50,11 +50,14 @@ import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
 
-private val exploreGreen = Color(0xFF18570D)
-private val exploreGradient = Brush.verticalGradient(listOf(Color(0xFF328B13), Color(0xFF18570D)))
-private val exploreInk = Color(0xFF27382B)
-private val exploreCream = Color(0xFFF5F2EC)
-private val exploreCard = exploreCream
+private val exploreGreen = Color(0xFFD94A12)
+private val exploreGradient = Brush.verticalGradient(
+    listOf(Color(0xFFFF8C35), Color(0xFFF25B18), Color(0xFFD9410C))
+)
+private val exploreInk = Color(0xFF38231B)
+private val exploreCream = Color(0xFFFFF8F2)
+private val exploreCard = Color(0xFFFFFDF9)
+private val exploreMuted = Color(0xFF766A62)
 
 private fun displayRecipeTitle(name: String): String {
     val locale = java.util.Locale("tr", "TR")
@@ -108,11 +111,11 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
         Spacer(Modifier.height(18.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Keşfet", modifier = Modifier.weight(1f), fontSize = 30.sp,
-                fontWeight = FontWeight.ExtraBold, color = Color(0xFF151A12))
+                fontWeight = FontWeight.ExtraBold, color = exploreInk)
             Box(Modifier.size(44.dp).clip(CircleShape).clickable { searchOpen = !searchOpen },
                 contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.Search, contentDescription = "Tarif ara",
-                    tint = Color(0xFF172918), modifier = Modifier.size(27.dp))
+                    tint = exploreInk, modifier = Modifier.size(27.dp))
             }
         }
         if (searchOpen) {
@@ -125,7 +128,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 singleLine = true, shape = RoundedCornerShape(20.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
-                    focusedBorderColor = exploreGreen, unfocusedBorderColor = Color(0xFFE7E5DF))
+                    focusedBorderColor = exploreGreen, unfocusedBorderColor = Color(0xFFE9DCD2))
             )
         }
         Spacer(Modifier.height(18.dp))
@@ -136,7 +139,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
             listOf("✨ Sana Özel", "🔥 Trendler", "🌿 Yeni Tarifler").forEachIndexed { index, label ->
                 Box(
                     Modifier.clip(RoundedCornerShape(24.dp))
-                        .background(if (tab == index) exploreGradient else Brush.verticalGradient(listOf(Color(0xFFFFFDF9), Color(0xFFF9F7F2))))
+                        .background(if (tab == index) exploreGradient else Brush.verticalGradient(listOf(Color(0xFFFFFFFF), Color(0xFFFFF1E6))))
                         .clickable { tab = index }
                         .padding(horizontal = 17.dp, vertical = 13.dp)
                 ) {
@@ -145,7 +148,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 }
             }
         }
-        Spacer(Modifier.height(27.dp))
+        Spacer(Modifier.height(23.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 when (tab) {
@@ -154,7 +157,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                     else -> "🌿 Yeni Tarifler"
                 },
                 modifier = Modifier.weight(1f),
-                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF151D12)
+                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = exploreInk
             )
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
                 showAllRecommendations = !showAllRecommendations
@@ -167,7 +170,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 1 -> "Tariflerin aldığı puanlara göre sıralandı."
                 else -> "En son eklenen tariflere göz at."
             },
-            fontSize = 13.sp, color = Color(0xFF5F695D)
+            fontSize = 13.sp, color = exploreMuted
         )
         Spacer(Modifier.height(15.dp))
         if (shown.isEmpty()) {
@@ -182,7 +185,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 }
             }
         }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(21.dp))
         Card(
             modifier = Modifier.fillMaxWidth().clickable {
                 ingredientMode = true
@@ -192,36 +195,36 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 showAllRecommendations = true
             },
             shape = RoundedCornerShape(19.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFD9EDC6)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFDCA5)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth().background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFFF4F8E5), Color(0xFFE2F1C9), Color(0xFFB5DC85))
+                        listOf(Color(0xFFFFF4D9), Color(0xFFFFE4B7), Color(0xFFFFC77F))
                     )
                 ).padding(horizontal = 11.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(Modifier.width(49.dp).height(49.dp), contentAlignment = Alignment.Center) {
-                    Text("🥕🥬", fontSize = 22.sp, modifier = Modifier.align(Alignment.BottomStart))
+                    Text("🥕🍅", fontSize = 22.sp, modifier = Modifier.align(Alignment.BottomStart))
                     Text("🧊", fontSize = 29.sp, modifier = Modifier.align(Alignment.TopEnd))
                 }
                 Spacer(Modifier.width(9.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Elindeki Malzemelerle Keşfet", fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF173D17), fontSize = 13.sp, lineHeight = 16.sp)
+                        color = Color(0xFF432414), fontSize = 13.sp, lineHeight = 16.sp)
                     Spacer(Modifier.height(3.dp))
                     Text(if (ingredientMode) "Malzemeni yaz, tarifleri keşfet."
                         else "Buzdolabındaki malzemelerle tarif bul.",
-                        color = Color(0xFF365B31), fontSize = 10.sp, lineHeight = 12.sp)
+                        color = Color(0xFF795038), fontSize = 10.sp, lineHeight = 12.sp)
                 }
                 Spacer(Modifier.width(6.dp))
                 Box(
                     Modifier.size(35.dp)
                         .shadow(4.dp, CircleShape)
                         .clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(Color(0xFF45A321), Color(0xFF17610C)))),
+                        .background(Brush.linearGradient(listOf(Color(0xFFFF8C27), Color(0xFFEC510E), Color(0xFFC9380B)))),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("➜", fontSize = 23.sp, fontWeight = FontWeight.ExtraBold,
@@ -229,10 +232,10 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 }
             }
         }
-        Spacer(Modifier.height(25.dp))
+        Spacer(Modifier.height(23.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("🔥 Bu Hafta Popüler", modifier = Modifier.weight(1f),
-                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF151D12))
+                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = exploreInk)
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
                 showAllPopular = !showAllPopular
             }, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = exploreGreen)
@@ -249,7 +252,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                     Box {
                         ExplorePhotoCard(recipe, engagements[recipe.id], isPopular = true) { onRecipeClick(recipe) }
                         Box(Modifier.padding(7.dp).size(30.dp).clip(CircleShape)
-                            .background(Color(0xFFFFD329)), contentAlignment = Alignment.Center) {
+                            .background(Color(0xFFFFC64D)), contentAlignment = Alignment.Center) {
                             Text((index + 1).toString(), fontWeight = FontWeight.ExtraBold)
                         }
                     }
@@ -258,12 +261,12 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
         }
         Spacer(Modifier.height(27.dp))
         Text("🥬 Temalara Göre Keşfet", fontSize = 22.sp,
-            fontWeight = FontWeight.ExtraBold, color = Color.Black)
+            fontWeight = FontWeight.ExtraBold, color = exploreInk)
         Spacer(Modifier.height(12.dp))
         Row(Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             categories.drop(1).forEachIndexed { index, name ->
-                val shades = listOf(0xFFDDE5D6, 0xFFE9DFD1, 0xFFD8E3D9, 0xFFE8DBD8)
+                val shades = listOf(0xFFFFE5CC, 0xFFFFD9BE, 0xFFFFEBD6, 0xFFF5DCD0)
                 Column(
                     Modifier.width(132.dp).clip(RoundedCornerShape(20.dp))
                         .background(Color(shades[index % shades.size]))
@@ -292,9 +295,9 @@ private fun ExplorePhotoCard(
 ) {
     Card(
         Modifier.width(if (isPopular) 112.dp else 116.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(15.dp),
         colors = CardDefaults.cardColors(containerColor = exploreCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
             Box(Modifier.fillMaxWidth().height(if (isPopular) 98.dp else 103.dp)) {
@@ -306,21 +309,21 @@ private fun ExplorePhotoCard(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Box(Modifier.fillMaxSize().background(Color(0xFFDFE4D6)),
+                    Box(Modifier.fillMaxSize().background(Color(0xFFF8E7D7)),
                         contentAlignment = Alignment.Center) {
                         Text("🍽️", fontSize = 36.sp)
                     }
                 }
                 if (!isPopular) Box(
                     Modifier.align(Alignment.BottomStart).padding(7.dp)
-                        .clip(RoundedCornerShape(13.dp)).background(Color(0xFFFFF2CC))
+                        .clip(RoundedCornerShape(13.dp)).background(Color(0xFFFFE7B4))
                         .padding(horizontal = 9.dp, vertical = 5.dp)
                 ) {
                     val score = engagement?.averageRating ?: 0.0
                     Text(if ((engagement?.ratingCount ?: 0) > 0)
                         "⭐ " + String.format(java.util.Locale.getDefault(), "%.1f", score)
                     else "Yeni tarif", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF20271C))
+                        color = Color(0xFF402A1D))
                 }
                 if (engagement?.isFavorite == true) {
                     Text("🥣", modifier = Modifier.align(Alignment.TopEnd).padding(5.dp)
@@ -330,7 +333,7 @@ private fun ExplorePhotoCard(
             Column(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
                 Text(displayRecipeTitle(recipe.name), fontSize = 14.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF152516), maxLines = 2, minLines = 2,
+                    color = Color(0xFF2B1D16), maxLines = 2, minLines = 2,
                     overflow = TextOverflow.Ellipsis, lineHeight = 17.sp)
                 Spacer(Modifier.height(5.dp))
                 if (isPopular) {
@@ -340,10 +343,10 @@ private fun ExplorePhotoCard(
                         String.format(java.util.Locale.getDefault(), "%.1f", score)
                         else "☆ Henüz puan yok",
                         fontSize = 13.sp, fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF273B22), maxLines = 1)
+                        color = Color(0xFF493026), maxLines = 1)
                 } else {
                     Text("◷  " + recipe.preparationTime, fontSize = 12.sp,
-                        color = Color(0xFF354B32), maxLines = 1,
+                        color = Color(0xFF6B5547), maxLines = 1,
                         fontWeight = FontWeight.SemiBold)
                 }
             }
@@ -355,8 +358,8 @@ private fun ExplorePhotoCard(
 private fun ExploreEmpty(message: String) {
     Card(
         Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = exploreCard)
     ) {
-        Text(message, Modifier.padding(19.dp), color = Color(0xFF6E786C), fontSize = 13.sp)
+        Text(message, Modifier.padding(19.dp), color = exploreMuted, fontSize = 13.sp)
     }
 }
