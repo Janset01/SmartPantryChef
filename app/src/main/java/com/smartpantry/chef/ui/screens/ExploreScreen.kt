@@ -49,10 +49,11 @@ import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
 
-private val exploreGreen = Color(0xFF226515)
+private val exploreGreen = Color(0xFF18570D)
+private val exploreGradient = Brush.verticalGradient(listOf(Color(0xFF328B13), Color(0xFF18570D)))
 private val exploreInk = Color(0xFF27382B)
-private val exploreCream = Color(0xFFF9F7F3)
-private val exploreCard = Color(0xFFFFFFFF)
+private val exploreCream = Color(0xFFF5F2EC)
+private val exploreCard = exploreCream
 
 @Composable
 fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
@@ -127,7 +128,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
             listOf("✨ Sana Özel", "🔥 Trendler", "🌿 Yeni Tarifler").forEachIndexed { index, label ->
                 Box(
                     Modifier.clip(RoundedCornerShape(24.dp))
-                        .background(if (tab == index) exploreGreen else Color(0xFFFFFFFF))
+                        .background(if (tab == index) exploreGradient else Brush.verticalGradient(listOf(Color(0xFFFFFDF9), Color(0xFFF9F7F2))))
                         .clickable { tab = index }
                         .padding(horizontal = 17.dp, vertical = 13.dp)
                 ) {
@@ -145,7 +146,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                     else -> "🌿 Yeni Tarifler"
                 },
                 modifier = Modifier.weight(1f),
-                fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black
+                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF151D12)
             )
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
                 showAllRecommendations = !showAllRecommendations
@@ -183,33 +184,33 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 showAllRecommendations = true
             },
             shape = RoundedCornerShape(19.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F1E2)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE4EED8)),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth().background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFFF0F6ED), Color(0xFFE6F1E2), Color(0xFFDDEBD7))
+                        listOf(Color(0xFFF1F5E9), Color(0xFFE4EED8), Color(0xFFD9E9C7))
                     )
-                ).padding(horizontal = 12.dp, vertical = 11.dp),
+                ).padding(horizontal = 11.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(Modifier.width(58.dp).height(59.dp), contentAlignment = Alignment.Center) {
-                    Text("🥕🥬", fontSize = 26.sp, modifier = Modifier.align(Alignment.BottomStart))
-                    Text("🧊", fontSize = 34.sp, modifier = Modifier.align(Alignment.TopEnd))
+                Box(Modifier.width(49.dp).height(49.dp), contentAlignment = Alignment.Center) {
+                    Text("🥕🥬", fontSize = 22.sp, modifier = Modifier.align(Alignment.BottomStart))
+                    Text("🧊", fontSize = 29.sp, modifier = Modifier.align(Alignment.TopEnd))
                 }
                 Spacer(Modifier.width(9.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Elindeki Malzemelerle Keşfet", fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF1B341C), fontSize = 13.sp, lineHeight = 16.sp)
+                        color = Color(0xFF1B341C), fontSize = 12.sp, lineHeight = 15.sp)
                     Spacer(Modifier.height(3.dp))
                     Text(if (ingredientMode) "Malzemeni yaz, tarifleri keşfet."
                         else "Buzdolabındaki malzemelerle tarif bul.",
-                        color = Color(0xFF52664D), fontSize = 10.sp, lineHeight = 13.sp)
+                        color = Color(0xFF52664D), fontSize = 10.sp, lineHeight = 12.sp)
                 }
                 Spacer(Modifier.width(6.dp))
                 Box(
-                    Modifier.size(34.dp).clip(CircleShape)
+                    Modifier.size(31.dp).clip(CircleShape)
                         .background(Color(0xFF236817)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -220,7 +221,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
         Spacer(Modifier.height(25.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("🔥 Bu Hafta Popüler", modifier = Modifier.weight(1f),
-                fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF151D12))
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
                 showAllPopular = !showAllPopular
             }, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = exploreGreen)
@@ -279,13 +280,13 @@ private fun ExplorePhotoCard(
     onClick: () -> Unit
 ) {
     Card(
-        Modifier.width(if (isPopular) 126.dp else 138.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(18.dp),
+        Modifier.width(if (isPopular) 112.dp else 116.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = exploreCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            Box(Modifier.fillMaxWidth().height(if (isPopular) 106.dp else 122.dp)) {
+            Box(Modifier.fillMaxWidth().height(if (isPopular) 98.dp else 103.dp)) {
                 if (!recipe.imageUri.isNullOrBlank()) {
                     Image(
                         painter = rememberAsyncImagePainter(recipe.imageUri),
@@ -311,26 +312,26 @@ private fun ExplorePhotoCard(
                         color = Color(0xFF20271C))
                 }
                 if (engagement?.isFavorite == true) {
-                    Text("🥣", modifier = Modifier.align(Alignment.TopEnd).padding(7.dp)
+                    Text("🥣", modifier = Modifier.align(Alignment.TopEnd).padding(5.dp)
                         .clip(CircleShape).background(Color.White).padding(6.dp), fontSize = 17.sp)
                 }
             }
-            Column(Modifier.padding(horizontal = 10.dp, vertical = 10.dp)) {
-                Text(recipe.name, fontSize = if (isPopular) 14.sp else 15.sp,
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
+                Text(recipe.name, fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF101C13), maxLines = 2, minLines = 2,
-                    overflow = TextOverflow.Ellipsis, lineHeight = 18.sp)
-                Spacer(Modifier.height(8.dp))
+                    color = Color(0xFF151B12), maxLines = 2, minLines = 2,
+                    overflow = TextOverflow.Ellipsis, lineHeight = 14.sp)
+                Spacer(Modifier.height(5.dp))
                 if (isPopular) {
                     val count = engagement?.ratingCount ?: 0
                     val score = engagement?.averageRating ?: 0.0
                     Text(if (count > 0) "⭐ " +
                         String.format(java.util.Locale.getDefault(), "%.1f", score)
                         else "☆ Henüz puan yok",
-                        fontSize = 14.sp, fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF24351F), maxLines = 1)
+                        fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                        color = Color(0xFF273B22), maxLines = 1)
                 } else {
-                    Text("◷  " + recipe.preparationTime, fontSize = 13.sp,
+                    Text("◷  " + recipe.preparationTime, fontSize = 11.sp,
                         color = Color(0xFF4C574A), maxLines = 1,
                         fontWeight = FontWeight.SemiBold)
                 }
