@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,6 +56,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
+import kotlinx.coroutines.launch
 
 private val exploreGreen = Color(0xFFD94A12)
 private val exploreGradient = Brush.verticalGradient(
@@ -76,6 +78,7 @@ private fun displayRecipeTitle(name: String): String {
 fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
     val context = LocalContext.current
     val database = remember(context) { AppDatabase.getDatabase(context) }
+    val scope = rememberCoroutineScope()
     var recipes by remember { mutableStateOf<List<Recipe>>(emptyList()) }
     var engagements by remember { mutableStateOf<Map<Int, RecipeEngagement>>(emptyMap()) }
     var search by remember { mutableStateOf("") }
@@ -107,6 +110,12 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 .thenByDescending { engagements[it.id]?.ratingCount ?: 0 }
         )
         else -> searched.sortedByDescending { it.id }
+    }
+    val toggleFavorite: (Recipe) -> Unit = { recipe ->
+        val current = engagements[recipe.id] ?: RecipeEngagement(recipeId = recipe.id)
+        val updated = current.copy(isFavorite = !current.isFavorite)
+        engagements = engagements + (recipe.id to updated)
+        scope.launch { database.recipeEngagementDao().upsert(updated) }
     }
     val categories = listOf("Tümü", "Kahvaltı", "Öğle Yemeği", "Akşam Yemeği", "Tatlı", "Fit", "Atıştırmalık")
 
@@ -187,7 +196,9 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 (if (showAllRecommendations) shown else shown.take(5)).forEach { recipe ->
-                    ExplorePhotoCard(recipe, engagements[recipe.id], onClick = { onRecipeClick(recipe) })
+                    ExplorePhotoCard(recipe, engagements[recipe.id],
+                        onFavoriteClick = { toggleFavorite(recipe) },
+                        onClick = { onRecipeClick(recipe) })
                 }
             }
         }
@@ -253,7 +264,9 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 (if (showAllPopular) popular else popular.take(5)).forEachIndexed { index, recipe ->
                     Box {
-                        ExplorePhotoCard(recipe, engagements[recipe.id], isPopular = true) { onRecipeClick(recipe) }
+                        ExplorePhotoCard(recipe, engagements[recipe.id], isPopular = true,
+                            onFavoriteClick = { toggleFavorite(recipe) },
+                            onClick = { onRecipeClick(recipe) })
                         Box(Modifier.padding(7.dp).size(30.dp).clip(CircleShape)
                             .background(Color(0xFFFFC64D)), contentAlignment = Alignment.Center) {
                             Text((index + 1).toString(), fontWeight = FontWeight.ExtraBold)
@@ -328,6 +341,7 @@ private fun ExplorePhotoCard(
     recipe: Recipe,
     engagement: RecipeEngagement?,
     isPopular: Boolean = false,
+    onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
@@ -364,8 +378,9 @@ private fun ExplorePhotoCard(
                 }
                 Box(
                     Modifier.align(Alignment.TopEnd).padding(5.dp)
-                        .size(28.dp).clip(CircleShape)
-                        .background(Color(0xFFFDFBF8)),
+                        .size(32.dp).clip(CircleShape)
+                        .background(Color(0xFFFDFBF8))
+                        .clickable(onClick = onFavoriteClick),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
