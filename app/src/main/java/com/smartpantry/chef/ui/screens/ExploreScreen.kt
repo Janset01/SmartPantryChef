@@ -1,6 +1,7 @@
 package com.smartpantry.chef.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -37,8 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -194,23 +200,20 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 category = "Tümü"
                 showAllRecommendations = true
             },
-            shape = RoundedCornerShape(19.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFDCA5)),
+            shape = RoundedCornerShape(15.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE0A6)),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth().background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFFFFF4D9), Color(0xFFFFE4B7), Color(0xFFFFC77F))
+                        listOf(Color(0xFFFFF6E3), Color(0xFFFFE5B8), Color(0xFFFFCE82))
                     )
-                ).padding(horizontal = 11.dp, vertical = 8.dp),
+                ).padding(horizontal = 9.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(Modifier.width(49.dp).height(49.dp), contentAlignment = Alignment.Center) {
-                    Text("🥕🍅", fontSize = 22.sp, modifier = Modifier.align(Alignment.BottomStart))
-                    Text("🧊", fontSize = 29.sp, modifier = Modifier.align(Alignment.TopEnd))
-                }
-                Spacer(Modifier.width(9.dp))
+                ExploreCookingPot(Modifier.size(52.dp))
+                Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Elindeki Malzemelerle Keşfet", fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF432414), fontSize = 13.sp, lineHeight = 16.sp)
@@ -221,13 +224,13 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 }
                 Spacer(Modifier.width(6.dp))
                 Box(
-                    Modifier.size(35.dp)
-                        .shadow(4.dp, CircleShape)
+                    Modifier.size(32.dp)
+                        .shadow(5.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Brush.linearGradient(listOf(Color(0xFFFF8C27), Color(0xFFEC510E), Color(0xFFC9380B)))),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("➜", fontSize = 23.sp, fontWeight = FontWeight.ExtraBold,
+                    Text("➜", fontSize = 21.sp, fontWeight = FontWeight.ExtraBold,
                         color = Color.White)
                 }
             }
@@ -287,6 +290,40 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
 }
 
 @Composable
+private fun ExploreCookingPot(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val w = size.width
+        val h = size.height
+        val orange = Color(0xFFF36B0A)
+        val dark = Color(0xFFD94B06)
+        val highlight = Color(0xFFFFA72B)
+        // Steam curls, lid and two handles: a compact illustrated cooking pot.
+        for (x in listOf(0.33f, 0.51f, 0.69f)) {
+            val steam = Path().apply {
+                moveTo(w * x, h * 0.06f)
+                cubicTo(w * (x - 0.13f), h * 0.16f, w * (x + 0.11f), h * 0.19f, w * x, h * 0.32f)
+            }
+            drawPath(steam, Color(0xFFFFA318), style = Stroke(width = w * 0.035f))
+        }
+        drawRoundRect(dark, topLeft = Offset(w * 0.06f, h * 0.49f),
+            size = Size(w * 0.88f, h * 0.16f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.07f))
+        drawRoundRect(orange, topLeft = Offset(w * 0.17f, h * 0.43f),
+            size = Size(w * 0.66f, h * 0.48f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.12f))
+        drawRoundRect(highlight, topLeft = Offset(w * 0.22f, h * 0.48f),
+            size = Size(w * 0.14f, h * 0.35f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.06f))
+        drawRoundRect(Color(0xFFFF9B17), topLeft = Offset(w * 0.12f, h * 0.39f),
+            size = Size(w * 0.76f, h * 0.13f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.07f))
+        drawRoundRect(dark, topLeft = Offset(w * 0.41f, h * 0.32f),
+            size = Size(w * 0.18f, h * 0.08f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.04f))
+    }
+}
+
+@Composable
 private fun ExplorePhotoCard(
     recipe: Recipe,
     engagement: RecipeEngagement?,
@@ -300,7 +337,7 @@ private fun ExplorePhotoCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            Box(Modifier.fillMaxWidth().height(if (isPopular) 98.dp else 103.dp)) {
+            Box(Modifier.fillMaxWidth().height(if (isPopular) 100.dp else 108.dp)) {
                 if (!recipe.imageUri.isNullOrBlank()) {
                     Image(
                         painter = rememberAsyncImagePainter(recipe.imageUri),
@@ -325,17 +362,25 @@ private fun ExplorePhotoCard(
                     else "Yeni tarif", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF402A1D))
                 }
-                if (engagement?.isFavorite == true) {
-                    Text("🥣", modifier = Modifier.align(Alignment.TopEnd).padding(5.dp)
-                        .clip(CircleShape).background(Color.White).padding(6.dp), fontSize = 17.sp)
+                Box(
+                    Modifier.align(Alignment.TopEnd).padding(5.dp)
+                        .size(28.dp).clip(CircleShape)
+                        .background(Color(0xFFFDFBF8)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "🥣",
+                        fontSize = 16.sp,
+                        modifier = Modifier.alpha(if (engagement?.isFavorite == true) 1f else 0.48f)
+                    )
                 }
             }
-            Column(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
-                Text(displayRecipeTitle(recipe.name), fontSize = 14.sp,
+            Column(Modifier.height(65.dp).padding(horizontal = 8.dp, vertical = 6.dp)) {
+                Text(displayRecipeTitle(recipe.name), fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF2B1D16), maxLines = 2, minLines = 2,
-                    overflow = TextOverflow.Ellipsis, lineHeight = 17.sp)
-                Spacer(Modifier.height(5.dp))
+                    overflow = TextOverflow.Ellipsis, lineHeight = 15.sp)
+                Spacer(Modifier.height(3.dp))
                 if (isPopular) {
                     val count = engagement?.ratingCount ?: 0
                     val score = engagement?.averageRating ?: 0.0
