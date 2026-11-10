@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -54,6 +55,13 @@ private val exploreGradient = Brush.verticalGradient(listOf(Color(0xFF328B13), C
 private val exploreInk = Color(0xFF27382B)
 private val exploreCream = Color(0xFFF5F2EC)
 private val exploreCard = exploreCream
+
+private fun displayRecipeTitle(name: String): String {
+    val locale = java.util.Locale("tr", "TR")
+    return name.trim().split(Regex("\\s+")).joinToString(" ") { word ->
+        word.replaceFirstChar { char -> char.titlecase(locale) }
+    }
+}
 
 @Composable
 fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
@@ -184,13 +192,13 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 showAllRecommendations = true
             },
             shape = RoundedCornerShape(19.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE4EED8)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFD9EDC6)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth().background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFFF1F5E9), Color(0xFFE4EED8), Color(0xFFD9E9C7))
+                        listOf(Color(0xFFF4F8E5), Color(0xFFE2F1C9), Color(0xFFB5DC85))
                     )
                 ).padding(horizontal = 11.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -202,19 +210,22 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 Spacer(Modifier.width(9.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Elindeki Malzemelerle Keşfet", fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF1B341C), fontSize = 12.sp, lineHeight = 15.sp)
+                        color = Color(0xFF173D17), fontSize = 13.sp, lineHeight = 16.sp)
                     Spacer(Modifier.height(3.dp))
                     Text(if (ingredientMode) "Malzemeni yaz, tarifleri keşfet."
                         else "Buzdolabındaki malzemelerle tarif bul.",
-                        color = Color(0xFF52664D), fontSize = 10.sp, lineHeight = 12.sp)
+                        color = Color(0xFF365B31), fontSize = 10.sp, lineHeight = 12.sp)
                 }
                 Spacer(Modifier.width(6.dp))
                 Box(
-                    Modifier.size(31.dp).clip(CircleShape)
-                        .background(Color(0xFF236817)),
+                    Modifier.size(35.dp)
+                        .shadow(4.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(Brush.linearGradient(listOf(Color(0xFF45A321), Color(0xFF17610C)))),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("➜", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("➜", fontSize = 23.sp, fontWeight = FontWeight.ExtraBold,
+                        color = Color.White)
                 }
             }
         }
@@ -317,10 +328,10 @@ private fun ExplorePhotoCard(
                 }
             }
             Column(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
-                Text(recipe.name, fontSize = 12.sp,
+                Text(displayRecipeTitle(recipe.name), fontSize = 14.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF151B12), maxLines = 2, minLines = 2,
-                    overflow = TextOverflow.Ellipsis, lineHeight = 14.sp)
+                    color = Color(0xFF152516), maxLines = 2, minLines = 2,
+                    overflow = TextOverflow.Ellipsis, lineHeight = 17.sp)
                 Spacer(Modifier.height(5.dp))
                 if (isPopular) {
                     val count = engagement?.ratingCount ?: 0
@@ -328,11 +339,11 @@ private fun ExplorePhotoCard(
                     Text(if (count > 0) "⭐ " +
                         String.format(java.util.Locale.getDefault(), "%.1f", score)
                         else "☆ Henüz puan yok",
-                        fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp, fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF273B22), maxLines = 1)
                 } else {
-                    Text("◷  " + recipe.preparationTime, fontSize = 11.sp,
-                        color = Color(0xFF4C574A), maxLines = 1,
+                    Text("◷  " + recipe.preparationTime, fontSize = 12.sp,
+                        color = Color(0xFF354B32), maxLines = 1,
                         fontWeight = FontWeight.SemiBold)
                 }
             }
