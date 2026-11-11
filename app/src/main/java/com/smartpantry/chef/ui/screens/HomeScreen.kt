@@ -170,39 +170,7 @@ fun HomeScreen(
                 }
             }
         }
-        // Kısayol paneli: afişin üzerine hafifçe binen, üst köşeleri oval krem yüzey.
-        Column(
-            Modifier.fillMaxWidth().offset(y = (-17).dp)
-                .clip(RoundedCornerShape(topStart = 31.dp, topEnd = 31.dp))
-                .background(homeCream)
-                .padding(start = 14.dp, end = 14.dp, top = 17.dp, bottom = 7.dp)
-        ) {
-            val shortcuts = listOf(
-                Triple("Tariflerim", "♨", onMyRecipesClick),
-                Triple("Buzdolabım", "▣", onPantryClick),
-                Triple("Tarif Ekle", "✚", onAddRecipeClick),
-                Triple("Favoriler", "🍲", onFavoritesClick)
-            )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                shortcuts.forEach { (title, symbol, action) ->
-                    Column(
-                        modifier = Modifier.weight(1f).height(83.dp)
-                            .clip(RoundedCornerShape(17.dp))
-                            .background(Color(0xFFFFE8DA))
-                            .clickable { action() }
-                            .padding(vertical = 11.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(symbol, fontSize = 27.sp, color = homeOrange)
-                        Spacer(Modifier.height(7.dp))
-                        Text(title, fontSize = 11.sp, maxLines = 1,
-                            fontWeight = FontWeight.ExtraBold, color = homeInk)
-                    }
-                }
-            }
-        }
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(18.dp))
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") { onExplore() }
         Spacer(Modifier.height(10.dp))
         val categoryItems = listOf(
