@@ -132,12 +132,24 @@ fun HomeScreen(
                         Text("Tarife Göz At  →", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
                     }
                 }
-            }
-            Row(Modifier.fillMaxWidth().padding(top = 9.dp), horizontalArrangement = Arrangement.Center) {
-                featured.forEachIndexed { index, _ ->
-                    Box(Modifier.padding(horizontal = 3.dp).size(width = if (index == featuredIndex) 19.dp else 7.dp, height = 7.dp)
-                        .clip(CircleShape).background(if (index == featuredIndex) homeOrange else Color(0xFFE9D0C0))
-                        .clickable { featuredIndex = index })
+                // The cream sheet visibly covers the bottom of the hero image.
+                Box(
+                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(26.dp)
+                        .clip(RoundedCornerShape(topStart = 27.dp, topEnd = 27.dp))
+                        .background(homeCream),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(horizontalArrangement = Arrangement.Center) {
+                        featured.forEachIndexed { index, _ ->
+                            Box(
+                                Modifier.padding(horizontal = 4.dp)
+                                    .size(width = if (index == featuredIndex) 18.dp else 7.dp, height = 7.dp)
+                                    .clip(CircleShape)
+                                    .background(if (index == featuredIndex) homeOrange else Color(0xFFE9D0C0))
+                                    .clickable { featuredIndex = index }
+                            )
+                        }
+                    }
                 }
             }
         } else {
@@ -155,10 +167,8 @@ fun HomeScreen(
         }
         Column(
             modifier = Modifier.fillMaxWidth()
-                .offset(y = (-16).dp)
-                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                 .background(homeCream)
-                .padding(top = 18.dp)
+                .padding(top = 10.dp)
         ) {
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") {
             selectedCategory = null
