@@ -187,23 +187,21 @@ fun HomeScreen(
                 Triple("Tarif Ekle", "✚", onAddRecipeClick),
                 Triple("Favoriler", "🍲", onFavoritesClick)
             )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 shortcuts.forEach { (title, symbol, action) ->
-                    Card(
-                        modifier = Modifier.weight(1f).height(88.dp).clickable { action() },
-                        shape = RoundedCornerShape(17.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF4ED)),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    Column(
+                        modifier = Modifier.weight(1f).height(83.dp)
+                            .clip(RoundedCornerShape(17.dp))
+                            .background(Color(0xFFFFE8DA))
+                            .clickable { action() }
+                            .padding(vertical = 11.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Column(
-                            Modifier.fillMaxSize().padding(vertical = 11.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(symbol, fontSize = 28.sp, color = homeOrange)
-                            Text(title, fontSize = 11.sp, maxLines = 1,
-                                fontWeight = FontWeight.ExtraBold, color = homeInk)
-                        }
+                        Text(symbol, fontSize = 27.sp, color = homeOrange)
+                        Spacer(Modifier.height(7.dp))
+                        Text(title, fontSize = 11.sp, maxLines = 1,
+                            fontWeight = FontWeight.ExtraBold, color = homeInk)
                     }
                 }
             }
