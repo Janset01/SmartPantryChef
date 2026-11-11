@@ -153,7 +153,13 @@ fun HomeScreen(
                 }
             }
         }
-        Spacer(Modifier.height(15.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth()
+                .offset(y = (-16).dp)
+                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                .background(homeCream)
+                .padding(top = 18.dp)
+        ) {
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") {
             selectedCategory = null
             onExplore()
@@ -175,7 +181,8 @@ fun HomeScreen(
                 }
             }
         }
-        Spacer(Modifier.height(18.dp))
+        }
+        Spacer(Modifier.height(2.dp))
         HomeSectionTitle("▣", "Günün Menüsü", "Bugün ⌄") {
             selectedDay = (selectedDay + 1) % 3
         }
