@@ -234,7 +234,10 @@ fun MainScreen() {
                             onRecipeClick = { recipe -> selectedRecipe = recipe },
                             onExplore = { selectedIndex = 1 },
                             onCategoryClick = { selectedIndex = 1 },
-                            onPantryClick = { selectedIndex = 3 }
+                            onPantryClick = { selectedIndex = 3 },
+                            onMyRecipesClick = { selectedIndex = 4 },
+                            onAddRecipeClick = { selectedIndex = 2 },
+                            onFavoritesClick = { selectedIndex = 4 }
                         )
 
                         1 -> ExploreScreen(
