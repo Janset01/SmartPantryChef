@@ -1,6 +1,8 @@
 package com.smartpantry.chef.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -76,7 +79,14 @@ fun HomeScreen(
         engagements = engagements + (recipe.id to updated)
         scope.launch { db.recipeEngagementDao().upsert(updated) }
     }
-    Column(Modifier.fillMaxSize().background(homeCream).verticalScroll(rememberScrollState())) {
+    val homeScrollState = rememberScrollState()
+    val heroParallax = (homeScrollState.value * 0.62f).coerceAtMost(290f)
+    val sheetLift by animateFloatAsState(
+        targetValue = if (homeScrollState.value > 12) 1f else 0f,
+        animationSpec = tween(durationMillis = 260),
+        label = "homeSheetLift"
+    )
+    Column(Modifier.fillMaxSize().background(homeCream).verticalScroll(homeScrollState)) {
         Spacer(Modifier.height(12.dp))
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 20.dp),
@@ -100,12 +110,13 @@ fun HomeScreen(
             ) {
                 if (!recipe.imageUri.isNullOrBlank()) {
                     Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
-                        Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        Modifier.fillMaxSize().graphicsLayer { translationY = heroParallax }, contentScale = ContentScale.Crop)
                 } else {
                     Box(Modifier.fillMaxSize().background(
                         Brush.horizontalGradient(listOf(Color(0xFF452114), Color(0xFFB75A26)))))
                 }
-                Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
+                Box(Modifier.fillMaxSize().graphicsLayer { translationY = heroParallax }
+                    .background(Brush.horizontalGradient(
                     listOf(Color(0xF0220F09), Color(0xA12A1209), Color(0x082A1209)))))
                 Column(
                     Modifier.align(Alignment.CenterStart)
@@ -150,6 +161,7 @@ fun HomeScreen(
                 // Decorative wave, drawn directly without clipping the recipe card.
                 Box(
                     Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(31.dp)
+                        .graphicsLayer { translationY = sheetLift * 3f }
                 ) {
                     Canvas(Modifier.fillMaxSize()) {
                         val wavePath = Path().apply {
