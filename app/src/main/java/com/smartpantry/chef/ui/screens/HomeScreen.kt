@@ -258,6 +258,171 @@ fun HomeScreen(
                 }
             }
         }
+
+        Spacer(Modifier.height(27.dp))
+        HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") { onExplore() }
+        Spacer(Modifier.height(10.dp))
+        val categoryItems = listOf(
+            "Ana Yemek" to "🍲", "Tatlı" to "🍰", "Salata" to "🥗",
+            "Çorba" to "🥣", "Kahvaltı" to "🥐", "Atıştırmalık" to "🍪"
+        )
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                .padding(horizontal = 15.dp),
+            horizontalArrangement = Arrangement.spacedBy(9.dp)
+        ) {
+            categoryItems.forEach { (category, emoji) ->
+                Column(
+                    Modifier.width(78.dp).clip(RoundedCornerShape(17.dp))
+                        .background(Color(0xFFFFE8DA))
+                        .clickable { onCategoryClick(category) }
+                        .padding(vertical = 11.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(emoji, fontSize = 27.sp)
+                    Spacer(Modifier.height(7.dp))
+                    Text(category, fontSize = 11.sp, maxLines = 1,
+                        fontWeight = FontWeight.ExtraBold, color = homeInk)
+                }
+            }
+        }
+        Spacer(Modifier.height(23.dp))
+        HomeSectionTitle("▣", "Günün Menüsü", "Bugün ⌄") {
+            selectedDay = (selectedDay + 1) % 3
+        }
+        Spacer(Modifier.height(11.dp))
+        val menuGroups = listOf(
+            "Kahvaltı" to "☀️", "Öğle Yemeği" to "🍽️", "Akşam Yemeği" to "🌙"
+        )
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            menuGroups.forEach { (category, icon) ->
+                val menuRecipe = recipes.firstOrNull { it.category.equals(category, true) }
+                    ?: recipes.firstOrNull {
+                        it.category.contains(category.substringBefore(" "), ignoreCase = true)
+                    }
+                Card(
+                    Modifier.weight(1f).clickable {
+                        if (menuRecipe != null) onRecipeClick(menuRecipe)
+                        else onCategoryClick(category)
+                    },
+                    shape = RoundedCornerShape(17.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF8)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
+                    Column {
+                        Box(
+                            Modifier.fillMaxWidth().height(91.dp)
+                                .background(Color(0xFFFFE5D5)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (!menuRecipe?.imageUri.isNullOrBlank()) {
+                                Image(rememberAsyncImagePainter(menuRecipe?.imageUri),
+                                    category, Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop)
+                            } else {
+                                Text(icon, fontSize = 38.sp)
+                            }
+                        }
+                        Row(
+                            Modifier.fillMaxWidth().padding(horizontal = 5.dp, vertical = 9.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Text(icon, fontSize = 15.sp)
+                            Text(category, fontSize = 11.sp, maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontWeight = FontWeight.ExtraBold, color = homeInk)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(24.dp))
+        HomeSectionTitle("🍂", "İlham Veren Tarifler", "Tümünü Gör ›") { onExplore() }
+        Spacer(Modifier.height(11.dp))
+        val inspiration = recipes.sortedWith(
+            compareByDescending<Recipe> { engagements[it.id]?.averageRating ?: 0.0 }
+                .thenByDescending { it.id }
+        ).take(8)
+        if (inspiration.isEmpty()) {
+            Text("Tarif ekledikçe ilham veren lezzetler burada görünecek.",
+                Modifier.padding(horizontal = 18.dp), fontSize = 13.sp, color = homeMuted)
+        } else {
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 15.dp),
+                horizontalArrangement = Arrangement.spacedBy(11.dp)
+            ) {
+                inspiration.forEach { recipe ->
+                    Box(
+                        Modifier.width(285.dp).height(166.dp)
+                            .clip(RoundedCornerShape(21.dp))
+                            .background(Color(0xFFDDAF91))
+                            .clickable { onRecipeClick(recipe) }
+                    ) {
+                        if (!recipe.imageUri.isNullOrBlank()) {
+                            Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
+                                Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        }
+                        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
+                            listOf(Color.Transparent, Color(0xD92A130A)))))
+                        Column(Modifier.align(Alignment.BottomStart).padding(13.dp)) {
+                            Text(recipe.name.replaceFirstChar { it.uppercase() },
+                                fontSize = 19.sp, fontWeight = FontWeight.ExtraBold,
+                                maxLines = 2, overflow = TextOverflow.Ellipsis, color = Color.White)
+                            Spacer(Modifier.height(6.dp))
+                            val rating = engagements[recipe.id]?.averageRating ?: 0.0
+                            Text(
+                                "⭐ " + String.format(java.util.Locale.US, "%.1f", rating) +
+                                    "   ◷ " + recipe.preparationTime,
+                                fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                        Box(
+                            Modifier.align(Alignment.TopEnd).padding(10.dp).size(37.dp)
+                                .clip(CircleShape).background(Color.White)
+                                .clickable { toggleFavorite(recipe) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(if (engagements[recipe.id]?.isFavorite == true) "🍲" else "🥣",
+                                fontSize = 20.sp)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(21.dp))
+        Card(
+            Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                .clickable { showPlanner = true },
+            shape = RoundedCornerShape(22.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE5D5)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        ) {
+            Row(
+                Modifier.fillMaxWidth().padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("🗓️", fontSize = 30.sp)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Haftalık Yemek Planı", fontSize = 17.sp,
+                        fontWeight = FontWeight.ExtraBold, color = homeInk)
+                    Text("Daha düzenli ve kolay bir mutfak.",
+                        fontSize = 12.sp, color = homeMuted)
+                }
+                Box(
+                    Modifier.size(39.dp).clip(CircleShape).background(homeGradient),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.ArrowForward, null, tint = Color.White)
+                }
+            }
+        }
         Spacer(Modifier.height(28.dp))
     }
     if (showNotifications) {
