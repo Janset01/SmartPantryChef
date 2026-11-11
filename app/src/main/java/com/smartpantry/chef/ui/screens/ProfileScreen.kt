@@ -280,7 +280,7 @@ fun ProfileScreen(
                     .size(78.dp)
                     .clip(CircleShape)
                     .background(
-                        Color(0xFFFFE5D1)
+                        Color(0xFFFFD5AE)
                     ),
                 contentAlignment =
                     Alignment.Center
@@ -302,9 +302,9 @@ fun ProfileScreen(
 
                 Text(
                     text = "@nickname",
-                    fontSize = 22.sp,
+                    fontSize = 23.sp,
                     fontWeight =
-                        FontWeight.Bold,
+                        FontWeight.ExtraBold,
                     color =
                         Color(
                             0xFF38231B
@@ -399,7 +399,7 @@ fun ProfileScreen(
                             Color(0xFFFFFDF9),
                         focusedBorderColor =
                             Color(
-                                0xFFE66B25
+                                0xFFF2631B
                             ),
                         unfocusedBorderColor =
                             Color(
@@ -450,7 +450,7 @@ fun ProfileScreen(
                         CardDefaults.cardColors(
                             containerColor =
                                 Color(
-                                    0xFFFFEBDD
+                                    0xFFFFE1C7
                                 )
                         ),
                     elevation =
@@ -480,7 +480,7 @@ fun ProfileScreen(
                                 FontWeight.SemiBold,
                             color =
                                 Color(
-                                    0xFF9B4C24
+                                    0xFFB44713
                                 )
                         )
 
@@ -615,7 +615,7 @@ fun ProfileScreen(
                                     ProfileRecipeSort.DEFAULT
                                 ) {
                                     Color(
-                                        0xFFFFE5D1
+                                        0xFFFFD5AE
                                     )
                                 } else {
                                     Color(
@@ -1118,7 +1118,7 @@ private fun ActiveFilterPill(
             CardDefaults.cardColors(
                 containerColor =
                     Color(
-                        0xFFFFE6D4
+                        0xFFFFDAB9
                     )
             ),
         elevation =
@@ -1158,10 +1158,11 @@ private fun ProfileRecipeCard(
     Card(
         modifier = Modifier.fillMaxWidth().height(168.dp).clickable { onClick() },
         shape = RoundedCornerShape(17.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF53392C)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8D8B7)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFFFFE7CC), Color(0xFFED995B), Color(0xFF9D421F)))))
             recipe.imageUri?.let { uri ->
                 Image(
                     painter = rememberAsyncImagePainter(uri),
@@ -1173,10 +1174,10 @@ private fun ProfileRecipeCard(
             Box(
                 modifier = Modifier.fillMaxSize().background(
                     androidx.compose.ui.graphics.Brush.verticalGradient(
-                        0.0f to Color(0xFF32180D).copy(alpha = 0.56f),
+                        0.0f to Color(0xFF402014).copy(alpha = 0.45f),
                         0.32f to Color.Transparent,
                         0.52f to Color.Transparent,
-                        1.0f to Color(0xFF27140D).copy(alpha = 0.88f)
+                        1.0f to Color(0xFF371A0D).copy(alpha = 0.93f)
                     )
                 )
             )
@@ -1185,8 +1186,8 @@ private fun ProfileRecipeCard(
             ) {
                 Text(
                     text = ratingStars(engagement.averageRating),
-                    fontSize = 15.sp,
-                    lineHeight = 16.sp,
+                    fontSize = 16.sp,
+                    lineHeight = 17.sp,
                     color = Color(0xFFFFD36D),
                     fontWeight = FontWeight.Bold,
                     maxLines = 1
