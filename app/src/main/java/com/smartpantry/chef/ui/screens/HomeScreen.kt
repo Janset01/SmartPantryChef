@@ -87,20 +87,7 @@ fun HomeScreen(
     Box(Modifier.fillMaxSize().background(homeCream)) {
         // Hero stays fixed behind the scrolling foreground sheet.
         Column(Modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(12.dp))
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("♨", fontSize = 32.sp, color = homeOrange)
-            Spacer(Modifier.width(8.dp))
-            Text("SmartPantryChef", Modifier.weight(1f), fontSize = 21.sp,
-                fontWeight = FontWeight.ExtraBold, color = homeInk)
-            IconButton(onClick = { showNotifications = true }) {
-                Icon(Icons.Default.NotificationsNone, "Bildirimler", tint = homeInk)
-            }
-        }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(124.dp))
         if (featured.isNotEmpty()) {
             val recipe = featured[featuredIndex.coerceIn(0, featured.lastIndex)]
             Box(
@@ -186,13 +173,13 @@ fun HomeScreen(
         }
         }
         Box(
-            Modifier.fillMaxWidth().padding(top = 80.dp).height(344.dp)
+            Modifier.fillMaxWidth().padding(top = 124.dp).height(344.dp)
                 .background(Color.Black.copy(alpha = darkness))
         )
         Column(
             Modifier.fillMaxSize().verticalScroll(homeScrollState)
         ) {
-            Spacer(Modifier.height(365.dp))
+            Spacer(Modifier.height(407.dp))
             Column(
                 Modifier.fillMaxWidth().background(homeCream)
             ) {
@@ -395,6 +382,46 @@ fun HomeScreen(
         }
         Spacer(Modifier.height(28.dp))
             }
+        }
+        // Fixed header masks the scrolling sheet: it cannot cover the brand or search.
+        Column(
+            Modifier.align(Alignment.TopCenter)
+                .fillMaxWidth().background(homeCream)
+                .padding(top = 8.dp, bottom = 10.dp)
+        ) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 18.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("♨", fontSize = 30.sp, color = homeOrange)
+                Spacer(Modifier.width(7.dp))
+                Text("SmartPantryChef", Modifier.weight(1f), fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold, color = homeInk)
+                IconButton(onClick = { showNotifications = true }) {
+                    Icon(Icons.Default.NotificationsNone, "Bildirimler", tint = homeInk)
+                }
+            }
+            OutlinedTextField(
+                value = search,
+                onValueChange = { search = it },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                    .height(52.dp),
+                placeholder = { Text("Tarif, malzeme veya kategori ara...", fontSize = 13.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, null, tint = homeMuted) },
+                trailingIcon = {
+                    IconButton(onClick = { onExplore() }) {
+                        Icon(Icons.Default.Tune, "Filtreler", tint = homeOrange)
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = homeOrange,
+                    unfocusedBorderColor = Color(0xFFECD5C7)
+                )
+            )
         }
     }
     if (showNotifications) {
