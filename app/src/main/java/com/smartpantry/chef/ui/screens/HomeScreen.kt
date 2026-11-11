@@ -132,7 +132,7 @@ fun HomeScreen(
                     }
                 }
                 Row(
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 48.dp),
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = 62.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     featured.forEachIndexed { index, _ ->
@@ -179,7 +179,7 @@ fun HomeScreen(
         Column(
             Modifier.fillMaxSize().verticalScroll(homeScrollState)
         ) {
-            Spacer(Modifier.height(407.dp))
+            Spacer(Modifier.height(455.dp))
             Column(
                 Modifier.fillMaxWidth().background(homeCream)
             ) {
