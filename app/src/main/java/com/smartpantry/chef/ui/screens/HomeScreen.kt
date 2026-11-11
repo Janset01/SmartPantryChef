@@ -158,37 +158,7 @@ fun HomeScreen(
                         )
                     }
                 }
-                // Decorative wave, drawn directly without clipping the recipe card.
-                Box(
-                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(31.dp)
-                ) {
-                    Canvas(Modifier.fillMaxSize()) {
-                        val wavePath = Path().apply {
-                            moveTo(0f, size.height * 0.65f)
-                            cubicTo(
-                                size.width * 0.14f, size.height * 0.05f,
-                                size.width * 0.31f, size.height * 0.92f,
-                                size.width * 0.50f, size.height * 0.46f
-                            )
-                            cubicTo(
-                                size.width * 0.70f, size.height * 0.06f,
-                                size.width * 0.86f, size.height * 0.92f,
-                                size.width, size.height * 0.65f
-                            )
-                            lineTo(size.width, size.height)
-                            lineTo(0f, size.height)
-                            close()
-                        }
-                        drawPath(wavePath, homeCream)
-                    }
-                    Box(
-                        Modifier.align(Alignment.BottomCenter)
-                            .padding(bottom = 5.dp)
-                            .size(width = 38.dp, height = 5.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFE7C4B2))
-                    )
-                }
+
             }
         } else {
             Box(
@@ -216,26 +186,50 @@ fun HomeScreen(
         }
         }
         Box(
-            Modifier.fillMaxWidth().height(440.dp)
+            Modifier.fillMaxWidth().padding(top = 80.dp).height(344.dp)
                 .background(Color.Black.copy(alpha = darkness))
         )
         Column(
             Modifier.fillMaxSize().verticalScroll(homeScrollState)
         ) {
-            Spacer(Modifier.height(400.dp))
+            Spacer(Modifier.height(365.dp))
             Column(
-                Modifier.fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                    .background(homeCream)
-                    .padding(top = 15.dp)
+                Modifier.fillMaxWidth().background(homeCream)
             ) {
+                // One continuous wave is the leading edge of the scrolling content.
+                // It covers the hero as the user scrolls, without a second sheet or handle.
                 Box(
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .size(width = 38.dp, height = 5.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE7C4B2))
-                )
-                Spacer(Modifier.height(17.dp))
+                    Modifier.fillMaxWidth().height(28.dp)
+                        .background(homeCream)
+                ) {
+                    Canvas(
+                        Modifier.fillMaxWidth().height(30.dp)
+                            .align(Alignment.TopCenter)
+                            .offset(y = (-24).dp)
+                    ) {
+                        val wavePath = Path().apply {
+                            moveTo(0f, size.height * 0.60f)
+                            cubicTo(size.width * 0.13f, -size.height * 0.10f,
+                                size.width * 0.34f, size.height * 0.92f,
+                                size.width * 0.50f, size.height * 0.42f)
+                            cubicTo(size.width * 0.68f, -size.height * 0.06f,
+                                size.width * 0.87f, size.height * 0.90f,
+                                size.width, size.height * 0.60f)
+                            lineTo(size.width, size.height)
+                            lineTo(0f, size.height)
+                            close()
+                        }
+                        drawPath(wavePath, homeCream)
+                    }
+                    Box(
+                        Modifier.align(Alignment.TopCenter)
+                            .padding(top = 1.dp)
+                            .size(width = 38.dp, height = 5.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE7C4B2))
+                    )
+                }
+                Spacer(Modifier.height(7.dp))
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") { onExplore() }
         Spacer(Modifier.height(10.dp))
         val categoryItems = listOf(
