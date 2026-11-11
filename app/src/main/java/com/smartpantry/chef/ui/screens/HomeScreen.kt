@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.GenericShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -132,7 +133,7 @@ fun HomeScreen(
                     }
                 }
                 Row(
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 43.dp),
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = 46.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     featured.forEachIndexed { index, _ ->
@@ -145,12 +146,27 @@ fun HomeScreen(
                         )
                     }
                 }
-                // Rounded cream sheet starts on the photo, below the carousel dots.
+                // Soft, continuous wave; no raised corners or exposed backing layer.
                 Box(
                     Modifier.align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .height(25.dp)
-                        .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
+                        .height(28.dp)
+                        .clip(GenericShape { size, _ ->
+                            moveTo(0f, size.height * 0.65f)
+                            cubicTo(
+                                size.width * 0.12f, size.height * 0.02f,
+                                size.width * 0.30f, size.height * 0.10f,
+                                size.width * 0.50f, size.height * 0.42f
+                            )
+                            cubicTo(
+                                size.width * 0.70f, size.height * 0.72f,
+                                size.width * 0.88f, size.height * 0.02f,
+                                size.width, size.height * 0.65f
+                            )
+                            lineTo(size.width, size.height)
+                            lineTo(0f, size.height)
+                            close()
+                        })
                         .background(homeCream)
                 )
             }
