@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,7 +47,10 @@ fun HomeScreen(
     onRecipeClick: (Recipe) -> Unit = {},
     onExplore: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
-    onPantryClick: () -> Unit = {}
+    onPantryClick: () -> Unit = {},
+    onMyRecipesClick: () -> Unit = {},
+    onAddRecipeClick: () -> Unit = {},
+    onFavoritesClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val db = remember(context) { AppDatabase.getDatabase(context) }
@@ -62,230 +67,198 @@ fun HomeScreen(
         recipes = db.recipeDao().getAllRecipes()
         engagements = db.recipeEngagementDao().getAll().associateBy { it.recipeId }
     }
-    val filtered = recipes.filter { recipe ->
-        (recipe.name.contains(search, true) || recipe.category.contains(search, true) ||
-            recipe.ingredients.contains(search, true)) &&
-            (selectedCategory == null || recipe.category.contains(selectedCategory!!, true))
-    }
-    val featured = filtered.sortedByDescending { it.id }.take(5)
-    val inspiration = filtered.sortedWith(
-        compareByDescending<Recipe> { engagements[it.id]?.averageRating ?: 0.0 }
-            .thenByDescending { it.id }
-    ).take(8)
+    val featured = recipes.sortedByDescending { it.id }.take(5)
+    val collectionItems = listOf(
+        Triple("Fırın\nLezzetleri", "🍲", listOf("Fırın", "Ana Yemek")),
+        Triple("Tatlı\nKöşesi", "🍰", listOf("Tatlı"))
+    )
     val toggleFavorite: (Recipe) -> Unit = { recipe ->
         val current = engagements[recipe.id] ?: RecipeEngagement(recipeId = recipe.id)
         val updated = current.copy(isFavorite = !current.isFavorite)
         engagements = engagements + (recipe.id to updated)
         scope.launch { db.recipeEngagementDao().upsert(updated) }
     }
-    val categoryItems = listOf("Ana Yemek" to "🍲", "Tatlı" to "🍰", "Salata" to "🥗", "Çorba" to "🥣", "Kahvaltı" to "🥐", "Atıştırmalık" to "🍪")
     Column(Modifier.fillMaxSize().background(homeCream).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.height(14.dp))
-        Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("👨‍🍳", fontSize = 27.sp, color = homeOrange)
-            Spacer(Modifier.width(6.dp))
-            Text("SmartPantryChef", Modifier.weight(1f), fontSize = 22.sp,
+        Spacer(Modifier.height(12.dp))
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("♨", fontSize = 32.sp, color = homeOrange)
+            Spacer(Modifier.width(8.dp))
+            Text("SmartPantryChef", Modifier.weight(1f), fontSize = 21.sp,
                 fontWeight = FontWeight.ExtraBold, color = homeInk)
             IconButton(onClick = { showNotifications = true }) {
                 Icon(Icons.Default.NotificationsNone, "Bildirimler", tint = homeInk)
             }
         }
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = search, onValueChange = { search = it },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
-            placeholder = { Text("Tarif, malzeme veya kategori ara...", fontSize = 15.sp, color = homeMuted) },
-            leadingIcon = { Icon(Icons.Default.Search, null, tint = homeMuted) },
-            trailingIcon = { Icon(Icons.Default.Tune, "Filtreler", tint = homeOrange,
-                modifier = Modifier.clickable { onExplore() }) },
-            singleLine = true, shape = RoundedCornerShape(22.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
-                focusedBorderColor = homeOrange, unfocusedBorderColor = Color(0xFFEAD6C9))
-        )
         Spacer(Modifier.height(14.dp))
         if (featured.isNotEmpty()) {
             val recipe = featured[featuredIndex.coerceIn(0, featured.lastIndex)]
-            Box(Modifier.fillMaxWidth().padding(horizontal = 18.dp).height(186.dp)
-                .clip(RoundedCornerShape(24.dp)).clickable { onRecipeClick(recipe) }) {
+            Box(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                    .height(344.dp).clip(RoundedCornerShape(27.dp))
+                    .clickable { onRecipeClick(recipe) }
+            ) {
                 if (!recipe.imageUri.isNullOrBlank()) {
-                    Image(rememberAsyncImagePainter(recipe.imageUri), null,
+                    Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
                         Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 } else {
                     Box(Modifier.fillMaxSize().background(
-                        Brush.horizontalGradient(listOf(Color(0xFF6E341C), Color(0xFFDB7B38)))))
+                        Brush.horizontalGradient(listOf(Color(0xFF452114), Color(0xFFB75A26)))))
                 }
                 Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
-                    listOf(Color(0xE826120A), Color(0xB82B150A), Color.Transparent))))
-                Column(Modifier.align(Alignment.CenterStart).padding(16.dp).fillMaxWidth(0.64f)) {
-                    Text("HAFTANIN ÖNE ÇIKANI", fontSize = 12.sp, letterSpacing = 1.4.sp,
-                        fontWeight = FontWeight.Bold, color = Color(0xFFFFDDBF))
-                    Spacer(Modifier.height(12.dp))
-                    Text(recipe.name.replaceFirstChar { it.uppercase() }, fontSize = 24.sp,
-                        lineHeight = 26.sp, maxLines = 3, overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.ExtraBold, color = Color.White)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Mutfağına ilham veren lezzet", fontSize = 14.sp, color = Color.White)
-                    Spacer(Modifier.height(14.dp))
-                    Box(Modifier.clip(RoundedCornerShape(28.dp)).background(homeGradient)
-                        .clickable { onRecipeClick(recipe) }.padding(horizontal = 15.dp, vertical = 10.dp)) {
-                        Text("Tarife Göz At  →", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
-                    }
-                }
-                // The cream sheet visibly covers the bottom of the hero image.
-                Box(
-                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(26.dp)
-                        .clip(RoundedCornerShape(topStart = 27.dp, topEnd = 27.dp))
-                        .background(homeCream),
-                    contentAlignment = Alignment.Center
+                    listOf(Color(0xF0220F09), Color(0xA12A1209), Color(0x082A1209)))))
+                Column(
+                    Modifier.align(Alignment.CenterStart)
+                        .fillMaxWidth(0.78f).padding(start = 21.dp, end = 6.dp, bottom = 20.dp)
                 ) {
-                    Row(horizontalArrangement = Arrangement.Center) {
-                        featured.forEachIndexed { index, _ ->
-                            Box(
-                                Modifier.padding(horizontal = 4.dp)
-                                    .size(width = if (index == featuredIndex) 18.dp else 7.dp, height = 7.dp)
-                                    .clip(CircleShape)
-                                    .background(if (index == featuredIndex) homeOrange else Color(0xFFE9D0C0))
-                                    .clickable { featuredIndex = index }
-                            )
-                        }
+                    Text("HAFTANIN ÖNE ÇIKANI", fontSize = 11.sp, letterSpacing = 1.6.sp,
+                        fontWeight = FontWeight.Bold, color = Color(0xFFFFE9D9))
+                    Spacer(Modifier.height(18.dp))
+                    Text(recipe.name.replaceFirstChar { it.uppercase() },
+                        fontSize = 34.sp, lineHeight = 36.sp,
+                        maxLines = 3, overflow = TextOverflow.Ellipsis,
+                        fontFamily = FontFamily.Serif, fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(Modifier.height(13.dp))
+                    Text("Az malzemeyle\nlezzetli sofralar",
+                        fontSize = 15.sp, lineHeight = 19.sp, color = Color.White)
+                    Spacer(Modifier.height(21.dp))
+                    Box(
+                        Modifier.clip(RoundedCornerShape(28.dp))
+                            .background(homeGradient)
+                            .clickable { onRecipeClick(recipe) }
+                            .padding(horizontal = 18.dp, vertical = 12.dp)
+                    ) {
+                        Text("Tariflere Göz At  →", fontSize = 14.sp,
+                            fontWeight = FontWeight.ExtraBold, color = Color.White)
+                    }
+                }
+                Row(
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    featured.forEachIndexed { index, _ ->
+                        Box(
+                            Modifier.padding(horizontal = 4.dp)
+                                .size(width = if (index == featuredIndex) 16.dp else 7.dp, height = 7.dp)
+                                .clip(CircleShape)
+                                .background(if (index == featuredIndex) homeOrange else Color(0xFFDAB09A))
+                                .clickable { featuredIndex = index }
+                        )
                     }
                 }
             }
         } else {
-            Box(Modifier.fillMaxWidth().padding(horizontal = 18.dp).height(155.dp)
-                .clip(RoundedCornerShape(22.dp)).background(Brush.horizontalGradient(
-                    listOf(Color(0xFF71351D), Color(0xFFE66B25)))).clickable { onExplore() },
-                contentAlignment = Alignment.CenterStart) {
-                Column(Modifier.padding(20.dp)) {
-                    Text("Mutfağında yeni lezzetlere yer aç!", color = Color.White,
-                        fontSize = 21.sp, fontWeight = FontWeight.ExtraBold)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Tarifleri keşfet →", color = Color.White, fontWeight = FontWeight.Bold)
+            Box(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                    .height(310.dp).clip(RoundedCornerShape(27.dp))
+                    .background(Brush.horizontalGradient(listOf(Color(0xFF432117), Color(0xFFB85A29))))
+                    .clickable { onExplore() }
+            ) {
+                Column(Modifier.align(Alignment.CenterStart).padding(24.dp)) {
+                    Text("HAFTANIN ÖNE ÇIKANI", fontSize = 12.sp,
+                        color = Color(0xFFFFE9D9), fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(20.dp))
+                    Text("Pratik\nLezzetler", fontSize = 37.sp, lineHeight = 40.sp,
+                        fontFamily = FontFamily.Serif, fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(Modifier.height(18.dp))
+                    Text("Tarif ekleyerek mutfağını keşfet", color = Color.White)
+                    Spacer(Modifier.height(18.dp))
+                    Text("Tariflere Göz At  →",
+                        Modifier.clip(RoundedCornerShape(28.dp)).background(homeGradient)
+                            .padding(horizontal = 18.dp, vertical = 12.dp),
+                        fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
+        // Kısayol paneli: afişin üzerine hafifçe binen, üst köşeleri oval krem yüzey.
         Column(
-            modifier = Modifier.fillMaxWidth()
+            Modifier.fillMaxWidth().offset(y = (-17).dp)
+                .clip(RoundedCornerShape(topStart = 31.dp, topEnd = 31.dp))
                 .background(homeCream)
-                .padding(top = 10.dp)
+                .padding(start = 14.dp, end = 14.dp, top = 17.dp, bottom = 7.dp)
         ) {
-        HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") {
-            selectedCategory = null
-            onExplore()
-        }
-        Spacer(Modifier.height(9.dp))
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
-            .padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            categoryItems.forEach { (name, emoji) ->
-                Column(Modifier.width(88.dp).clip(RoundedCornerShape(18.dp))
-                    .background(if (selectedCategory == name) Color(0xFFFFCFAB) else Color(0xFFFFE9DB))
-                    .clickable {
-                        selectedCategory = if (selectedCategory == name) null else name
-                        featuredIndex = 0
-                    }.padding(vertical = 13.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(emoji, fontSize = 29.sp)
-                    Spacer(Modifier.height(8.dp))
-                    Text(name, fontSize = 12.sp, maxLines = 1, fontWeight = FontWeight.Bold, color = homeInk)
-                }
-            }
-        }
-        }
-        Spacer(Modifier.height(2.dp))
-        HomeSectionTitle("▣", "Günün Menüsü", "Bugün ⌄") {
-            selectedDay = (selectedDay + 1) % 3
-        }
-        Spacer(Modifier.height(12.dp))
-        val menuGroups = listOf("Kahvaltı" to "☀️", "Öğle Yemeği" to "🍽️", "Akşam Yemeği" to "🌙")
-        Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            menuGroups.forEach { (category, icon) ->
-                val menuRecipe = recipes.firstOrNull { it.category.equals(category, true) }
-                    ?: recipes.firstOrNull { it.category.contains(category.substringBefore(" "), true) }
-                Card(Modifier.weight(1f).clickable {
-                    if (menuRecipe != null) onRecipeClick(menuRecipe) else onCategoryClick(category)
-                }, shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF9)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) {
-                    Column {
-                        Box(Modifier.fillMaxWidth().height(79.dp).background(Color(0xFFFFE4D0)),
-                            contentAlignment = Alignment.Center) {
-                            if (!menuRecipe?.imageUri.isNullOrBlank()) {
-                                Image(rememberAsyncImagePainter(menuRecipe?.imageUri), null,
-                                    Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                            } else Text(icon, fontSize = 36.sp)
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 9.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+            val shortcuts = listOf(
+                Triple("Tariflerim", "♨", onMyRecipesClick),
+                Triple("Buzdolabım", "▣", onPantryClick),
+                Triple("Tarif Ekle", "✚", onAddRecipeClick),
+                Triple("Favoriler", "🍲", onFavoritesClick)
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                shortcuts.forEach { (title, symbol, action) ->
+                    Card(
+                        modifier = Modifier.weight(1f).height(88.dp).clickable { action() },
+                        shape = RoundedCornerShape(17.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF4ED)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    ) {
+                        Column(
+                            Modifier.fillMaxSize().padding(vertical = 11.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(icon, fontSize = 15.sp, color = homeOrange)
-                            Text(category, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold,
-                                maxLines = 1, overflow = TextOverflow.Ellipsis, color = homeInk)
+                            Text(symbol, fontSize = 28.sp, color = homeOrange)
+                            Text(title, fontSize = 11.sp, maxLines = 1,
+                                fontWeight = FontWeight.ExtraBold, color = homeInk)
                         }
                     }
                 }
             }
         }
-        Spacer(Modifier.height(25.dp))
-        HomeSectionTitle("🍂", "İlham Veren Tarifler", "Tümünü Gör ›") { onExplore() }
-        Spacer(Modifier.height(12.dp))
-        if (inspiration.isEmpty()) {
-            Text("Tarif ekledikçe burada ilham veren lezzetler görünecek.",
-                Modifier.padding(horizontal = 18.dp), color = homeMuted, fontSize = 13.sp)
-        } else {
-            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                inspiration.forEach { recipe ->
-                    Box(Modifier.width(270.dp).height(143.dp).clip(RoundedCornerShape(21.dp))
-                        .background(Color(0xFFF1D4BF)).clickable { onRecipeClick(recipe) }) {
-                        if (!recipe.imageUri.isNullOrBlank()) {
-                            Image(rememberAsyncImagePainter(recipe.imageUri), null,
-                                Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        Spacer(Modifier.height(4.dp))
+        HomeSectionTitle("🍂", "Özel Koleksiyonlar", "Tümünü Gör ›") { onExplore() }
+        Spacer(Modifier.height(15.dp))
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+            horizontalArrangement = Arrangement.spacedBy(11.dp)
+        ) {
+            collectionItems.forEach { (title, symbol, categories) ->
+                val recipe = recipes.firstOrNull { item ->
+                    categories.any { category -> item.category.contains(category, ignoreCase = true) }
+                }
+                Box(
+                    Modifier.weight(1f).height(168.dp)
+                        .clip(RoundedCornerShape(21.dp))
+                        .background(Color(0xFFDDB39A))
+                        .clickable {
+                            if (recipe != null) onRecipeClick(recipe)
+                            else onCategoryClick(categories.first())
                         }
-                        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
-                            listOf(Color.Transparent, Color(0xD927150F)))))
-                        Column(Modifier.align(Alignment.BottomStart).padding(13.dp)) {
-                            Text(recipe.name.replaceFirstChar { it.uppercase() }, color = Color.White,
-                                fontSize = 19.sp, fontWeight = FontWeight.ExtraBold,
-                                maxLines = 2, overflow = TextOverflow.Ellipsis)
-                            Spacer(Modifier.height(5.dp))
-                            val rating = engagements[recipe.id]?.averageRating ?: 0.0
-                            Text("⭐ " + String.format(java.util.Locale.US, "%.1f", rating) +
-                                "    ◷ " + recipe.preparationTime,
-                                color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                ) {
+                    if (!recipe?.imageUri.isNullOrBlank()) {
+                        Image(rememberAsyncImagePainter(recipe?.imageUri), title,
+                            Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                    } else {
+                        Box(
+                            Modifier.fillMaxSize().background(Brush.verticalGradient(
+                                listOf(Color(0xFFE8A879), Color(0xFF7A3C27)))),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(symbol, fontSize = 49.sp)
                         }
-                        Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(36.dp)
-                            .clip(CircleShape).background(Color.White)
-                            .clickable { toggleFavorite(recipe) }, contentAlignment = Alignment.Center) {
-                            Text(if (engagements[recipe.id]?.isFavorite == true) "🍲" else "🥣",
-                                fontSize = 19.sp)
-                        }
+                    }
+                    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
+                        listOf(Color.Transparent, Color(0x220F0906), Color(0xD90F0906)))))
+                    Text(
+                        title, Modifier.align(Alignment.BottomStart).padding(12.dp),
+                        fontSize = 21.sp, lineHeight = 23.sp, maxLines = 2,
+                        fontWeight = FontWeight.ExtraBold, color = Color.White
+                    )
+                    Box(
+                        Modifier.align(Alignment.BottomEnd).padding(9.dp).size(31.dp)
+                            .clip(CircleShape).background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.ArrowForward, null, tint = homeOrange,
+                            modifier = Modifier.size(19.dp))
                     }
                 }
             }
         }
-        Spacer(Modifier.height(17.dp))
-        Card(Modifier.fillMaxWidth().padding(horizontal = 18.dp).clickable { showPlanner = true },
-            shape = RoundedCornerShape(21.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE3D0)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) {
-            Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("🗓", fontSize = 29.sp)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text("Haftalık Yemek Planı", fontWeight = FontWeight.ExtraBold,
-                        fontSize = 18.sp, color = homeInk)
-                    Text("Daha düzenli ve kolay bir mutfak.", fontSize = 14.sp, color = homeMuted)
-                }
-                Box(Modifier.size(37.dp).clip(CircleShape).background(homeGradient),
-                    contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.ArrowForward, null, tint = Color.White)
-                }
-            }
-        }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(28.dp))
     }
     if (showNotifications) {
         AlertDialog(onDismissRequest = { showNotifications = false },
