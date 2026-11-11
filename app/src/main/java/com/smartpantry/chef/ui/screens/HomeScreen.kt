@@ -132,7 +132,7 @@ fun HomeScreen(
                     }
                 }
                 Row(
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp),
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = 43.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     featured.forEachIndexed { index, _ ->
@@ -145,6 +145,14 @@ fun HomeScreen(
                         )
                     }
                 }
+                // Rounded cream sheet starts on the photo, below the carousel dots.
+                Box(
+                    Modifier.align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(25.dp)
+                        .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
+                        .background(homeCream)
+                )
             }
         } else {
             Box(
@@ -170,7 +178,7 @@ fun HomeScreen(
                 }
             }
         }
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(8.dp))
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") { onExplore() }
         Spacer(Modifier.height(10.dp))
         val categoryItems = listOf(
