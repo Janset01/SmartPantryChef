@@ -34,10 +34,10 @@ import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
 import kotlinx.coroutines.launch
 
-private val homeInk = Color(0xFF38231B)
+private val homeInk = Color(0xFF201612)
 private val homeOrange = Color(0xFFE94D10)
 private val homeCream = Color(0xFFFFF8F2)
-private val homeMuted = Color(0xFF806C61)
+private val homeMuted = Color(0xFF51453D)
 private val homeGradient = Brush.horizontalGradient(listOf(Color(0xFFFF8D34), Color(0xFFF05A15), Color(0xFFD83D0A)))
 
 @Composable
@@ -84,7 +84,7 @@ fun HomeScreen(
         Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("👨‍🍳", fontSize = 27.sp, color = homeOrange)
             Spacer(Modifier.width(6.dp))
-            Text("SmartPantryChef", Modifier.weight(1f), fontSize = 20.sp,
+            Text("SmartPantryChef", Modifier.weight(1f), fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold, color = homeInk)
             IconButton(onClick = { showNotifications = true }) {
                 Icon(Icons.Default.NotificationsNone, "Bildirimler", tint = homeInk)
@@ -94,7 +94,7 @@ fun HomeScreen(
         OutlinedTextField(
             value = search, onValueChange = { search = it },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
-            placeholder = { Text("Tarif, malzeme veya kategori ara...", fontSize = 13.sp) },
+            placeholder = { Text("Tarif, malzeme veya kategori ara...", fontSize = 15.sp, color = homeMuted) },
             leadingIcon = { Icon(Icons.Default.Search, null, tint = homeMuted) },
             trailingIcon = { Icon(Icons.Default.Tune, "Filtreler", tint = homeOrange,
                 modifier = Modifier.clickable { onExplore() }) },
@@ -118,18 +118,18 @@ fun HomeScreen(
                 Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
                     listOf(Color(0xE826120A), Color(0xB82B150A), Color.Transparent))))
                 Column(Modifier.align(Alignment.CenterStart).padding(16.dp).fillMaxWidth(0.64f)) {
-                    Text("HAFTANIN ÖNE ÇIKANI", fontSize = 10.sp, letterSpacing = 1.4.sp,
+                    Text("HAFTANIN ÖNE ÇIKANI", fontSize = 12.sp, letterSpacing = 1.4.sp,
                         fontWeight = FontWeight.Bold, color = Color(0xFFFFDDBF))
                     Spacer(Modifier.height(12.dp))
                     Text(recipe.name.replaceFirstChar { it.uppercase() }, fontSize = 24.sp,
                         lineHeight = 26.sp, maxLines = 3, overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.ExtraBold, color = Color.White)
                     Spacer(Modifier.height(8.dp))
-                    Text("Mutfağına ilham veren lezzet", fontSize = 12.sp, color = Color.White)
+                    Text("Mutfağına ilham veren lezzet", fontSize = 14.sp, color = Color.White)
                     Spacer(Modifier.height(14.dp))
                     Box(Modifier.clip(RoundedCornerShape(28.dp)).background(homeGradient)
                         .clickable { onRecipeClick(recipe) }.padding(horizontal = 15.dp, vertical = 10.dp)) {
-                        Text("Tarife Göz At  →", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.White)
+                        Text("Tarife Göz At  →", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
                     }
                 }
             }
@@ -160,18 +160,18 @@ fun HomeScreen(
         }
         Spacer(Modifier.height(9.dp))
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
-            .padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            .padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             categoryItems.forEach { (name, emoji) ->
-                Column(Modifier.width(59.dp).clip(RoundedCornerShape(18.dp))
+                Column(Modifier.width(88.dp).clip(RoundedCornerShape(18.dp))
                     .background(if (selectedCategory == name) Color(0xFFFFCFAB) else Color(0xFFFFE9DB))
                     .clickable {
                         selectedCategory = if (selectedCategory == name) null else name
                         featuredIndex = 0
-                    }.padding(vertical = 9.dp),
+                    }.padding(vertical = 13.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(emoji, fontSize = 22.sp)
-                    Spacer(Modifier.height(5.dp))
-                    Text(name, fontSize = 9.sp, maxLines = 1, fontWeight = FontWeight.Bold, color = homeInk)
+                    Text(emoji, fontSize = 29.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Text(name, fontSize = 12.sp, maxLines = 1, fontWeight = FontWeight.Bold, color = homeInk)
                 }
             }
         }
@@ -198,8 +198,8 @@ fun HomeScreen(
                                     Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                             } else Text(icon, fontSize = 36.sp)
                         }
-                        Text(category, Modifier.padding(horizontal = 5.dp, vertical = 8.dp),
-                            fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                        Text(category, Modifier.padding(horizontal = 6.dp, vertical = 9.dp),
+                            fontSize = 12.sp, fontWeight = FontWeight.Bold,
                             maxLines = 1, color = homeInk)
                     }
                 }
@@ -225,13 +225,13 @@ fun HomeScreen(
                             listOf(Color.Transparent, Color(0xD927150F)))))
                         Column(Modifier.align(Alignment.BottomStart).padding(13.dp)) {
                             Text(recipe.name.replaceFirstChar { it.uppercase() }, color = Color.White,
-                                fontSize = 17.sp, fontWeight = FontWeight.ExtraBold,
+                                fontSize = 19.sp, fontWeight = FontWeight.ExtraBold,
                                 maxLines = 2, overflow = TextOverflow.Ellipsis)
                             Spacer(Modifier.height(5.dp))
                             val rating = engagements[recipe.id]?.averageRating ?: 0.0
                             Text("⭐ " + String.format(java.util.Locale.US, "%.1f", rating) +
                                 "    ◷ " + recipe.preparationTime,
-                                color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                         Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(36.dp)
                             .clip(CircleShape).background(Color.White)
@@ -253,8 +253,8 @@ fun HomeScreen(
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Haftalık Yemek Planı", fontWeight = FontWeight.ExtraBold,
-                        fontSize = 16.sp, color = homeInk)
-                    Text("Daha düzenli ve kolay bir mutfak.", fontSize = 12.sp, color = homeMuted)
+                        fontSize = 18.sp, color = homeInk)
+                    Text("Daha düzenli ve kolay bir mutfak.", fontSize = 14.sp, color = homeMuted)
                 }
                 Box(Modifier.size(37.dp).clip(CircleShape).background(homeGradient),
                     contentAlignment = Alignment.Center) {
@@ -284,9 +284,9 @@ private fun HomeSectionTitle(icon: String, title: String, action: String, onActi
         verticalAlignment = Alignment.CenterVertically) {
         Text(icon, fontSize = 23.sp, color = homeOrange)
         Spacer(Modifier.width(8.dp))
-        Text(title, Modifier.weight(1f), fontSize = 17.sp,
+        Text(title, Modifier.weight(1f), fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold, color = homeInk)
-        Text(action, Modifier.clickable { onAction() }, fontSize = 11.sp,
+        Text(action, Modifier.clickable { onAction() }, fontSize = 13.sp,
             fontWeight = FontWeight.Bold, color = homeOrange)
     }
 }
