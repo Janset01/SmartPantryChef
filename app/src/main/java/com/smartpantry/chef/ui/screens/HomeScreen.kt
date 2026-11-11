@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -80,13 +79,14 @@ fun HomeScreen(
         scope.launch { db.recipeEngagementDao().upsert(updated) }
     }
     val homeScrollState = rememberScrollState()
-    val heroParallax = (homeScrollState.value * 0.62f).coerceAtMost(290f)
-    val sheetLift by animateFloatAsState(
-        targetValue = if (homeScrollState.value > 12) 1f else 0f,
-        animationSpec = tween(durationMillis = 260),
-        label = "homeSheetLift"
+    val darkness by animateFloatAsState(
+        targetValue = (homeScrollState.value / 560f).coerceIn(0f, 0.50f),
+        animationSpec = tween(durationMillis = 180),
+        label = "heroDarkness"
     )
-    Column(Modifier.fillMaxSize().background(homeCream).verticalScroll(homeScrollState)) {
+    Box(Modifier.fillMaxSize().background(homeCream)) {
+        // Hero stays fixed behind the scrolling foreground sheet.
+        Column(Modifier.fillMaxWidth()) {
         Spacer(Modifier.height(12.dp))
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 20.dp),
@@ -110,12 +110,12 @@ fun HomeScreen(
             ) {
                 if (!recipe.imageUri.isNullOrBlank()) {
                     Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
-                        Modifier.fillMaxSize().graphicsLayer { translationY = heroParallax }, contentScale = ContentScale.Crop)
+                        Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 } else {
                     Box(Modifier.fillMaxSize().background(
                         Brush.horizontalGradient(listOf(Color(0xFF452114), Color(0xFFB75A26)))))
                 }
-                Box(Modifier.fillMaxSize().graphicsLayer { translationY = heroParallax }
+                Box(Modifier.fillMaxSize()
                     .background(Brush.horizontalGradient(
                     listOf(Color(0xF0220F09), Color(0xA12A1209), Color(0x082A1209)))))
                 Column(
@@ -161,7 +161,6 @@ fun HomeScreen(
                 // Decorative wave, drawn directly without clipping the recipe card.
                 Box(
                     Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(31.dp)
-                        .graphicsLayer { translationY = sheetLift * 3f }
                 ) {
                     Canvas(Modifier.fillMaxSize()) {
                         val wavePath = Path().apply {
@@ -215,7 +214,28 @@ fun HomeScreen(
                 }
             }
         }
-        Spacer(Modifier.height(8.dp))
+        }
+        Box(
+            Modifier.fillMaxWidth().height(440.dp)
+                .background(Color.Black.copy(alpha = darkness))
+        )
+        Column(
+            Modifier.fillMaxSize().verticalScroll(homeScrollState)
+        ) {
+            Spacer(Modifier.height(400.dp))
+            Column(
+                Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                    .background(homeCream)
+                    .padding(top = 15.dp)
+            ) {
+                Box(
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .size(width = 38.dp, height = 5.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE7C4B2))
+                )
+                Spacer(Modifier.height(17.dp))
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") { onExplore() }
         Spacer(Modifier.height(10.dp))
         val categoryItems = listOf(
@@ -380,6 +400,8 @@ fun HomeScreen(
             }
         }
         Spacer(Modifier.height(28.dp))
+            }
+        }
     }
     if (showNotifications) {
         AlertDialog(onDismissRequest = { showNotifications = false },
