@@ -222,7 +222,8 @@ fun HomeScreen(
         val categoryItems = listOf(
             "Ana Yemek" to "🍲", "Salata" to "🥗", "Tatlı" to "🍰",
             "Çorba" to "🥣", "Fırın" to "♨️", "Kahvaltı" to "🥐",
-            "Atıştırmalık" to "🍪"
+            "Atıştırmalık" to "🍪", "Öğle Yemeği" to "🍛",
+            "Brunch" to "🥞", "Akşam Yemeği" to "🍽️", "Fit" to "🥑"
         )
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
