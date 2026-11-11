@@ -180,7 +180,7 @@ fun HomeScreen(
             selectedDay = (selectedDay + 1) % 3
         }
         Spacer(Modifier.height(12.dp))
-        val menuGroups = listOf("Kahvaltı" to "☀", "Öğle Yemeği" to "🍽", "Akşam Yemeği" to "☾")
+        val menuGroups = listOf("Kahvaltı" to "☀️", "Öğle Yemeği" to "🍽️", "Akşam Yemeği" to "🌙")
         Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             menuGroups.forEach { (category, icon) ->
                 val menuRecipe = recipes.firstOrNull { it.category.equals(category, true) }
@@ -198,9 +198,15 @@ fun HomeScreen(
                                     Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                             } else Text(icon, fontSize = 36.sp)
                         }
-                        Text(category, Modifier.padding(horizontal = 6.dp, vertical = 9.dp),
-                            fontSize = 12.sp, fontWeight = FontWeight.Bold,
-                            maxLines = 1, color = homeInk)
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 9.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Text(icon, fontSize = 15.sp, color = homeOrange)
+                            Text(category, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold,
+                                maxLines = 1, overflow = TextOverflow.Ellipsis, color = homeInk)
+                        }
                     }
                 }
             }
