@@ -22,7 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -146,32 +146,29 @@ fun HomeScreen(
                         )
                     }
                 }
-                // Edge-to-edge cream wave; the handle visually invites vertical page scrolling.
+                // Decorative wave, drawn directly without clipping the recipe card.
                 Box(
-                    Modifier.align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(31.dp)
+                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(31.dp)
                 ) {
-                    Box(
-                        Modifier.fillMaxSize()
-                            .clip(GenericShape { size, _ ->
-                                moveTo(0f, size.height * 0.64f)
-                                cubicTo(
-                                    size.width * 0.14f, -size.height * 0.12f,
-                                    size.width * 0.29f, size.height * 0.96f,
-                                    size.width * 0.50f, size.height * 0.45f
-                                )
-                                cubicTo(
-                                    size.width * 0.70f, -size.height * 0.04f,
-                                    size.width * 0.87f, size.height * 0.95f,
-                                    size.width, size.height * 0.64f
-                                )
-                                lineTo(size.width, size.height)
-                                lineTo(0f, size.height)
-                                close()
-                            })
-                            .background(homeCream)
-                    )
+                    Canvas(Modifier.fillMaxSize()) {
+                        val wavePath = Path().apply {
+                            moveTo(0f, size.height * 0.65f)
+                            cubicTo(
+                                size.width * 0.14f, size.height * 0.05f,
+                                size.width * 0.31f, size.height * 0.92f,
+                                size.width * 0.50f, size.height * 0.46f
+                            )
+                            cubicTo(
+                                size.width * 0.70f, size.height * 0.06f,
+                                size.width * 0.86f, size.height * 0.92f,
+                                size.width, size.height * 0.65f
+                            )
+                            lineTo(size.width, size.height)
+                            lineTo(0f, size.height)
+                            close()
+                        }
+                        drawPath(wavePath, homeCream)
+                    }
                     Box(
                         Modifier.align(Alignment.BottomCenter)
                             .padding(bottom = 5.dp)
@@ -179,7 +176,7 @@ fun HomeScreen(
                             .clip(CircleShape)
                             .background(Color(0xFFE7C4B2))
                     )
-                )
+                }
             }
         } else {
             Box(
