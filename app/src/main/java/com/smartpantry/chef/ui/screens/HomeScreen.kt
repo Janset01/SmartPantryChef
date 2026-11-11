@@ -93,8 +93,8 @@ fun HomeScreen(
         if (featured.isNotEmpty()) {
             val recipe = featured[featuredIndex.coerceIn(0, featured.lastIndex)]
             Box(
-                Modifier.fillMaxWidth().padding(horizontal = 12.dp)
-                    .height(344.dp).clip(RoundedCornerShape(27.dp))
+                Modifier.fillMaxWidth().padding(horizontal = 2.dp)
+                    .height(344.dp).clip(RoundedCornerShape(25.dp))
                     .clickable { onRecipeClick(recipe) }
             ) {
                 if (!recipe.imageUri.isNullOrBlank()) {
@@ -133,7 +133,7 @@ fun HomeScreen(
                     }
                 }
                 Row(
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 46.dp),
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = 48.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     featured.forEachIndexed { index, _ ->
@@ -146,28 +146,39 @@ fun HomeScreen(
                         )
                     }
                 }
-                // Soft, continuous wave; no raised corners or exposed backing layer.
+                // Edge-to-edge cream wave; the handle visually invites vertical page scrolling.
                 Box(
                     Modifier.align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .height(28.dp)
-                        .clip(GenericShape { size, _ ->
-                            moveTo(0f, size.height * 0.65f)
-                            cubicTo(
-                                size.width * 0.12f, size.height * 0.02f,
-                                size.width * 0.30f, size.height * 0.10f,
-                                size.width * 0.50f, size.height * 0.42f
-                            )
-                            cubicTo(
-                                size.width * 0.70f, size.height * 0.72f,
-                                size.width * 0.88f, size.height * 0.02f,
-                                size.width, size.height * 0.65f
-                            )
-                            lineTo(size.width, size.height)
-                            lineTo(0f, size.height)
-                            close()
-                        })
-                        .background(homeCream)
+                        .height(31.dp)
+                ) {
+                    Box(
+                        Modifier.fillMaxSize()
+                            .clip(GenericShape { size, _ ->
+                                moveTo(0f, size.height * 0.64f)
+                                cubicTo(
+                                    size.width * 0.14f, -size.height * 0.12f,
+                                    size.width * 0.29f, size.height * 0.96f,
+                                    size.width * 0.50f, size.height * 0.45f
+                                )
+                                cubicTo(
+                                    size.width * 0.70f, -size.height * 0.04f,
+                                    size.width * 0.87f, size.height * 0.95f,
+                                    size.width, size.height * 0.64f
+                                )
+                                lineTo(size.width, size.height)
+                                lineTo(0f, size.height)
+                                close()
+                            })
+                            .background(homeCream)
+                    )
+                    Box(
+                        Modifier.align(Alignment.BottomCenter)
+                            .padding(bottom = 5.dp)
+                            .size(width = 38.dp, height = 5.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE7C4B2))
+                    )
                 )
             }
         } else {
