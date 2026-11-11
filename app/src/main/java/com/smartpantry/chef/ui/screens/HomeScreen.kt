@@ -217,29 +217,36 @@ fun HomeScreen(
                     )
                 }
                 Spacer(Modifier.height(7.dp))
-        HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") { onExplore() }
-        Spacer(Modifier.height(10.dp))
+        HomeSectionTitle("▦", "Kategorilere Göz At", "Tüm Kategoriler ›") { onExplore() }
+        Spacer(Modifier.height(7.dp))
         val categoryItems = listOf(
-            "Ana Yemek" to "🍲", "Tatlı" to "🍰", "Salata" to "🥗",
-            "Çorba" to "🥣", "Kahvaltı" to "🥐", "Atıştırmalık" to "🍪"
+            "Ana Yemek" to "🍲", "Salata" to "🥗", "Tatlı" to "🍰",
+            "Çorba" to "🥣", "Fırın" to "♨️", "Kahvaltı" to "🥐",
+            "Atıştırmalık" to "🍪"
         )
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
-                .padding(horizontal = 15.dp),
-            horizontalArrangement = Arrangement.spacedBy(9.dp)
+                .padding(horizontal = 5.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             categoryItems.forEach { (category, emoji) ->
                 Column(
-                    Modifier.width(78.dp).clip(RoundedCornerShape(17.dp))
-                        .background(Color(0xFFFFE8DA))
+                    Modifier.width(57.dp)
+                        .shadow(2.dp, RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFFEDE2))
                         .clickable { onCategoryClick(category) }
-                        .padding(vertical = 11.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(top = 6.dp, bottom = 6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Text(emoji, fontSize = 27.sp)
-                    Spacer(Modifier.height(7.dp))
-                    Text(category, fontSize = 11.sp, maxLines = 1,
-                        fontWeight = FontWeight.ExtraBold, color = homeInk)
+                    Text(emoji, fontSize = 23.sp, lineHeight = 26.sp)
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        category, fontSize = 9.sp, maxLines = 1,
+                        fontWeight = FontWeight.ExtraBold, color = homeInk,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
