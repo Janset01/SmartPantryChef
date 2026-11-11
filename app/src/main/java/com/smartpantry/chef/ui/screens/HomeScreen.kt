@@ -1,6 +1,8 @@
 package com.smartpantry.chef.ui.screens
 
 import androidx.compose.foundation.Canvas
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -252,56 +254,69 @@ fun HomeScreen(
             }
         }
         Spacer(Modifier.height(23.dp))
-        HomeSectionTitle("▣", "Günün Menüsü", "Bugün ⌄") {
-            selectedDay = (selectedDay + 1) % 3
+        HomeSectionTitle("▣", "Günün Menüsü", "Menüyü Değiştir ↻") {
+            selectedDay += 1
         }
-        Spacer(Modifier.height(11.dp))
-        val menuGroups = listOf(
-            "Kahvaltı" to "☀️", "Öğle Yemeği" to "🍽️", "Akşam Yemeği" to "🌙"
+        Spacer(Modifier.height(9.dp))
+        val dailyMenu = recipes.getOrNull(
+            if (recipes.isEmpty()) 0 else selectedDay % recipes.size
         )
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                .clickable {
+                    if (dailyMenu != null) onRecipeClick(dailyMenu)
+                    else onExplore()
+                },
+            shape = RoundedCornerShape(17.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF9)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
         ) {
-            menuGroups.forEach { (category, icon) ->
-                val menuRecipe = recipes.firstOrNull { it.category.equals(category, true) }
-                    ?: recipes.firstOrNull {
-                        it.category.contains(category.substringBefore(" "), ignoreCase = true)
-                    }
-                Card(
-                    Modifier.weight(1f).clickable {
-                        if (menuRecipe != null) onRecipeClick(menuRecipe)
-                        else onCategoryClick(category)
-                    },
-                    shape = RoundedCornerShape(17.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF8)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            Row(
+                Modifier.fillMaxWidth().height(88.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier.width(108.dp).fillMaxHeight()
+                        .background(Color(0xFFFFD9C2)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column {
-                        Box(
-                            Modifier.fillMaxWidth().height(91.dp)
-                                .background(Color(0xFFFFE5D5)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (!menuRecipe?.imageUri.isNullOrBlank()) {
-                                Image(rememberAsyncImagePainter(menuRecipe?.imageUri),
-                                    category, Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop)
-                            } else {
-                                Text(icon, fontSize = 38.sp)
-                            }
-                        }
-                        Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 5.dp, vertical = 9.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(3.dp)
-                        ) {
-                            Text(icon, fontSize = 15.sp)
-                            Text(category, fontSize = 11.sp, maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontWeight = FontWeight.ExtraBold, color = homeInk)
-                        }
+                    if (!dailyMenu?.imageUri.isNullOrBlank()) {
+                        Image(
+                            rememberAsyncImagePainter(dailyMenu?.imageUri),
+                            dailyMenu?.name,
+                            Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text("🍽️", fontSize = 34.sp)
                     }
+                }
+                Column(
+                    Modifier.weight(1f).padding(horizontal = 11.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        dailyMenu?.name?.replaceFirstChar { it.uppercase() }
+                            ?: "Bugün ne pişirsek?",
+                        color = homeInk, fontSize = 14.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(5.dp))
+                    Text(
+                        if (dailyMenu == null) "Tarif ekleyerek menünü oluştur"
+                        else "◷ ${dailyMenu.preparationTime}   🍴 ${dailyMenu.servings}",
+                        fontSize = 11.sp, color = homeMuted,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Box(
+                    Modifier.padding(end = 12.dp).size(30.dp)
+                        .clip(CircleShape).background(homeGradient),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.ArrowForward, null, tint = Color.White,
+                        modifier = Modifier.size(18.dp))
                 }
             }
         }
@@ -360,6 +375,63 @@ fun HomeScreen(
                 }
             }
         }
+        Spacer(Modifier.height(22.dp))
+        HomeSectionTitle("👨‍🍳", "Tanınmış Şeflerin Tarifleri", "Tümünü Gör ›") {
+            val url = Uri.parse("https://www.google.com/search?q=" +
+                Uri.encode("ünlü şeflerin tarifleri"))
+            context.startActivity(Intent(Intent.ACTION_VIEW, url))
+        }
+        Spacer(Modifier.height(10.dp))
+        val featuredChefs = listOf(
+            "Danilo Zanna", "Somer Sivrioğlu", "Mehmet Yalçınkaya"
+        )
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(9.dp)
+        ) {
+            featuredChefs.forEach { chef ->
+                Card(
+                    Modifier.width(145.dp).clickable {
+                        val url = Uri.parse("https://www.google.com/search?q=" +
+                            Uri.encode(chef + " tarifleri"))
+                        context.startActivity(Intent(Intent.ACTION_VIEW, url))
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE9DC)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column {
+                        Box(
+                            Modifier.fillMaxWidth().height(82.dp)
+                                .background(Brush.verticalGradient(
+                                    listOf(Color(0xFFFFD6B9), Color(0xFFB65C36))
+                                )),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("👨‍🍳", fontSize = 39.sp)
+                        }
+                        Row(
+                            Modifier.fillMaxWidth().padding(9.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                chef, Modifier.weight(1f), color = homeInk,
+                                fontWeight = FontWeight.Bold, fontSize = 12.sp,
+                                maxLines = 2
+                            )
+                            Text("↗", color = homeOrange, fontSize = 16.sp)
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Şef kartları web üzerindeki tarif aramalarını açar.",
+            Modifier.padding(horizontal = 14.dp),
+            fontSize = 10.sp, color = homeMuted
+        )
         Spacer(Modifier.height(21.dp))
         Card(
             Modifier.fillMaxWidth().padding(horizontal = 15.dp)
