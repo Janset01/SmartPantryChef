@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -255,7 +256,7 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Color(0xFFF8F6F2)
+                Color(0xFFFFF8F2)
             )
             .padding(
                 horizontal = 16.dp
@@ -279,7 +280,7 @@ fun ProfileScreen(
                     .size(78.dp)
                     .clip(CircleShape)
                     .background(
-                        Color(0xFFDDE9DF)
+                        Color(0xFFFFE5D1)
                     ),
                 contentAlignment =
                     Alignment.Center
@@ -306,7 +307,7 @@ fun ProfileScreen(
                         FontWeight.Bold,
                     color =
                         Color(
-                            0xFF2F3E34
+                            0xFF38231B
                         )
                 )
 
@@ -323,7 +324,7 @@ fun ProfileScreen(
                     fontSize = 14.sp,
                     color =
                         Color(
-                            0xFF68736C
+                            0xFF80695C
                         )
                 )
 
@@ -393,16 +394,16 @@ fun ProfileScreen(
                 OutlinedTextFieldDefaults
                     .colors(
                         focusedContainerColor =
-                            Color.White,
+                            Color(0xFFFFFDF9),
                         unfocusedContainerColor =
-                            Color.White,
+                            Color(0xFFFFFDF9),
                         focusedBorderColor =
                             Color(
-                                0xFF7A9E7E
+                                0xFFE66B25
                             ),
                         unfocusedBorderColor =
                             Color(
-                                0xFFE3E4E1
+                                0xFFEADBD0
                             )
                     )
         )
@@ -429,7 +430,7 @@ fun ProfileScreen(
                     FontWeight.ExtraBold,
                 color =
                     Color(
-                        0xFF2F3E34
+                        0xFF38231B
                     )
             )
 
@@ -449,7 +450,7 @@ fun ProfileScreen(
                         CardDefaults.cardColors(
                             containerColor =
                                 Color(
-                                    0xFFF0F4F1
+                                    0xFFFFEBDD
                                 )
                         ),
                     elevation =
@@ -479,7 +480,7 @@ fun ProfileScreen(
                                 FontWeight.SemiBold,
                             color =
                                 Color(
-                                    0xFF4F6F5A
+                                    0xFF9B4C24
                                 )
                         )
 
@@ -501,7 +502,7 @@ fun ProfileScreen(
                                 ),
                             tint =
                                 Color(
-                                    0xFF4F6F5A
+                                    0xFF9B4C24
                                 )
                         )
                     }
@@ -569,7 +570,7 @@ fun ProfileScreen(
                                             null,
                                         tint =
                                             Color(
-                                                0xFF4F7F65
+                                                0xFFD94A12
                                             )
                                     )
                                 }
@@ -614,11 +615,11 @@ fun ProfileScreen(
                                     ProfileRecipeSort.DEFAULT
                                 ) {
                                     Color(
-                                        0xFFDDE9DF
+                                        0xFFFFE5D1
                                     )
                                 } else {
                                     Color(
-                                        0xFFF0F4F1
+                                        0xFFFFEBDD
                                     )
                                 }
                         ),
@@ -652,7 +653,7 @@ fun ProfileScreen(
                                 ),
                             tint =
                                 Color(
-                                    0xFF4F6F5A
+                                    0xFF9B4C24
                                 )
                         )
 
@@ -678,7 +679,7 @@ fun ProfileScreen(
                                     FontWeight.Bold,
                                 color =
                                     Color(
-                                        0xFF4F6F5A
+                                        0xFF9B4C24
                                     )
                             )
                         }
@@ -713,7 +714,7 @@ fun ProfileScreen(
                             FontWeight.Bold,
                         color =
                             Color(
-                                0xFF5D685F
+                                0xFF766A62
                             )
                     )
 
@@ -755,11 +756,11 @@ fun ProfileScreen(
                                                     selected
                                                 ) {
                                                     Color(
-                                                        0xFF7A9E7E
+                                                        0xFFE66B25
                                                     )
                                                 } else {
                                                     Color(
-                                                        0xFFE9ECEA
+                                                        0xFFFFE9D8
                                                     )
                                                 }
                                             ),
@@ -810,7 +811,7 @@ fun ProfileScreen(
                             ),
                         color =
                             Color(
-                                0xFFE2E7E3
+                                0xFFF1DFD2
                             )
                     )
 
@@ -829,7 +830,7 @@ fun ProfileScreen(
                             FontWeight.Bold,
                         color =
                             Color(
-                                0xFF5D685F
+                                0xFF766A62
                             )
                     )
 
@@ -869,7 +870,7 @@ fun ProfileScreen(
                                                 null,
                                             tint =
                                                 Color(
-                                                    0xFF4F7F65
+                                                    0xFFD94A12
                                                 )
                                         )
                                     }
@@ -889,7 +890,7 @@ fun ProfileScreen(
                             ),
                         color =
                             Color(
-                                0xFFE2E7E3
+                                0xFFF1DFD2
                             )
                     )
 
@@ -989,7 +990,7 @@ fun ProfileScreen(
         HorizontalDivider(
             color =
                 Color(
-                    0xFFD7DDD8
+                    0xFFE9D8CA
                 )
         )
 
@@ -1013,7 +1014,7 @@ fun ProfileScreen(
                 colors =
                     CardDefaults.cardColors(
                         containerColor =
-                            Color.White
+                            Color(0xFFFFFDF9)
                     )
             ) {
 
@@ -1117,7 +1118,7 @@ private fun ActiveFilterPill(
             CardDefaults.cardColors(
                 containerColor =
                     Color(
-                        0xFFE8F0EA
+                        0xFFFFE6D4
                     )
             ),
         elevation =
@@ -1141,7 +1142,7 @@ private fun ActiveFilterPill(
                 FontWeight.SemiBold,
             color =
                 Color(
-                    0xFF4F6F5A
+                    0xFF9B4C24
                 )
         )
     }
@@ -1155,10 +1156,10 @@ private fun ProfileRecipeCard(
     onFavoriteToggle: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().height(176.dp).clickable { onClick() },
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF394839)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        modifier = Modifier.fillMaxWidth().height(168.dp).clickable { onClick() },
+        shape = RoundedCornerShape(17.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF53392C)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             recipe.imageUri?.let { uri ->
@@ -1172,10 +1173,10 @@ private fun ProfileRecipeCard(
             Box(
                 modifier = Modifier.fillMaxSize().background(
                     androidx.compose.ui.graphics.Brush.verticalGradient(
-                        0.0f to Color.Black.copy(alpha = 0.55f),
+                        0.0f to Color(0xFF32180D).copy(alpha = 0.56f),
                         0.32f to Color.Transparent,
                         0.52f to Color.Transparent,
-                        1.0f to Color.Black.copy(alpha = 0.82f)
+                        1.0f to Color(0xFF27140D).copy(alpha = 0.88f)
                     )
                 )
             )
@@ -1186,7 +1187,7 @@ private fun ProfileRecipeCard(
                     text = ratingStars(engagement.averageRating),
                     fontSize = 15.sp,
                     lineHeight = 16.sp,
-                    color = Color(0xFFFFCA58),
+                    color = Color(0xFFFFD36D),
                     fontWeight = FontWeight.Bold,
                     maxLines = 1
                 )
@@ -1201,7 +1202,7 @@ private fun ProfileRecipeCard(
             Box(
                 modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)
                     .size(27.dp).clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.94f))
+                    .background(Color(0xFFFFF9F2).copy(alpha = 0.97f))
                     .clickable { onFavoriteToggle() },
                 contentAlignment = Alignment.Center
             ) {
@@ -1214,7 +1215,7 @@ private fun ProfileRecipeCard(
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 14.sp,
-                lineHeight = 16.sp,
+                lineHeight = 17.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White
             )
