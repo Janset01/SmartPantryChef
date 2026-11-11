@@ -384,9 +384,8 @@ private fun ExplorePhotoCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "🥣",
-                        fontSize = 16.sp,
-                        modifier = Modifier.alpha(if (engagement?.isFavorite == true) 1f else 0.48f)
+                        if (engagement?.isFavorite == true) "🍲" else "🥣",
+                        fontSize = 17.sp
                     )
                 }
             }
