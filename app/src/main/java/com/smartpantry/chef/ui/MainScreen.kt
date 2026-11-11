@@ -230,7 +230,12 @@ fun MainScreen() {
 
                     when (selectedIndex) {
 
-                        0 -> HomeScreen()
+                        0 -> HomeScreen(
+                            onRecipeClick = { recipe -> selectedRecipe = recipe },
+                            onExplore = { selectedIndex = 1 },
+                            onCategoryClick = { selectedIndex = 1 },
+                            onPantryClick = { selectedIndex = 3 }
+                        )
 
                         1 -> ExploreScreen(
                             onRecipeClick = { recipe ->
