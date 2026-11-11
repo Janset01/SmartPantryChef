@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -81,9 +82,9 @@ fun HomeScreen(
     Column(Modifier.fillMaxSize().background(homeCream).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(14.dp))
         Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("♨", fontSize = 30.sp, color = homeOrange)
+            Text("👨‍🍳", fontSize = 27.sp, color = homeOrange)
             Spacer(Modifier.width(6.dp))
-            Text("SmartPantryChef", Modifier.weight(1f), fontSize = 22.sp,
+            Text("SmartPantryChef", Modifier.weight(1f), fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold, color = homeInk)
             IconButton(onClick = { showNotifications = true }) {
                 Icon(Icons.Default.NotificationsNone, "Bildirimler", tint = homeInk)
@@ -95,15 +96,17 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
             placeholder = { Text("Tarif, malzeme veya kategori ara...", fontSize = 13.sp) },
             leadingIcon = { Icon(Icons.Default.Search, null, tint = homeMuted) },
+            trailingIcon = { Icon(Icons.Default.Tune, "Filtreler", tint = homeOrange,
+                modifier = Modifier.clickable { onExplore() }) },
             singleLine = true, shape = RoundedCornerShape(22.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
                 focusedBorderColor = homeOrange, unfocusedBorderColor = Color(0xFFEAD6C9))
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(14.dp))
         if (featured.isNotEmpty()) {
             val recipe = featured[featuredIndex.coerceIn(0, featured.lastIndex)]
-            Box(Modifier.fillMaxWidth().padding(horizontal = 18.dp).height(225.dp)
+            Box(Modifier.fillMaxWidth().padding(horizontal = 18.dp).height(186.dp)
                 .clip(RoundedCornerShape(24.dp)).clickable { onRecipeClick(recipe) }) {
                 if (!recipe.imageUri.isNullOrBlank()) {
                     Image(rememberAsyncImagePainter(recipe.imageUri), null,
@@ -114,12 +117,12 @@ fun HomeScreen(
                 }
                 Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
                     listOf(Color(0xE826120A), Color(0xB82B150A), Color.Transparent))))
-                Column(Modifier.align(Alignment.CenterStart).padding(18.dp).fillMaxWidth(0.8f)) {
+                Column(Modifier.align(Alignment.CenterStart).padding(16.dp).fillMaxWidth(0.64f)) {
                     Text("HAFTANIN ÖNE ÇIKANI", fontSize = 10.sp, letterSpacing = 1.4.sp,
                         fontWeight = FontWeight.Bold, color = Color(0xFFFFDDBF))
                     Spacer(Modifier.height(12.dp))
-                    Text(recipe.name.replaceFirstChar { it.uppercase() }, fontSize = 27.sp,
-                        lineHeight = 29.sp, maxLines = 3, overflow = TextOverflow.Ellipsis,
+                    Text(recipe.name.replaceFirstChar { it.uppercase() }, fontSize = 24.sp,
+                        lineHeight = 26.sp, maxLines = 3, overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.ExtraBold, color = Color.White)
                     Spacer(Modifier.height(8.dp))
                     Text("Mutfağına ilham veren lezzet", fontSize = 12.sp, color = Color.White)
@@ -150,29 +153,29 @@ fun HomeScreen(
                 }
             }
         }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(15.dp))
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") {
             selectedCategory = null
             onExplore()
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(9.dp))
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
-            .padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            .padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             categoryItems.forEach { (name, emoji) ->
-                Column(Modifier.width(72.dp).clip(RoundedCornerShape(20.dp))
+                Column(Modifier.width(59.dp).clip(RoundedCornerShape(18.dp))
                     .background(if (selectedCategory == name) Color(0xFFFFCFAB) else Color(0xFFFFE9DB))
                     .clickable {
                         selectedCategory = if (selectedCategory == name) null else name
                         featuredIndex = 0
-                    }.padding(vertical = 12.dp),
+                    }.padding(vertical = 9.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(emoji, fontSize = 25.sp)
-                    Spacer(Modifier.height(7.dp))
-                    Text(name, fontSize = 10.sp, maxLines = 1, fontWeight = FontWeight.Bold, color = homeInk)
+                    Text(emoji, fontSize = 22.sp)
+                    Spacer(Modifier.height(5.dp))
+                    Text(name, fontSize = 9.sp, maxLines = 1, fontWeight = FontWeight.Bold, color = homeInk)
                 }
             }
         }
-        Spacer(Modifier.height(25.dp))
+        Spacer(Modifier.height(18.dp))
         HomeSectionTitle("▣", "Günün Menüsü", "Bugün ⌄") {
             selectedDay = (selectedDay + 1) % 3
         }
@@ -188,15 +191,15 @@ fun HomeScreen(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF9)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) {
                     Column {
-                        Box(Modifier.fillMaxWidth().height(92.dp).background(Color(0xFFFFE4D0)),
+                        Box(Modifier.fillMaxWidth().height(79.dp).background(Color(0xFFFFE4D0)),
                             contentAlignment = Alignment.Center) {
                             if (!menuRecipe?.imageUri.isNullOrBlank()) {
                                 Image(rememberAsyncImagePainter(menuRecipe?.imageUri), null,
                                     Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                             } else Text(icon, fontSize = 36.sp)
                         }
-                        Text(category, Modifier.padding(horizontal = 7.dp, vertical = 10.dp),
-                            fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        Text(category, Modifier.padding(horizontal = 5.dp, vertical = 8.dp),
+                            fontSize = 10.sp, fontWeight = FontWeight.Bold,
                             maxLines = 1, color = homeInk)
                     }
                 }
@@ -212,7 +215,7 @@ fun HomeScreen(
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
                 .padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 inspiration.forEach { recipe ->
-                    Box(Modifier.width(270.dp).height(165.dp).clip(RoundedCornerShape(21.dp))
+                    Box(Modifier.width(270.dp).height(143.dp).clip(RoundedCornerShape(21.dp))
                         .background(Color(0xFFF1D4BF)).clickable { onRecipeClick(recipe) }) {
                         if (!recipe.imageUri.isNullOrBlank()) {
                             Image(rememberAsyncImagePainter(recipe.imageUri), null,
@@ -240,17 +243,17 @@ fun HomeScreen(
                 }
             }
         }
-        Spacer(Modifier.height(23.dp))
+        Spacer(Modifier.height(17.dp))
         Card(Modifier.fillMaxWidth().padding(horizontal = 18.dp).clickable { showPlanner = true },
             shape = RoundedCornerShape(21.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE3D0)),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) {
-            Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("🗓", fontSize = 33.sp)
+            Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("🗓", fontSize = 29.sp)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Haftalık Yemek Planı", fontWeight = FontWeight.ExtraBold,
-                        fontSize = 17.sp, color = homeInk)
+                        fontSize = 16.sp, color = homeInk)
                     Text("Daha düzenli ve kolay bir mutfak.", fontSize = 12.sp, color = homeMuted)
                 }
                 Box(Modifier.size(37.dp).clip(CircleShape).background(homeGradient),
@@ -281,7 +284,7 @@ private fun HomeSectionTitle(icon: String, title: String, action: String, onActi
         verticalAlignment = Alignment.CenterVertically) {
         Text(icon, fontSize = 23.sp, color = homeOrange)
         Spacer(Modifier.width(8.dp))
-        Text(title, Modifier.weight(1f), fontSize = 18.sp,
+        Text(title, Modifier.weight(1f), fontSize = 17.sp,
             fontWeight = FontWeight.ExtraBold, color = homeInk)
         Text(action, Modifier.clickable { onAction() }, fontSize = 11.sp,
             fontWeight = FontWeight.Bold, color = homeOrange)
