@@ -68,10 +68,6 @@ fun HomeScreen(
         engagements = db.recipeEngagementDao().getAll().associateBy { it.recipeId }
     }
     val featured = recipes.sortedByDescending { it.id }.take(5)
-    val collectionItems = listOf(
-        Triple("Fırın\nLezzetleri", "🍲", listOf("Fırın", "Ana Yemek")),
-        Triple("Tatlı\nKöşesi", "🍰", listOf("Tatlı"))
-    )
     val toggleFavorite: (Recipe) -> Unit = { recipe ->
         val current = engagements[recipe.id] ?: RecipeEngagement(recipeId = recipe.id)
         val updated = current.copy(isFavorite = !current.isFavorite)
@@ -207,57 +203,6 @@ fun HomeScreen(
             }
         }
         Spacer(Modifier.height(4.dp))
-        HomeSectionTitle("🍂", "Özel Koleksiyonlar", "Tümünü Gör ›") { onExplore() }
-        Spacer(Modifier.height(15.dp))
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-            horizontalArrangement = Arrangement.spacedBy(11.dp)
-        ) {
-            collectionItems.forEach { (title, symbol, categories) ->
-                val recipe = recipes.firstOrNull { item ->
-                    categories.any { category -> item.category.contains(category, ignoreCase = true) }
-                }
-                Box(
-                    Modifier.weight(1f).height(168.dp)
-                        .clip(RoundedCornerShape(21.dp))
-                        .background(Color(0xFFDDB39A))
-                        .clickable {
-                            if (recipe != null) onRecipeClick(recipe)
-                            else onCategoryClick(categories.first())
-                        }
-                ) {
-                    if (!recipe?.imageUri.isNullOrBlank()) {
-                        Image(rememberAsyncImagePainter(recipe?.imageUri), title,
-                            Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                    } else {
-                        Box(
-                            Modifier.fillMaxSize().background(Brush.verticalGradient(
-                                listOf(Color(0xFFE8A879), Color(0xFF7A3C27)))),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(symbol, fontSize = 49.sp)
-                        }
-                    }
-                    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
-                        listOf(Color.Transparent, Color(0x220F0906), Color(0xD90F0906)))))
-                    Text(
-                        title, Modifier.align(Alignment.BottomStart).padding(12.dp),
-                        fontSize = 21.sp, lineHeight = 23.sp, maxLines = 2,
-                        fontWeight = FontWeight.ExtraBold, color = Color.White
-                    )
-                    Box(
-                        Modifier.align(Alignment.BottomEnd).padding(9.dp).size(31.dp)
-                            .clip(CircleShape).background(Color.White),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.ArrowForward, null, tint = homeOrange,
-                            modifier = Modifier.size(19.dp))
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(27.dp))
         HomeSectionTitle("▦", "Kategorilere Göz At", "Tümünü Gör ›") { onExplore() }
         Spacer(Modifier.height(10.dp))
         val categoryItems = listOf(
