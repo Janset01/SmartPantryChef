@@ -1,5 +1,9 @@
 package com.smartpantry.chef.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -69,10 +75,19 @@ private val mealCategories = listOf(
 )
 
 @Composable
+private fun suggestionPressScale(source: MutableInteractionSource): Float {
+    val pressed by source.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.97f else 1f, label = "suggestionPress")
+    return scale
+}
+
+@Composable
 fun PantryRecipeSuggestionsScreen(
     onBack: () -> Unit,
     onRecipeClick: (Recipe) -> Unit
 ) {
+    val backPress = remember { MutableInteractionSource() }
+    val backScale = suggestionPressScale(backPress)
     val context = LocalContext.current
     val database = remember { AppDatabase.getDatabase(context) }
 
@@ -148,7 +163,7 @@ fun PantryRecipeSuggestionsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F6F2))
+            .background(Color(0xFFFFF8F2))
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
@@ -161,7 +176,11 @@ fun PantryRecipeSuggestionsScreen(
                     selectedCategory = null
                     selectedFilter = SuggestionFilter.BEST
                 }
-            }
+            },
+            interactionSource = backPress,
+            modifier = Modifier.graphicsLayer { scaleX = backScale; scaleY = backScale },
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF712B))
         ) {
             Text(
                 if (selectedCategory == null) {
@@ -179,7 +198,7 @@ fun PantryRecipeSuggestionsScreen(
                 Text(
                     text = "🍳 Tarifler kontrol ediliyor...",
                     fontSize = 18.sp,
-                    color = Color(0xFF55645A)
+                    color = Color(0xFF8B7061)
                 )
             }
 
@@ -231,7 +250,7 @@ private fun CategorySelectionContent(
         text = "🍳 Elimdekilerle Ne Yapabilirim?",
         fontSize = 27.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF2F3E34)
+        color = Color(0xFF493028)
     )
 
     Spacer(modifier = Modifier.height(6.dp))
@@ -337,7 +356,7 @@ private fun MealCategoryCard(
                     text = category.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2F3E34)
+                    color = Color(0xFF493028)
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -416,7 +435,7 @@ private fun CategoryRecipesContent(
         text = "${category.emoji} ${category.title}",
         fontSize = 28.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF2F3E34)
+        color = Color(0xFF493028)
     )
 
     Spacer(modifier = Modifier.height(5.dp))
@@ -442,7 +461,8 @@ private fun CategoryRecipesContent(
             label = {
                 Text("⭐ En Uygun")
             },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Color(0xFFFFD5B6), selectedLabelColor = Color(0xFFAD491C))
         )
 
         FilterChip(
@@ -453,7 +473,8 @@ private fun CategoryRecipesContent(
             label = {
                 Text("✅ Hazır")
             },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Color(0xFFFFD5B6), selectedLabelColor = Color(0xFFAD491C))
         )
 
         FilterChip(
@@ -464,7 +485,8 @@ private fun CategoryRecipesContent(
             label = {
                 Text("🛒 Az Eksik")
             },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Color(0xFFFFD5B6), selectedLabelColor = Color(0xFFAD491C))
         )
     }
 
@@ -564,14 +586,14 @@ private fun CompactRecipeCard(
                     modifier = Modifier.weight(1f),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2F3E34)
+                    color = Color(0xFF493028)
                 )
 
                 Text(
                     text = "%${match.compatibilityPercent}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4F7F65)
+                    color = Color(0xFFE66A26)
                 )
             }
 
@@ -607,10 +629,10 @@ private fun CompactRecipeCard(
                 color =
                     when (match.status) {
                         MatchStatus.CAN_MAKE ->
-                            Color(0xFF3F6F52)
+                            Color(0xFFDD6826)
 
                         else ->
-                            Color(0xFF715B2E)
+                            Color(0xFFB96A34)
                     }
             )
 
@@ -626,7 +648,7 @@ private fun CompactRecipeCard(
                         },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF4F7F65)
+                    color = Color(0xFFE66A26)
                 )
             }
 
@@ -651,7 +673,7 @@ private fun ExpiringRecipesSection(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE8F5E9)
+            containerColor = Color(0xFFFFE8D4)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
@@ -664,7 +686,7 @@ private fun ExpiringRecipesSection(
                 text = "♻️ Önce Bunları Tüket",
                 fontSize = 21.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2F3E34)
+                color = Color(0xFF493028)
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -703,7 +725,7 @@ private fun ExpiringRecipesSection(
                                     text = recommendation.match.recipe.name,
                                     modifier = Modifier.weight(1f),
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF2F3E34)
+                                    color = Color(0xFF493028)
                                 )
 
                                 Text(
@@ -724,7 +746,7 @@ private fun ExpiringRecipesSection(
                                     daysLeft = recommendation.daysLeft
                                 ),
                                 fontSize = 13.sp,
-                                color = Color(0xFF4F7F65)
+                                color = Color(0xFFE66A26)
                             )
 
                             Spacer(modifier = Modifier.height(5.dp))
@@ -894,7 +916,7 @@ private fun SmallInfoCard(
         Text(
             text = text,
             modifier = Modifier.padding(18.dp),
-            color = Color(0xFF55645A)
+            color = Color(0xFF8B7061)
         )
     }
 }
