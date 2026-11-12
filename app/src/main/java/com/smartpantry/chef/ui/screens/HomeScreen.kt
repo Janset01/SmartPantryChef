@@ -297,7 +297,7 @@ fun HomeScreen(
                     )
                 }
                 Spacer(Modifier.height(7.dp))
-        HomeSectionTitle("▦", "Kategorilere Göz At", "Tüm Kategoriler ›") { onExplore() }
+        HomeSectionTitle("▦", "Kategorilere Göz At", "Tüm Kategoriler ›") { onCategoryClick("Tümü") }
         Spacer(Modifier.height(7.dp))
         val categoryItems = listOf(
             "Ana Yemek" to "🍲", "Salata" to "🥗", "Tatlı" to "🍰",
