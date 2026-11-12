@@ -153,12 +153,17 @@ fun ProfileScreen(
     val categories =
         listOf(
             "Tümü",
-            "Kahvaltı",
-            "Öğle Yemeği",
-            "Akşam Yemeği",
+            "Ana Yemek",
+            "Salata",
             "Tatlı",
-            "Fit",
-            "Atıştırmalık"
+            "Çorba",
+            "Fırın",
+            "Kahvaltı",
+            "Atıştırmalık",
+            "Öğle Yemeği",
+            "Brunch",
+            "Akşam Yemeği",
+            "Fit"
         )
 
     LaunchedEffect(Unit) {
