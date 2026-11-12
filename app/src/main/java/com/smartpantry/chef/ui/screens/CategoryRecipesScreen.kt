@@ -108,7 +108,7 @@ fun CategoryRecipesScreen(
                 Icon(Icons.Default.ArrowBack, contentDescription = "Geri", tint = categoryInk)
             }
             Column(Modifier.weight(1f)) {
-                Text(if (category == null) "Tüm Kategoriler" else category, fontSize = 23.sp,
+                Text(if (selectedCategory == "Tümü") "Tüm Kategoriler" else selectedCategory, fontSize = 23.sp,
                     fontWeight = FontWeight.ExtraBold, color = categoryInk)
                 Text("${visible.size} tarif", fontSize = 12.sp, color = Color(0xFF756052))
             }
@@ -132,7 +132,7 @@ fun CategoryRecipesScreen(
                 focusedBorderColor = categoryOrange
             )
         )
-        if ((category == null && selectedCategory != "Tümü") || servingFilter != "Tümü" || timeFilter != 0 || favoritesOnly ||
+        if (selectedCategory != (category ?: "Tümü") || servingFilter != "Tümü" || timeFilter != 0 || favoritesOnly ||
             sortOrder != "En yeni tarifler") {
             TextButton(
                 onClick = { filterOpen = true },
@@ -242,7 +242,7 @@ fun CategoryRecipesScreen(
             title = { Text("Filtrele ve Sırala", color = categoryInk) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    if (category == null) {
+                    run {
                         Text("Kategori", fontWeight = FontWeight.Bold, color = categoryInk)
                         Box(Modifier.fillMaxWidth()) {
                             OutlinedButton(
@@ -326,7 +326,7 @@ fun CategoryRecipesScreen(
             dismissButton = {
                 TextButton(onClick = {
                     servingFilter = "Tümü"
-                    if (category == null) selectedCategory = "Tümü"
+                    selectedCategory = category ?: "Tümü"
                     timeFilter = 0
                     favoritesOnly = false
                     sortOrder = "En yeni tarifler"
