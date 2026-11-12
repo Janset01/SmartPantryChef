@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -67,7 +68,10 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-private val pantryOrange = Color(0xFFEA5716)
+private val pantryOrange = Color(0xFFB65E3B)
+private val pantryButtonGradient = androidx.compose.ui.graphics.Brush.horizontalGradient(
+    listOf(Color(0xFF984B38), Color(0xFFC77750))
+)
 private val pantryInk = Color(0xFF38231B)
 private val pantryCream = Color(0xFFFFF8F2)
 
@@ -280,10 +284,12 @@ fun PantryScreen(
         Button(
             onClick = onShowRecipeSuggestions,
             modifier = Modifier.fillMaxWidth().height(50.dp)
-                .graphicsLayer { scaleX = suggestionScale; scaleY = suggestionScale },
+                .graphicsLayer { scaleX = suggestionScale; scaleY = suggestionScale }
+                .clip(RoundedCornerShape(18.dp))
+                .background(pantryButtonGradient),
             interactionSource = suggestionPress,
             shape = RoundedCornerShape(18.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = pantryOrange)
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
         ) {
             Text("🍳 Elimdekilerle Ne Yapabilirim?", fontWeight = FontWeight.Bold)
         }
@@ -564,10 +570,12 @@ fun PantryScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp)
-                        .graphicsLayer { scaleX = addScale; scaleY = addScale },
+                        .graphicsLayer { scaleX = addScale; scaleY = addScale }
+                        .clip(RoundedCornerShape(17.dp))
+                        .background(pantryButtonGradient),
                     interactionSource = addPress,
                     shape = RoundedCornerShape(17.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = pantryOrange)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                 ) {
 
                     Text(
