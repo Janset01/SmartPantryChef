@@ -1,6 +1,9 @@
 package com.smartpantry.chef.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.delay
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
@@ -93,11 +96,30 @@ fun HomeScreen(
     var showNotifications by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var featuredIndex by remember { mutableIntStateOf(0) }
+    var weeklyViewCounts by remember { mutableStateOf<Map<Int, Int>>(emptyMap()) }
     LaunchedEffect(Unit) {
         recipes = db.recipeDao().getAllRecipes()
         engagements = db.recipeEngagementDao().getAll().associateBy { it.recipeId }
+        val sevenDaysAgo = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
+        weeklyViewCounts = db.recipeViewEventDao().topSince(sevenDaysAgo)
+            .associate { it.recipeId to it.viewCount }
+        db.recipeViewEventDao().deleteBefore(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000)
     }
-    val featured = recipes.sortedByDescending { it.id }.take(5)
+    val featured = remember(recipes, weeklyViewCounts) {
+        recipes.sortedWith(
+            compareByDescending<Recipe> { weeklyViewCounts[it.id] ?: 0 }
+                .thenByDescending { it.id }
+        ).take(3)
+    }
+    LaunchedEffect(featured.map { it.id }) {
+        featuredIndex = 0
+        if (featured.size > 1) {
+            while (true) {
+                delay(5000)
+                featuredIndex = (featuredIndex + 1) % featured.size
+            }
+        }
+    }
     val toggleFavorite: (Recipe) -> Unit = { recipe ->
         val current = engagements[recipe.id] ?: RecipeEngagement(recipeId = recipe.id)
         val updated = current.copy(isFavorite = !current.isFavorite)
@@ -119,6 +141,25 @@ fun HomeScreen(
             Box(
                 Modifier.fillMaxWidth().padding(horizontal = 2.dp)
                     .height(344.dp).clip(RoundedCornerShape(25.dp))
+                    .pointerInput(featured.size) {
+                        var dragDistance = 0f
+                        detectHorizontalDragGestures(
+                            onDragStart = { dragDistance = 0f },
+                            onHorizontalDrag = { change, amount ->
+                                change.consume()
+                                dragDistance += amount
+                            },
+                            onDragEnd = {
+                                if (featured.size > 1 && kotlin.math.abs(dragDistance) > 55f) {
+                                    featuredIndex = if (dragDistance < 0)
+                                        (featuredIndex + 1) % featured.size
+                                    else (featuredIndex - 1 + featured.size) % featured.size
+                                }
+                                dragDistance = 0f
+                            },
+                            onDragCancel = { dragDistance = 0f }
+                        )
+                    }
                     .clickable { onRecipeClick(recipe) }
             ) {
                 if (!recipe.imageUri.isNullOrBlank()) {
