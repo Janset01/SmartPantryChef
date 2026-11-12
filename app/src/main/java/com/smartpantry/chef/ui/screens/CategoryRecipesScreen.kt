@@ -162,7 +162,7 @@ fun CategoryRecipesScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
-                                Modifier.size(width = 96.dp, height = 96.dp)
+                                Modifier.size(width = 112.dp, height = 102.dp)
                                     .background(Color(0xFFFFDFCC)),
                                 contentAlignment = Alignment.Center
                             ) {
