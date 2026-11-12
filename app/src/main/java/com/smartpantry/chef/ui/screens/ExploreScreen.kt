@@ -1,5 +1,7 @@
 package com.smartpantry.chef.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
@@ -152,13 +155,23 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
             listOf("✨ Sana Özel", "🔥 Trendler", "🌿 Yeni Tarifler").forEachIndexed { index, label ->
+                val selected = tab == index
+                val scale by animateFloatAsState(
+                    targetValue = if (selected) 1.035f else 1f,
+                    label = "exploreTabScale"
+                )
+                val backgroundColor by animateColorAsState(
+                    targetValue = if (selected) Color(0xFFF16A20) else Color(0xFFFFE9D8),
+                    label = "exploreTabColor"
+                )
                 Box(
-                    Modifier.clip(RoundedCornerShape(24.dp))
-                        .background(if (tab == index) exploreGradient else Brush.verticalGradient(listOf(Color(0xFFFFFFFF), Color(0xFFFFF1E6))))
+                    Modifier.graphicsLayer { scaleX = scale; scaleY = scale }
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(backgroundColor)
                         .clickable { tab = index }
                         .padding(horizontal = 17.dp, vertical = 13.dp)
                 ) {
-                    Text(label, color = if (tab == index) Color.White else exploreInk,
+                    Text(label, color = if (selected) Color.White else Color(0xFFB94C17),
                         fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
