@@ -15,9 +15,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RecipeMedia::class,
         RecipeEngagement::class,
         RecipeComment::class,
-        ShoppingItem::class
+        ShoppingItem::class,
+        RecipeViewEvent::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -35,6 +36,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recipeCommentDao(): RecipeCommentDao
 
     abstract fun shoppingItemDao(): ShoppingItemDao
+
+    abstract fun recipeViewEventDao(): RecipeViewEventDao
 
     companion object {
 
@@ -164,6 +167,20 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS recipe_view_events (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "recipeId INTEGER NOT NULL, viewedAt INTEGER NOT NULL, " +
+                        "FOREIGN KEY(recipeId) REFERENCES recipes(id) " +
+                        "ON UPDATE NO ACTION ON DELETE CASCADE)"
+                )
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_recipe_view_events_recipeId ON recipe_view_events(recipeId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_recipe_view_events_viewedAt ON recipe_view_events(viewedAt)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
 
             return INSTANCE ?: synchronized(this) {
@@ -181,7 +198,8 @@ abstract class AppDatabase : RoomDatabase() {
                             MIGRATION_8_9,
                             MIGRATION_9_10,
                             MIGRATION_10_11,
-                            MIGRATION_11_12
+                            MIGRATION_11_12,
+                            MIGRATION_12_13
                         )
                         .fallbackToDestructiveMigration()
                         .build()
