@@ -244,7 +244,7 @@ fun HomeScreen(
                             .clickable { onRecipeClick(activeRecipe) }
                     ) {
                         Row(
-                            Modifier.align(Alignment.BottomCenter).padding(bottom = 62.dp),
+                            Modifier.align(Alignment.BottomEnd).padding(end = 20.dp, bottom = 62.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
                             featured.forEachIndexed { index, _ ->
