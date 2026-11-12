@@ -14,6 +14,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -21,6 +22,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.smartpantry.chef.data.AppDatabase
+import com.smartpantry.chef.data.RecipeViewEvent
+import androidx.compose.ui.platform.LocalContext
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.ui.screens.AddRecipeScreen
 import com.smartpantry.chef.ui.screens.EditRecipeScreen
@@ -34,6 +38,8 @@ import com.smartpantry.chef.ui.screens.ShoppingListScreen
 
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
+    val database = remember(context) { AppDatabase.getDatabase(context) }
 
     var selectedIndex by remember {
         mutableIntStateOf(0)
@@ -53,6 +59,13 @@ fun MainScreen() {
 
     var showShoppingList by remember {
         mutableStateOf(false)
+    }
+
+    LaunchedEffect(selectedRecipe?.id, isEditingRecipe) {
+        val recipe = selectedRecipe
+        if (recipe != null && !isEditingRecipe) {
+            database.recipeViewEventDao().record(RecipeViewEvent(recipeId = recipe.id))
+        }
     }
 
     Scaffold(
