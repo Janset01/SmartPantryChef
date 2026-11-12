@@ -190,14 +190,14 @@ fun CategoryRecipesScreen(
                                     )
                                     Spacer(Modifier.width(5.dp))
                                     Text("(${engagement?.commentCount ?: 0} yorum)",
-                                        color = Color(0xFF756052), fontSize = 10.sp)
+                                        color = Color(0xFF352A25), fontSize = 12.sp)
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.AccessTime, contentDescription = null,
                                         tint = Color(0xFF50423C), modifier = Modifier.size(12.dp))
                                     Spacer(Modifier.width(3.dp))
-                                    Text(recipe.preparationTime, color = Color(0xFF50423C),
-                                        fontSize = 10.sp, maxLines = 1)
+                                    Text(recipe.preparationTime, color = Color(0xFF352A25),
+                                        fontSize = 12.sp, maxLines = 1)
                                     Spacer(Modifier.width(8.dp))
                                     Icon(Icons.Default.People, contentDescription = null,
                                         tint = Color(0xFF50423C), modifier = Modifier.size(12.dp))
@@ -205,7 +205,7 @@ fun CategoryRecipesScreen(
                                     Text(
                                         if (recipe.servings.contains("kişi", ignoreCase = true))
                                             recipe.servings else "${recipe.servings} kişilik",
-                                        color = Color(0xFF50423C), fontSize = 10.sp,
+                                        color = Color(0xFF352A25), fontSize = 12.sp,
                                         maxLines = 1, overflow = TextOverflow.Ellipsis
                                     )
                                 }
