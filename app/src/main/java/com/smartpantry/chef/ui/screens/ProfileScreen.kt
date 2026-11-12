@@ -1,5 +1,9 @@
 package com.smartpantry.chef.ui.screens
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -280,7 +285,7 @@ fun ProfileScreen(
                     .size(78.dp)
                     .clip(CircleShape)
                     .background(
-                        Color(0xFFFFD5AE)
+                        Color(0xFFF2D1BA)
                     ),
                 contentAlignment =
                     Alignment.Center
@@ -1033,12 +1038,12 @@ fun ProfileScreen(
 
             LazyVerticalGrid(
                 columns =
-                    GridCells.Fixed(3),
+                    GridCells.Fixed(2),
                 modifier =
                     Modifier.fillMaxSize(),
                 horizontalArrangement =
                     Arrangement.spacedBy(
-                        9.dp
+                        12.dp
                     ),
                 verticalArrangement =
                     Arrangement.spacedBy(
@@ -1155,71 +1160,103 @@ private fun ProfileRecipeCard(
     onClick: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.975f else 1f,
+        label = "profileRecipePress"
+    )
     Card(
-        modifier = Modifier.fillMaxWidth().height(168.dp).clickable { onClick() },
-        shape = RoundedCornerShape(17.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8D8B7)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        modifier = Modifier.fillMaxWidth().height(226.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF9)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFFFFE7CC), Color(0xFFED995B), Color(0xFF9D421F)))))
-            recipe.imageUri?.let { uri ->
-                Image(
-                    painter = rememberAsyncImagePainter(uri),
-                    contentDescription = recipe.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            Box(
-                modifier = Modifier.fillMaxSize().background(
-                    androidx.compose.ui.graphics.Brush.verticalGradient(
-                        0.0f to Color(0xFF402014).copy(alpha = 0.45f),
-                        0.32f to Color.Transparent,
-                        0.52f to Color.Transparent,
-                        1.0f to Color(0xFF371A0D).copy(alpha = 0.93f)
+        Column(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxWidth().height(150.dp)) {
+                Box(
+                    Modifier.fillMaxSize().clickable(
+                        interactionSource = interaction,
+                        indication = null,
+                        onClick = onClick
                     )
-                )
-            )
+                ) {
+                    if (!recipe.imageUri.isNullOrBlank()) {
+                        Image(
+                            painter = rememberAsyncImagePainter(recipe.imageUri),
+                            contentDescription = recipe.name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            Modifier.fillMaxSize().background(
+                                Brush.linearGradient(
+                                    listOf(Color(0xFFFFF0E1), Color(0xFFF0C5A9))
+                                )
+                            ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("🍽️", fontSize = 47.sp)
+                        }
+                    }
+                    Box(
+                        Modifier.fillMaxWidth().height(48.dp)
+                            .align(Alignment.BottomCenter)
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color.Transparent, Color(0x770F0804))
+                                )
+                            )
+                    )
+                }
+                Box(
+                    Modifier.align(Alignment.TopEnd).padding(9.dp)
+                        .size(34.dp).clip(CircleShape)
+                        .background(Color(0xFFFFFAF5))
+                        .clickable(onClick = onFavoriteToggle),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        if (engagement.isFavorite) "🍲" else "🥣",
+                        fontSize = 18.sp
+                    )
+                }
+            }
             Column(
-                modifier = Modifier.align(Alignment.TopStart).padding(start = 8.dp, top = 8.dp, end = 30.dp)
+                Modifier.fillMaxWidth().clickable(onClick = onClick)
+                    .padding(horizontal = 11.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = ratingStars(engagement.averageRating),
-                    fontSize = 16.sp,
-                    lineHeight = 17.sp,
-                    color = Color(0xFFFFD36D),
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1
-                )
-                Text(
-                    text = "⏱ " + recipe.preparationTime,
-                    fontSize = 10.sp,
-                    color = Color.White,
-                    maxLines = 1,
+                    recipe.name,
+                    fontSize = 15.sp,
+                    lineHeight = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF38231B),
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+                Spacer(Modifier.height(4.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "★ " + String.format(java.util.Locale.US, "%.1f", engagement.averageRating),
+                        color = Color(0xFFAD663B),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "◷ " + recipe.preparationTime,
+                        color = Color(0xFF80695C),
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
-            Box(
-                modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)
-                    .size(27.dp).clip(CircleShape)
-                    .background(Color(0xFFFFF9F2).copy(alpha = 0.97f))
-                    .clickable { onFavoriteToggle() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(if (engagement.isFavorite) "🍲" else "🥣", fontSize = 14.sp)
-            }
-            Text(
-                text = recipe.name,
-                modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()
-                    .padding(horizontal = 9.dp, vertical = 11.dp),
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 14.sp,
-                lineHeight = 17.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White
-            )
         }
     }
 }
