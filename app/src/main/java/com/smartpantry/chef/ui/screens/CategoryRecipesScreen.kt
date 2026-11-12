@@ -56,6 +56,9 @@ fun CategoryRecipesScreen(
     val scope = rememberCoroutineScope()
     var filterOpen by remember { mutableStateOf(false) }
     var servingFilter by remember { mutableStateOf("Tümü") }
+    var selectedCategory by remember(category) { mutableStateOf(category ?: "Tümü") }
+    var categoryMenuOpen by remember { mutableStateOf(false) }
+    val categoryOptions = listOf("Tümü", "Ana Yemek", "Salata", "Tatlı", "Çorba", "Fırın", "Kahvaltı", "Atıştırmalık", "Öğle Yemeği", "Brunch", "Akşam Yemeği", "Fit")
     var timeFilter by remember { mutableIntStateOf(0) }
     var favoritesOnly by remember { mutableStateOf(false) }
     var sortOrder by remember { mutableStateOf("En yeni tarifler") }
@@ -71,7 +74,7 @@ fun CategoryRecipesScreen(
     val visible = recipes.filter { recipe ->
         val servings = numberFrom(recipe.servings)
         val minutes = numberFrom(recipe.preparationTime)
-        (category == null || recipe.category.trim().equals(category.trim(), ignoreCase = true)) &&
+        (selectedCategory == "Tümü" || recipe.category.trim().equals(selectedCategory.trim(), ignoreCase = true)) &&
             (query.isBlank() || recipe.name.contains(query.trim(), ignoreCase = true) ||
                 recipe.ingredients.contains(query.trim(), ignoreCase = true)) &&
             (servingFilter == "Tümü" ||
@@ -105,7 +108,7 @@ fun CategoryRecipesScreen(
                 Icon(Icons.Default.ArrowBack, contentDescription = "Geri", tint = categoryInk)
             }
             Column(Modifier.weight(1f)) {
-                Text(category ?: "Tüm Kategoriler", fontSize = 23.sp,
+                Text(if (category == null) "Tüm Kategoriler" else category, fontSize = 23.sp,
                     fontWeight = FontWeight.ExtraBold, color = categoryInk)
                 Text("${visible.size} tarif", fontSize = 12.sp, color = Color(0xFF756052))
             }
@@ -129,7 +132,7 @@ fun CategoryRecipesScreen(
                 focusedBorderColor = categoryOrange
             )
         )
-        if (servingFilter != "Tümü" || timeFilter != 0 || favoritesOnly ||
+        if ((category == null && selectedCategory != "Tümü") || servingFilter != "Tümü" || timeFilter != 0 || favoritesOnly ||
             sortOrder != "En yeni tarifler") {
             TextButton(
                 onClick = { filterOpen = true },
@@ -239,7 +242,35 @@ fun CategoryRecipesScreen(
             title = { Text("Filtrele ve Sırala", color = categoryInk) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text("Kaç kişilik?", fontWeight = FontWeight.Bold, color = categoryInk)
+                    if (category == null) {
+                        Text("Kategori", fontWeight = FontWeight.Bold, color = categoryInk)
+                        Box(Modifier.fillMaxWidth()) {
+                            OutlinedButton(
+                                onClick = { categoryMenuOpen = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp)
+                            ) {
+                                Text(selectedCategory, color = categoryInk, modifier = Modifier.weight(1f))
+                                Text("▾", color = categoryOrange)
+                            }
+                            DropdownMenu(
+                                expanded = categoryMenuOpen,
+                                onDismissRequest = { categoryMenuOpen = false }
+                            ) {
+                                categoryOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option, color = categoryInk) },
+                                        onClick = {
+                                            selectedCategory = option
+                                            categoryMenuOpen = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(10.dp))
+                    }
+                    Text("Kaç kişilik?"', fontWeight = FontWeight.Bold, color = categoryInk)
                     servingOptions.chunked(4).forEach { options ->
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             options.forEach { option ->
@@ -295,6 +326,7 @@ fun CategoryRecipesScreen(
             dismissButton = {
                 TextButton(onClick = {
                     servingFilter = "Tümü"
+                    if (category == null) selectedCategory = "Tümü"
                     timeFilter = 0
                     favoritesOnly = false
                     sortOrder = "En yeni tarifler"
