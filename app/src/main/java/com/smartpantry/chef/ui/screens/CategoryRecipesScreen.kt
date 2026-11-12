@@ -173,7 +173,7 @@ fun CategoryRecipesScreen(
                                 } else Text("🍲", fontSize = 34.sp)
                             }
                             Column(Modifier.weight(1f).padding(start = 10.dp, top = 5.dp, bottom = 5.dp)) {
-                                Text(recipe.name, fontWeight = FontWeight.Bold,
+                                Text(recipe.name.uppercase(java.util.Locale.forLanguageTag("tr-TR")), fontWeight = FontWeight.Bold,
                                     color = Color(0xFF17110F), fontSize = 14.sp, maxLines = 1,
                                     overflow = TextOverflow.Ellipsis)
                                 Text(recipe.category, color = Color(0xFFE6470C), fontWeight = FontWeight.Medium, fontSize = 11.sp,
