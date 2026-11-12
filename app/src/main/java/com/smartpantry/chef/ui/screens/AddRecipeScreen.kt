@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -62,7 +63,10 @@ import com.smartpantry.chef.data.RecipeIngredient
 import com.smartpantry.chef.data.RecipeMedia
 import kotlinx.coroutines.launch
 
-private val recipeOrange = Color(0xFFEA5716)
+private val recipeOrange = Color(0xFFB65E3B)
+private val recipeButtonGradient = androidx.compose.ui.graphics.Brush.horizontalGradient(
+    listOf(Color(0xFF984B38), Color(0xFFC77750))
+)
 private val recipeInk = Color(0xFF38231B)
 private val recipeCream = Color(0xFFFFF8F2)
 private val recipePeach = Color(0xFFFFE9D9)
@@ -694,10 +698,12 @@ fun AddRecipeScreen() {
                     },
                     modifier = Modifier.fillMaxWidth()
                         .height(48.dp)
-                        .graphicsLayer { scaleX = ingredientScale; scaleY = ingredientScale },
+                        .graphicsLayer { scaleX = ingredientScale; scaleY = ingredientScale }
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(recipeButtonGradient),
                     interactionSource = ingredientPress,
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = recipeOrange)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                 ) {
 
                     Text(
@@ -1246,14 +1252,15 @@ fun AddRecipeScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp)
-                .graphicsLayer { scaleX = shareScale; scaleY = shareScale },
+                .graphicsLayer { scaleX = shareScale; scaleY = shareScale }
+                .clip(RoundedCornerShape(18.dp))
+                .background(recipeButtonGradient),
             interactionSource = sharePress,
             shape =
                 RoundedCornerShape(18.dp),
             colors =
                 ButtonDefaults.buttonColors(
-                    containerColor =
-                        recipeOrange
+                    containerColor = Color.Transparent
                 )
         ) {
 
