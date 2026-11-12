@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.People
 import com.smartpantry.chef.data.RecipeEngagement
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
@@ -146,7 +148,7 @@ fun CategoryRecipesScreen(
         } else {
             LazyColumn(
                 contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(9.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(visible, key = { it.id }) { recipe ->
                     Card(
@@ -157,7 +159,7 @@ fun CategoryRecipesScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
-                                Modifier.size(width = 104.dp, height = 104.dp)
+                                Modifier.size(width = 96.dp, height = 96.dp)
                                     .background(Color(0xFFFFDFCC)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -170,11 +172,11 @@ fun CategoryRecipesScreen(
                                     )
                                 } else Text("🍲", fontSize = 34.sp)
                             }
-                            Column(Modifier.weight(1f).padding(start = 11.dp, top = 7.dp, bottom = 7.dp)) {
+                            Column(Modifier.weight(1f).padding(start = 10.dp, top = 5.dp, bottom = 5.dp)) {
                                 Text(recipe.name, fontWeight = FontWeight.Bold,
-                                    color = categoryInk, fontSize = 14.sp, maxLines = 1,
+                                    color = Color(0xFF17110F), fontSize = 14.sp, maxLines = 1,
                                     overflow = TextOverflow.Ellipsis)
-                                Text(recipe.category, color = categoryOrange, fontSize = 11.sp,
+                                Text(recipe.category, color = Color(0xFFE6470C), fontWeight = FontWeight.Medium, fontSize = 11.sp,
                                     maxLines = 1)
                                 val engagement = engagements[recipe.id]
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -190,9 +192,23 @@ fun CategoryRecipesScreen(
                                     Text("(${engagement?.commentCount ?: 0} yorum)",
                                         color = Color(0xFF756052), fontSize = 10.sp)
                                 }
-                                Text("◷ ${recipe.preparationTime}  |  ${recipe.servings}",
-                                    color = Color(0xFF756052), fontSize = 10.sp,
-                                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.AccessTime, contentDescription = null,
+                                        tint = Color(0xFF50423C), modifier = Modifier.size(12.dp))
+                                    Spacer(Modifier.width(3.dp))
+                                    Text(recipe.preparationTime, color = Color(0xFF50423C),
+                                        fontSize = 10.sp, maxLines = 1)
+                                    Spacer(Modifier.width(8.dp))
+                                    Icon(Icons.Default.People, contentDescription = null,
+                                        tint = Color(0xFF50423C), modifier = Modifier.size(12.dp))
+                                    Spacer(Modifier.width(3.dp))
+                                    Text(
+                                        if (recipe.servings.contains("kişi", ignoreCase = true))
+                                            recipe.servings else "${recipe.servings} kişilik",
+                                        color = Color(0xFF50423C), fontSize = 10.sp,
+                                        maxLines = 1, overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
                             IconButton(
                                 onClick = {
