@@ -196,7 +196,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 (if (showAllRecommendations) shown else shown.take(5)).forEach { recipe ->
-                    ExplorePhotoCard(recipe, engagements[recipe.id],
+                    ExploreFeaturedRecommendationCard(recipe, engagements[recipe.id],
                         onFavoriteClick = { toggleFavorite(recipe) },
                         onClick = { onRecipeClick(recipe) })
                 }
@@ -409,6 +409,101 @@ private fun ExplorePhotoCard(
                         fontWeight = FontWeight.SemiBold)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ExploreFeaturedRecommendationCard(
+    recipe: Recipe,
+    engagement: RecipeEngagement?,
+    onFavoriteClick: () -> Unit,
+    onClick: () -> Unit
+) {
+    // The recipe and favorite surfaces are siblings, so tapping the pot
+    // never triggers the recipe navigation callback.
+    Box(
+        Modifier.width(238.dp).height(184.dp)
+            .shadow(5.dp, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp))
+    ) {
+        Box(
+            Modifier.fillMaxSize().clickable(onClick = onClick)
+        ) {
+            if (!recipe.imageUri.isNullOrBlank()) {
+                Image(
+                    painter = rememberAsyncImagePainter(recipe.imageUri),
+                    contentDescription = recipe.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    Modifier.fillMaxSize().background(Color(0xFFF8E7D7)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🍽️", fontSize = 44.sp)
+                }
+            }
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        0.0f to Color.Transparent,
+                        0.42f to Color(0x330F0804),
+                        1.0f to Color(0xD9160B05)
+                    )
+                )
+            )
+            Column(
+                Modifier.align(Alignment.BottomStart)
+                    .fillMaxWidth().padding(start = 13.dp, end = 12.dp, bottom = 12.dp)
+            ) {
+                Text(
+                    displayRecipeTitle(recipe.name),
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    lineHeight = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val ratingCount = engagement?.ratingCount ?: 0
+                    val rating = engagement?.averageRating ?: 0.0
+                    Text(
+                        if (ratingCount > 0) "⭐ " +
+                            String.format(java.util.Locale.getDefault(), "%.1f", rating)
+                        else "☆ Yeni tarif",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "◷ " + recipe.preparationTime,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+        Box(
+            Modifier.align(Alignment.TopEnd).padding(8.dp)
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFFDFBF8))
+                .clickable(onClick = onFavoriteClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                if (engagement?.isFavorite == true) "🍲" else "🥣",
+                fontSize = 19.sp
+            )
         }
     }
 }
