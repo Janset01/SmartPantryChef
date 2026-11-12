@@ -7,6 +7,12 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,12 +67,35 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+private val pantryOrange = Color(0xFFEA5716)
+private val pantryInk = Color(0xFF38231B)
+private val pantryCream = Color(0xFFFFF8F2)
+
+@Composable
+private fun pantryPressScale(source: MutableInteractionSource): Float {
+    val pressed by source.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.96f else 1f,
+        label = "pantryPress"
+    )
+    return scale
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantryScreen(
     onShowRecipeSuggestions: () -> Unit,
     onShowShoppingList: () -> Unit
 ) {
+
+    val suggestionPress = remember { MutableInteractionSource() }
+    val suggestionScale = pantryPressScale(suggestionPress)
+    val shoppingPress = remember { MutableInteractionSource() }
+    val shoppingScale = pantryPressScale(shoppingPress)
+    val datePress = remember { MutableInteractionSource() }
+    val dateScale = pantryPressScale(datePress)
+    val addPress = remember { MutableInteractionSource() }
+    val addScale = pantryPressScale(addPress)
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -205,7 +234,7 @@ fun PantryScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Color(0xFFF8F6F2)
+                pantryCream
             )
             .verticalScroll(
                 rememberScrollState()
@@ -215,9 +244,9 @@ fun PantryScreen(
 
         Text(
             text = "🧊 Buzdolabım",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
+            fontSize = 30.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = pantryInk
         )
 
         Spacer(
@@ -227,7 +256,7 @@ fun PantryScreen(
         Text(
             text = "Stoklarını ve kalan miktarlarını takip et",
             fontSize = 15.sp,
-            color = Color.Gray
+            color = Color(0xFF88756A)
         )
 
         Spacer(
@@ -250,9 +279,13 @@ fun PantryScreen(
 
         Button(
             onClick = onShowRecipeSuggestions,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(50.dp)
+                .graphicsLayer { scaleX = suggestionScale; scaleY = suggestionScale },
+            interactionSource = suggestionPress,
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = pantryOrange)
         ) {
-            Text("🍳 Elimdekilerle Ne Yapabilirim?")
+            Text("🍳 Elimdekilerle Ne Yapabilirim?", fontWeight = FontWeight.Bold)
         }
 
         Spacer(
@@ -261,9 +294,12 @@ fun PantryScreen(
 
         OutlinedButton(
             onClick = onShowShoppingList,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(48.dp)
+                .graphicsLayer { scaleX = shoppingScale; scaleY = shoppingScale },
+            interactionSource = shoppingPress,
+            shape = RoundedCornerShape(18.dp)
         ) {
-            Text("🛒 Alışveriş Listem")
+            Text("🛒 Alışveriş Listem", color = pantryOrange, fontWeight = FontWeight.Bold)
         }
 
         Spacer(
@@ -276,9 +312,9 @@ fun PantryScreen(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = Color(0xFFFFFDF9)
             ),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 3.dp
@@ -290,9 +326,10 @@ fun PantryScreen(
             ) {
 
                 Text(
-                    text = "Yeni Malzeme",
+                    text = "🥕 Yeni Malzeme",
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.ExtraBold,
+                    color = pantryInk
                 )
 
                 Spacer(
@@ -439,11 +476,14 @@ fun PantryScreen(
                     onClick = {
                         datePickerDialog.show()
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(46.dp)
+                        .graphicsLayer { scaleX = dateScale; scaleY = dateScale },
+                    interactionSource = datePress,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
 
                     Text(
-                        text = "📅 Tarih Seç"
+                        text = "📅 Tarih Seç", color = pantryOrange
                     )
                 }
 
@@ -523,11 +563,15 @@ fun PantryScreen(
                             ).show()
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(50.dp)
+                        .graphicsLayer { scaleX = addScale; scaleY = addScale },
+                    interactionSource = addPress,
+                    shape = RoundedCornerShape(17.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = pantryOrange)
                 ) {
 
                     Text(
-                        text = "➕ Buzdolabına Ekle"
+                        text = "➕ Buzdolabına Ekle", fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -545,7 +589,7 @@ fun PantryScreen(
             text = "📦 Malzemelerim",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
+            color = pantryInk
         )
 
         Spacer(
