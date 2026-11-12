@@ -262,16 +262,10 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
         } else {
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                (if (showAllPopular) popular else popular.take(5)).forEachIndexed { index, recipe ->
-                    Box {
-                        ExploreFeaturedRecommendationCard(recipe, engagements[recipe.id],
-                            onFavoriteClick = { toggleFavorite(recipe) },
-                            onClick = { onRecipeClick(recipe) })
-                        Box(Modifier.padding(7.dp).size(30.dp).clip(CircleShape)
-                            .background(Color(0xFFFFC64D)), contentAlignment = Alignment.Center) {
-                            Text((index + 1).toString(), fontWeight = FontWeight.ExtraBold)
-                        }
-                    }
+                (if (showAllPopular) popular else popular.take(5)).forEach { recipe ->
+                    ExploreFeaturedRecommendationCard(recipe, engagements[recipe.id],
+                        onFavoriteClick = { toggleFavorite(recipe) },
+                        onClick = { onRecipeClick(recipe) })
                 }
             }
         }
