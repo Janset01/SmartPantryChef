@@ -68,9 +68,9 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-private val pantryOrange = Color(0xFFB65E3B)
+private val pantryOrange = Color(0xFFEA681F)
 private val pantryButtonGradient = androidx.compose.ui.graphics.Brush.horizontalGradient(
-    listOf(Color(0xFF984B38), Color(0xFFC77750))
+    listOf(Color(0xFFFF943B), Color(0xFFE85A16))
 )
 private val pantryInk = Color(0xFF38231B)
 private val pantryCream = Color(0xFFFFF8F2)
