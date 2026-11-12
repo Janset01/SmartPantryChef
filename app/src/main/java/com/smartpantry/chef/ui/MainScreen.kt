@@ -264,7 +264,7 @@ fun MainScreen() {
                             onRecipeClick = { recipe -> selectedRecipe = recipe },
                             onExplore = { selectedIndex = 1 },
                             onCategoryClick = { category ->
-                                selectedCategory = category
+                                selectedCategory = category.takeUnless { it == "Tümü" }
                                 showCategoryScreen = true
                             },
                             onPantryClick = { selectedIndex = 3 },
