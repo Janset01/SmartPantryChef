@@ -6,6 +6,10 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,9 +62,33 @@ import com.smartpantry.chef.data.RecipeIngredient
 import com.smartpantry.chef.data.RecipeMedia
 import kotlinx.coroutines.launch
 
+private val recipeOrange = Color(0xFFEA5716)
+private val recipeInk = Color(0xFF38231B)
+private val recipeCream = Color(0xFFFFF8F2)
+private val recipePeach = Color(0xFFFFE9D9)
+
+@Composable
+private fun recipePressScale(source: MutableInteractionSource): Float {
+    val pressed by source.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.96f else 1f,
+        label = "recipeButtonScale"
+    )
+    return scale
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeScreen() {
+
+    val ingredientPress = remember { MutableInteractionSource() }
+    val ingredientScale = recipePressScale(ingredientPress)
+    val photoPress = remember { MutableInteractionSource() }
+    val photoScale = recipePressScale(photoPress)
+    val videoPress = remember { MutableInteractionSource() }
+    val videoScale = recipePressScale(videoPress)
+    val sharePress = remember { MutableInteractionSource() }
+    val shareScale = recipePressScale(sharePress)
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -212,7 +240,7 @@ fun AddRecipeScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Color(0xFFF8F6F2)
+                recipeCream
             )
             .verticalScroll(
                 rememberScrollState()
@@ -229,9 +257,9 @@ fun AddRecipeScreen() {
 
         Text(
             text = "Tarif Ekle 🍳",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
+            fontSize = 30.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = recipeInk
         )
 
         Spacer(
@@ -243,7 +271,7 @@ fun AddRecipeScreen() {
             text =
                 "Kendi tarifini toplulukla paylaş",
             fontSize = 15.sp,
-            color = Color.Gray
+            color = Color(0xFF8B776B)
         )
 
         Spacer(
@@ -255,11 +283,11 @@ fun AddRecipeScreen() {
             modifier =
                 Modifier.fillMaxWidth(),
             shape =
-                RoundedCornerShape(22.dp),
+                RoundedCornerShape(24.dp),
             colors =
                 CardDefaults.cardColors(
                     containerColor =
-                        Color.White
+                        Color(0xFFFFFDF9)
                 ),
             elevation =
                 CardDefaults.cardElevation(
@@ -442,7 +470,7 @@ fun AddRecipeScreen() {
                     fontWeight =
                         FontWeight.Bold,
                     color =
-                        Color(0xFF2F3E34)
+                        recipeInk
                 )
 
                 Spacer(
@@ -664,8 +692,12 @@ fun AddRecipeScreen() {
                         ingredientQuantity = ""
                         ingredientUnit = "Adet"
                     },
-                    modifier =
-                        Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
+                        .height(48.dp)
+                        .graphicsLayer { scaleX = ingredientScale; scaleY = ingredientScale },
+                    interactionSource = ingredientPress,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = recipeOrange)
                 ) {
 
                     Text(
@@ -810,7 +842,7 @@ fun AddRecipeScreen() {
             colors =
                 CardDefaults.cardColors(
                     containerColor =
-                        Color(0xFFDDE9DF)
+                        recipePeach
                 )
         ) {
 
@@ -826,7 +858,7 @@ fun AddRecipeScreen() {
                     fontWeight =
                         FontWeight.Bold,
                     color =
-                        Color(0xFF2F3E34)
+                        recipeInk
                 )
 
                 Spacer(
@@ -838,7 +870,7 @@ fun AddRecipeScreen() {
                     text =
                         "Malzemelerin toplu hali, karıştırma, pişirme veya servis gibi istediğin aşamalardan en fazla 10 fotoğraf ve 1 video ekleyebilirsin.",
                     fontSize = 13.sp,
-                    color = Color.Gray
+                    color = Color(0xFF8B776B)
                 )
 
                 Spacer(
@@ -852,8 +884,11 @@ fun AddRecipeScreen() {
                             arrayOf("image/*")
                         )
                     },
-                    modifier =
-                        Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
+                        .height(48.dp)
+                        .graphicsLayer { scaleX = photoScale; scaleY = photoScale },
+                    interactionSource = photoPress,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
                         "Fotoğraf Seç (${selectedImageUris.size}/10)"
@@ -910,7 +945,7 @@ fun AddRecipeScreen() {
                                                 "Kapak fotoğrafı",
                                             fontSize = 12.sp,
                                             color =
-                                                Color.Gray
+                                                Color(0xFF8B776B)
                                         )
                                     }
                                 }
@@ -942,8 +977,11 @@ fun AddRecipeScreen() {
                             arrayOf("video/*")
                         )
                     },
-                    modifier =
-                        Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
+                        .height(48.dp)
+                        .graphicsLayer { scaleX = videoScale; scaleY = videoScale },
+                    interactionSource = videoPress,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
                         if (
@@ -1207,13 +1245,15 @@ fun AddRecipeScreen() {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp),
+                .height(55.dp)
+                .graphicsLayer { scaleX = shareScale; scaleY = shareScale },
+            interactionSource = sharePress,
             shape =
                 RoundedCornerShape(18.dp),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor =
-                        Color(0xFF4F7F65)
+                        recipeOrange
                 )
         ) {
 
