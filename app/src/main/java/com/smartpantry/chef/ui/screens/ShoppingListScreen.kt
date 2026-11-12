@@ -61,6 +61,7 @@ private fun shoppingPressScale(source: MutableInteractionSource): Float {
 fun ShoppingListScreen(
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val backPress = remember { MutableInteractionSource() }
     val backScale = shoppingPressScale(backPress)
     val clearPress = remember { MutableInteractionSource() }
