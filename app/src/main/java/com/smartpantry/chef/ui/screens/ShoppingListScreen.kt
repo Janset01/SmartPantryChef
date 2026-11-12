@@ -3,6 +3,10 @@ package com.smartpantry.chef.ui.screens
 import android.app.DatePickerDialog
 import android.widget.Toast
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,10 +51,20 @@ import java.util.Calendar
 import java.util.Locale
 
 @Composable
+private fun shoppingPressScale(source: MutableInteractionSource): Float {
+    val pressed by source.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.97f else 1f, label = "shoppingPress")
+    return scale
+}
+
+@Composable
 fun ShoppingListScreen(
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
+    val backPress = remember { MutableInteractionSource() }
+    val backScale = shoppingPressScale(backPress)
+    val clearPress = remember { MutableInteractionSource() }
+    val clearScale = shoppingPressScale(clearPress)
     val scope = rememberCoroutineScope()
 
     val database = remember {
@@ -82,12 +97,16 @@ fun ShoppingListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F6F2))
+            .background(Color(0xFFFFF8F2))
             .padding(20.dp)
     ) {
 
         Button(
-            onClick = onBack
+            onClick = onBack,
+            interactionSource = backPress,
+            modifier = Modifier.graphicsLayer { scaleX = backScale; scaleY = backScale },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF712B)),
+            shape = RoundedCornerShape(18.dp)
         ) {
             Text("← Buzdolabına Dön")
         }
@@ -98,7 +117,7 @@ fun ShoppingListScreen(
             text = "🛒 Alışveriş Listem",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF2F3E34)
+            color = Color(0xFF493028)
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -148,7 +167,7 @@ fun ShoppingListScreen(
                 text = "Alınacak $remainingCount ürün var",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF4F7F65)
+                color = Color(0xFFE66A26)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -198,7 +217,8 @@ fun ShoppingListScreen(
                 onClick = {
                     showClearDialog = true
                 },
-                modifier = Modifier.fillMaxWidth(),
+                interactionSource = clearPress,
+                modifier = Modifier.fillMaxWidth().graphicsLayer { scaleX = clearScale; scaleY = clearScale },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFB3261E)
                 )
@@ -309,7 +329,7 @@ private fun ShoppingItemCard(
         colors = CardDefaults.cardColors(
             containerColor =
                 if (item.isPurchased) {
-                    Color(0xFFE8F1EA)
+                    Color(0xFFFFE8D4)
                 } else {
                     Color.White
                 }
@@ -329,7 +349,8 @@ private fun ShoppingItemCard(
 
                 Checkbox(
                     checked = item.isPurchased,
-                    onCheckedChange = onPurchasedChange
+                    onCheckedChange = onPurchasedChange,
+                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFFEF712B))
                 )
 
                 Column(
@@ -342,7 +363,7 @@ private fun ShoppingItemCard(
                         text = item.name,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2F3E34)
+                        color = Color(0xFF493028)
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -362,7 +383,7 @@ private fun ShoppingItemCard(
                             text = "✅ Alındı",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF3F6F52)
+                            color = Color(0xFFDD6826)
                         )
                     }
                 }
