@@ -29,6 +29,7 @@ import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.ui.screens.AddRecipeScreen
 import com.smartpantry.chef.ui.screens.EditRecipeScreen
 import com.smartpantry.chef.ui.screens.ExploreScreen
+import com.smartpantry.chef.ui.screens.CategoryRecipesScreen
 import com.smartpantry.chef.ui.screens.HomeScreen
 import com.smartpantry.chef.ui.screens.PantryRecipeSuggestionsScreen
 import com.smartpantry.chef.ui.screens.PantryScreen
@@ -44,6 +45,9 @@ fun MainScreen() {
     var selectedIndex by remember {
         mutableIntStateOf(0)
     }
+
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var showCategoryScreen by remember { mutableStateOf(false) }
 
     var selectedRecipe by remember {
         mutableStateOf<Recipe?>(null)
@@ -78,6 +82,7 @@ fun MainScreen() {
                     onClick = {
                         selectedIndex = 0
                         selectedRecipe = null
+                        showCategoryScreen = false
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
@@ -98,6 +103,7 @@ fun MainScreen() {
                     onClick = {
                         selectedIndex = 1
                         selectedRecipe = null
+                        showCategoryScreen = false
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
@@ -118,6 +124,7 @@ fun MainScreen() {
                     onClick = {
                         selectedIndex = 2
                         selectedRecipe = null
+                        showCategoryScreen = false
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
@@ -138,6 +145,7 @@ fun MainScreen() {
                     onClick = {
                         selectedIndex = 3
                         selectedRecipe = null
+                        showCategoryScreen = false
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
@@ -158,6 +166,7 @@ fun MainScreen() {
                     onClick = {
                         selectedIndex = 4
                         selectedRecipe = null
+                        showCategoryScreen = false
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
@@ -217,6 +226,14 @@ fun MainScreen() {
                     }
                 }
 
+                showCategoryScreen -> {
+                    CategoryRecipesScreen(
+                        category = selectedCategory,
+                        onBack = { showCategoryScreen = false },
+                        onRecipeClick = { recipe -> selectedRecipe = recipe }
+                    )
+                }
+
                 showShoppingList -> {
 
                     ShoppingListScreen(
@@ -246,7 +263,10 @@ fun MainScreen() {
                         0 -> HomeScreen(
                             onRecipeClick = { recipe -> selectedRecipe = recipe },
                             onExplore = { selectedIndex = 1 },
-                            onCategoryClick = { selectedIndex = 1 },
+                            onCategoryClick = { category ->
+                                selectedCategory = category
+                                showCategoryScreen = true
+                            },
                             onPantryClick = { selectedIndex = 3 },
                             onMyRecipesClick = { selectedIndex = 4 },
                             onAddRecipeClick = { selectedIndex = 2 },
