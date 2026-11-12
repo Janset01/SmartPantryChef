@@ -270,7 +270,7 @@ fun CategoryRecipesScreen(
                         }
                         Spacer(Modifier.height(10.dp))
                     }
-                    Text("Kaç kişilik?"', fontWeight = FontWeight.Bold, color = categoryInk)
+                    Text("Kaç kişilik?", fontWeight = FontWeight.Bold, color = categoryInk)
                     servingOptions.chunked(4).forEach { options ->
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             options.forEach { option ->
