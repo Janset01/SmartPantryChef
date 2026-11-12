@@ -264,7 +264,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 (if (showAllPopular) popular else popular.take(5)).forEachIndexed { index, recipe ->
                     Box {
-                        ExplorePhotoCard(recipe, engagements[recipe.id], isPopular = true,
+                        ExploreFeaturedRecommendationCard(recipe, engagements[recipe.id],
                             onFavoriteClick = { toggleFavorite(recipe) },
                             onClick = { onRecipeClick(recipe) })
                         Box(Modifier.padding(7.dp).size(30.dp).clip(CircleShape)
@@ -420,12 +420,11 @@ private fun ExploreFeaturedRecommendationCard(
     onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
-    // Full-bleed photo card. Favorite is a sibling of the clickable photo
-    // rather than a nested click target, avoiding accidental navigation.
+    // Match the HomeScreen "İlham Veren Tarifler" card dimensions and styling.
     Box(
-        Modifier.width(282.dp).height(238.dp)
-            .shadow(7.dp, RoundedCornerShape(22.dp))
-            .clip(RoundedCornerShape(22.dp))
+        Modifier.width(285.dp).height(166.dp)
+            .clip(RoundedCornerShape(21.dp))
+            .background(Color(0xFFDDAF91))
     ) {
         Box(Modifier.fillMaxSize().clickable(onClick = onClick)) {
             if (!recipe.imageUri.isNullOrBlank()) {
@@ -435,80 +434,43 @@ private fun ExploreFeaturedRecommendationCard(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-            } else {
-                Box(
-                    Modifier.fillMaxSize().background(
-                        Brush.linearGradient(
-                            listOf(Color(0xFFF4C7A3), Color(0xFFE99055))
-                        )
-                    ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🍽️", fontSize = 64.sp)
-                }
             }
             Box(
                 Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
-                        0f to Color(0x220E0906),
-                        0.37f to Color.Transparent,
-                        0.66f to Color(0x7A140B06),
-                        1f to Color(0xE9160B06)
+                        listOf(Color.Transparent, Color(0xD92A130A))
                     )
                 )
             )
-            Column(
-                Modifier.align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(start = 17.dp, end = 14.dp, bottom = 17.dp)
-            ) {
+            Column(Modifier.align(Alignment.BottomStart).padding(13.dp)) {
                 Text(
                     displayRecipeTitle(recipe.name),
-                    fontSize = 21.sp,
-                    lineHeight = 24.sp,
+                    fontSize = 19.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color.White
                 )
-                Spacer(Modifier.height(9.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val count = engagement?.ratingCount ?: 0
-                    val rating = engagement?.averageRating ?: 0.0
-                    Text(
-                        if (count > 0) "⭐ " +
-                            String.format(java.util.Locale.getDefault(), "%.1f", rating)
-                        else "☆ Yeni tarif",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        "◷ " + recipe.preparationTime,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                        maxLines = 1
-                    )
-                }
+                Spacer(Modifier.height(6.dp))
+                val rating = engagement?.averageRating ?: 0.0
+                Text(
+                    "⭐ " + String.format(java.util.Locale.US, "%.1f", rating) +
+                        "   ◷ " + recipe.preparationTime,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         }
         Box(
-            Modifier.align(Alignment.TopEnd)
-                .padding(11.dp)
-                .size(42.dp)
-                .shadow(3.dp, CircleShape)
-                .clip(CircleShape)
-                .background(Color(0xFFFDF8F3))
+            Modifier.align(Alignment.TopEnd).padding(10.dp).size(37.dp)
+                .clip(CircleShape).background(Color.White)
                 .clickable(onClick = onFavoriteClick),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 if (engagement?.isFavorite == true) "🍲" else "🥣",
-                fontSize = 22.sp
+                fontSize = 20.sp
             )
         }
     }
