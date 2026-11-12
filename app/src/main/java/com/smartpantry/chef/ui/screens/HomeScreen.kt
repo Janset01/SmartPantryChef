@@ -64,6 +64,30 @@ fun HomeScreen(
     var recipes by remember { mutableStateOf<List<Recipe>>(emptyList()) }
     var engagements by remember { mutableStateOf<Map<Int, RecipeEngagement>>(emptyMap()) }
     var search by remember { mutableStateOf("") }
+    var searchOpen by remember { mutableStateOf(false) }
+    var filtersOpen by remember { mutableStateOf(false) }
+    var searchCategory by remember { mutableStateOf("Tümü") }
+    var searchMaxMinutes by remember { mutableIntStateOf(0) }
+    var searchMinRating by remember { mutableStateOf(false) }
+    var searchSort by remember { mutableStateOf("En yeni") }
+    val searchCategories = listOf("Tümü", "Ana Yemek", "Salata", "Tatlı", "Çorba",
+        "Fırın", "Kahvaltı", "Atıştırmalık", "Öğle Yemeği", "Brunch", "Akşam Yemeği", "Fit")
+    val filteredHomeRecipes = remember(recipes, engagements, search, searchCategory, searchMaxMinutes, searchMinRating, searchSort) {
+        val query = search.trim()
+        val matched = recipes.filter { recipe ->
+            (query.isEmpty() || recipe.name.contains(query, ignoreCase = true) ||
+                recipe.category.contains(query, ignoreCase = true) ||
+                recipe.ingredients.contains(query, ignoreCase = true)) &&
+                (searchCategory == "Tümü" || recipe.category == searchCategory) &&
+                (searchMaxMinutes == 0 || (Regex("\\d+").find(recipe.preparationTime)?.value?.toIntOrNull()
+                    ?: Int.MAX_VALUE) <= searchMaxMinutes) &&
+                (!searchMinRating || (engagements[recipe.id]?.averageRating ?: 0.0) >= 4.0)
+        }
+        if (searchSort == "En yüksek puan") matched.sortedWith(
+            compareByDescending<Recipe> { engagements[it.id]?.averageRating ?: 0.0 }
+                .thenByDescending { it.id }
+        ) else matched.sortedByDescending { it.id }
+    }
     var selectedDay by remember { mutableIntStateOf(0) }
     var showPlanner by remember { mutableStateOf(false) }
     var showNotifications by remember { mutableStateOf(false) }
@@ -483,13 +507,17 @@ fun HomeScreen(
             }
             OutlinedTextField(
                 value = search,
-                onValueChange = { search = it },
+                onValueChange = { search = it; searchOpen = true },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
                     .height(52.dp),
                 placeholder = { Text("Tarif, malzeme veya kategori ara...", fontSize = 13.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, null, tint = homeMuted) },
+                leadingIcon = {
+                    IconButton(onClick = { searchOpen = true }) {
+                        Icon(Icons.Default.Search, "Tarif ara", tint = homeMuted)
+                    }
+                },
                 trailingIcon = {
-                    IconButton(onClick = { onExplore() }) {
+                    IconButton(onClick = { filtersOpen = true }) {
                         Icon(Icons.Default.Tune, "Filtreler", tint = homeOrange)
                     }
                 },
@@ -503,6 +531,142 @@ fun HomeScreen(
                 )
             )
         }
+        if (searchOpen || search.isNotBlank() || searchCategory != "Tümü" ||
+            searchMaxMinutes != 0 || searchMinRating) {
+            Column(
+                Modifier.fillMaxSize().padding(top = 124.dp)
+                    .background(homeCream).verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Tarif Ara", Modifier.weight(1f), fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold, color = homeInk)
+                    TextButton(onClick = {
+                        searchOpen = false
+                        search = ""
+                        searchCategory = "Tümü"
+                        searchMaxMinutes = 0
+                        searchMinRating = false
+                    }) { Text("Kapat", color = homeOrange) }
+                }
+                Text("${filteredHomeRecipes.size} tarif bulundu", color = homeMuted, fontSize = 12.sp)
+                if (searchCategory != "Tümü" || searchMaxMinutes != 0 || searchMinRating) {
+                    TextButton(onClick = { filtersOpen = true }) {
+                        Text("Aktif filtreler · Düzenle", color = homeOrange)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                filteredHomeRecipes.forEach { recipe ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                            .clickable { searchOpen = false; onRecipeClick(recipe) },
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                Modifier.size(width = 104.dp, height = 96.dp)
+                                    .background(Color(0xFFFFE2CE)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (!recipe.imageUri.isNullOrBlank()) {
+                                    Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
+                                        Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                } else Text("🍲", fontSize = 34.sp)
+                            }
+                            Column(Modifier.weight(1f).padding(12.dp)) {
+                                Text(recipe.name, color = homeInk, fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold, maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis)
+                                Text(recipe.category + " · " + recipe.preparationTime,
+                                    color = homeMuted, fontSize = 12.sp)
+                                Text("★ " + String.format(java.util.Locale.US, "%.1f",
+                                    engagements[recipe.id]?.averageRating ?: 0.0),
+                                    color = homeOrange, fontSize = 12.sp)
+                            }
+                            Icon(Icons.Default.ArrowForward, null, tint = homeOrange,
+                                modifier = Modifier.padding(end = 12.dp))
+                        }
+                    }
+                }
+                if (filteredHomeRecipes.isEmpty()) {
+                    Text("Bu arama ve filtrelerle eşleşen tarif bulunamadı.",
+                        color = homeMuted, modifier = Modifier.padding(top = 24.dp))
+                }
+            }
+        }
+    }
+    if (filtersOpen) {
+        AlertDialog(
+            onDismissRequest = { filtersOpen = false },
+            title = { Text("Tarif Filtreleri", color = homeInk) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text("Kategori", fontWeight = FontWeight.Bold, color = homeInk)
+                    Column {
+                        searchCategories.chunked(3).forEach { group ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                group.forEach { category ->
+                                    FilterChip(
+                                        selected = searchCategory == category,
+                                        onClick = { searchCategory = category },
+                                        label = { Text(category, fontSize = 10.sp) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = Color(0xFFFFD4B8),
+                                            selectedLabelColor = homeInk
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Text("Hazırlama süresi", fontWeight = FontWeight.Bold, color = homeInk)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(0, 15, 30, 60).forEach { minutes ->
+                            FilterChip(
+                                selected = searchMaxMinutes == minutes,
+                                onClick = { searchMaxMinutes = minutes },
+                                label = { Text(if (minutes == 0) "Tümü" else "≤ ${minutes} dk",
+                                    fontSize = 11.sp) }
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = searchMinRating,
+                            onCheckedChange = { searchMinRating = it },
+                            colors = CheckboxDefaults.colors(checkedColor = homeOrange))
+                        Text("4.0 ve üzeri puan", color = homeInk)
+                    }
+                    Text("Sıralama", fontWeight = FontWeight.Bold, color = homeInk)
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                        listOf("En yeni", "En yüksek puan").forEach { option ->
+                            FilterChip(
+                                selected = searchSort == option,
+                                onClick = { searchSort = option },
+                                label = { Text(option, fontSize = 11.sp) }
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { filtersOpen = false; searchOpen = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = homeOrange)
+                ) { Text("Sonuçları Göster") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    searchCategory = "Tümü"
+                    searchMaxMinutes = 0
+                    searchMinRating = false
+                    searchSort = "En yeni"
+                }) { Text("Sıfırla", color = homeOrange) }
+            },
+            containerColor = homeCream
+        )
     }
     if (showNotifications) {
         AlertDialog(onDismissRequest = { showNotifications = false },
