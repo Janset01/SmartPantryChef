@@ -63,9 +63,9 @@ import com.smartpantry.chef.data.RecipeIngredient
 import com.smartpantry.chef.data.RecipeMedia
 import kotlinx.coroutines.launch
 
-private val recipeOrange = Color(0xFFB65E3B)
+private val recipeOrange = Color(0xFFEA681F)
 private val recipeButtonGradient = androidx.compose.ui.graphics.Brush.horizontalGradient(
-    listOf(Color(0xFF984B38), Color(0xFFC77750))
+    listOf(Color(0xFFFF943B), Color(0xFFE85A16))
 )
 private val recipeInk = Color(0xFF38231B)
 private val recipeCream = Color(0xFFFFF8F2)
