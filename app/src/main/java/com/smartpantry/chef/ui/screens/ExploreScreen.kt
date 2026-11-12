@@ -420,16 +420,14 @@ private fun ExploreFeaturedRecommendationCard(
     onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
-    // The recipe and favorite surfaces are siblings, so tapping the pot
-    // never triggers the recipe navigation callback.
+    // Full-bleed photo card. Favorite is a sibling of the clickable photo
+    // rather than a nested click target, avoiding accidental navigation.
     Box(
-        Modifier.width(238.dp).height(184.dp)
-            .shadow(5.dp, RoundedCornerShape(20.dp))
-            .clip(RoundedCornerShape(20.dp))
+        Modifier.width(282.dp).height(238.dp)
+            .shadow(7.dp, RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(22.dp))
     ) {
-        Box(
-            Modifier.fillMaxSize().clickable(onClick = onClick)
-        ) {
+        Box(Modifier.fillMaxSize().clickable(onClick = onClick)) {
             if (!recipe.imageUri.isNullOrBlank()) {
                 Image(
                     painter = rememberAsyncImagePainter(recipe.imageUri),
@@ -439,70 +437,78 @@ private fun ExploreFeaturedRecommendationCard(
                 )
             } else {
                 Box(
-                    Modifier.fillMaxSize().background(Color(0xFFF8E7D7)),
+                    Modifier.fillMaxSize().background(
+                        Brush.linearGradient(
+                            listOf(Color(0xFFF4C7A3), Color(0xFFE99055))
+                        )
+                    ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("🍽️", fontSize = 44.sp)
+                    Text("🍽️", fontSize = 64.sp)
                 }
             }
             Box(
                 Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
-                        0.0f to Color.Transparent,
-                        0.42f to Color(0x330F0804),
-                        1.0f to Color(0xD9160B05)
+                        0f to Color(0x220E0906),
+                        0.37f to Color.Transparent,
+                        0.66f to Color(0x7A140B06),
+                        1f to Color(0xE9160B06)
                     )
                 )
             )
             Column(
                 Modifier.align(Alignment.BottomStart)
-                    .fillMaxWidth().padding(start = 13.dp, end = 12.dp, bottom = 12.dp)
+                    .fillMaxWidth()
+                    .padding(start = 17.dp, end = 14.dp, bottom = 17.dp)
             ) {
                 Text(
                     displayRecipeTitle(recipe.name),
-                    color = Color.White,
-                    fontSize = 17.sp,
-                    lineHeight = 20.sp,
+                    fontSize = 21.sp,
+                    lineHeight = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(9.dp))
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val ratingCount = engagement?.ratingCount ?: 0
+                    val count = engagement?.ratingCount ?: 0
                     val rating = engagement?.averageRating ?: 0.0
                     Text(
-                        if (ratingCount > 0) "⭐ " +
+                        if (count > 0) "⭐ " +
                             String.format(java.util.Locale.getDefault(), "%.1f", rating)
                         else "☆ Yeni tarif",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                     Text(
                         "◷ " + recipe.preparationTime,
-                        color = Color.White,
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
                         maxLines = 1
                     )
                 }
             }
         }
         Box(
-            Modifier.align(Alignment.TopEnd).padding(8.dp)
-                .size(36.dp)
+            Modifier.align(Alignment.TopEnd)
+                .padding(11.dp)
+                .size(42.dp)
+                .shadow(3.dp, CircleShape)
                 .clip(CircleShape)
-                .background(Color(0xFFFDFBF8))
+                .background(Color(0xFFFDF8F3))
                 .clickable(onClick = onFavoriteClick),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 if (engagement?.isFavorite == true) "🍲" else "🥣",
-                fontSize = 19.sp
+                fontSize = 22.sp
             )
         }
     }
