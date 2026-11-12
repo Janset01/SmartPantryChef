@@ -188,9 +188,9 @@ fun RecipeDetailScreen(
         pantryCheckLoading = false
     }
 
-    val forest = Color(0xFF315D34)
-    val ink = Color(0xFF28382B)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF8F5EE)).verticalScroll(rememberScrollState())) {
+    val forest = Color(0xFFE96A24)
+    val ink = Color(0xFF493028)
+    Column(Modifier.fillMaxSize().background(Color(0xFFFFF8F2)).verticalScroll(rememberScrollState())) {
         Box(Modifier.fillMaxWidth()) {
             if (!recipe.imageUri.isNullOrBlank()) {
                 Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
@@ -219,7 +219,7 @@ fun RecipeDetailScreen(
             }
             Column(Modifier.align(Alignment.BottomStart).padding(20.dp)) {
                 Text(recipe.category, color = Color.White, fontSize = 13.sp,
-                    modifier = Modifier.clip(RoundedCornerShape(16.dp)).background(Color(0xFFE4A62D))
+                    modifier = Modifier.clip(RoundedCornerShape(16.dp)).background(Color(0xFFF6A436))
                         .padding(horizontal = 12.dp, vertical = 7.dp))
                 Spacer(Modifier.height(9.dp))
                 Text(recipe.name, color = Color.White, fontWeight = FontWeight.ExtraBold,
@@ -276,7 +276,7 @@ fun RecipeDetailScreen(
                                     fontSize = 15.sp, lineHeight = 22.sp,
                                     textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None)
                             }
-                            HorizontalDivider(color = Color(0xFFF1EFE8))
+                            HorizontalDivider(color = Color(0xFFF4E4D8))
                         }
                     }
                 }
@@ -341,7 +341,7 @@ fun RecipeDetailScreen(
                 fontWeight =
                     FontWeight.Bold,
                 color =
-                    Color(0xFF2F3E34)
+                    Color(0xFF493028)
             )
 
             Spacer(
@@ -438,7 +438,7 @@ fun RecipeDetailScreen(
                 colors =
                     CardDefaults.cardColors(
                         containerColor =
-                            Color(0xFFE7EEF9)
+                            Color(0xFFFFE9D9)
                     )
             ) {
 
@@ -454,7 +454,7 @@ fun RecipeDetailScreen(
                         fontWeight =
                             FontWeight.Bold,
                         color =
-                            Color(0xFF2F3E34)
+                            Color(0xFF493028)
                     )
 
                     Spacer(
@@ -691,7 +691,7 @@ fun RecipeDetailScreen(
         Spacer(modifier = Modifier.height(30.dp))
 
         HorizontalDivider(
-            color = Color(0xFFD9DED9)
+            color = Color(0xFFF0DDD0)
         )
 
         Spacer(modifier = Modifier.height(14.dp))
@@ -907,7 +907,7 @@ private fun PantryCompatibilitySection(
                 text = "🧊 Buzdolabına Göre Uygunluk",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2F3E34)
+                color = Color(0xFF493028)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
