@@ -1,5 +1,7 @@
 package com.smartpantry.chef.ui.screens.pantry
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -173,7 +175,7 @@ fun PantryInventoryTable(
 
     Column(
         modifier =
-            Modifier.fillMaxWidth()
+            Modifier.fillMaxWidth().animateContentSize()
     ) {
 
         // -------------------------------------------------------------
@@ -188,7 +190,7 @@ fun PantryInventoryTable(
             colors =
                 CardDefaults.cardColors(
                     containerColor =
-                        Color(0xFFEAF2EC)
+                        Color(0xFFFFE9D9)
                 )
         ) {
 
@@ -379,7 +381,7 @@ fun PantryInventoryTable(
                     modifier =
                         Modifier.padding(18.dp),
                     color =
-                        Color(0xFF5B665E)
+                        Color(0xFF796459)
                 )
             }
 
@@ -476,7 +478,7 @@ private fun PantrySummaryValue(
             fontWeight =
                 FontWeight.Bold,
             color =
-                Color(0xFF2F3E34)
+                Color(0xFF38231B)
         )
 
         Spacer(
@@ -488,7 +490,7 @@ private fun PantrySummaryValue(
             text = title,
             fontSize = 12.sp,
             color =
-                Color(0xFF69756D)
+                Color(0xFF8A7568)
         )
     }
 }
@@ -558,7 +560,7 @@ private fun PantryCategoryTable(
                         fontWeight =
                             FontWeight.Bold,
                         color =
-                            Color(0xFF2F3E34)
+                            Color(0xFF38231B)
                     )
 
                     Text(
@@ -571,7 +573,7 @@ private fun PantryCategoryTable(
                                     },
                         fontSize = 13.sp,
                         color =
-                            Color(0xFF66746B)
+                            Color(0xFF8A7568)
                     )
                 }
             }
@@ -580,7 +582,7 @@ private fun PantryCategoryTable(
 
                 HorizontalDivider(
                     color =
-                        Color(0xFFE2E6E3)
+                        Color(0xFFF1DED1)
                 )
 
                 val horizontalScrollState =
@@ -599,7 +601,7 @@ private fun PantryCategoryTable(
 
                     HorizontalDivider(
                         color =
-                            Color(0xFFE2E6E3)
+                            Color(0xFFF1DED1)
                     )
 
                     val sortedItems =
@@ -660,7 +662,7 @@ private fun PantryCategoryTable(
                         HorizontalDivider(
                             color =
                                 Color(
-                                    0xFFE2E6E3
+                                    0xFFF1DED1
                                 )
                         )
 
@@ -700,7 +702,7 @@ private fun PantryTableHeader() {
             Modifier
                 .width(890.dp)
                 .background(
-                    Color(0xFFF1F5F2)
+                    Color(0xFFFFF0E5)
                 )
                 .padding(
                     vertical = 10.dp
@@ -766,7 +768,7 @@ private fun PantryHeaderCell(
         fontWeight =
             FontWeight.Bold,
         color =
-            Color(0xFF526057)
+            Color(0xFF794A34)
     )
 }
 
@@ -802,7 +804,7 @@ private fun PantryTableRow(
                     ) {
                         Color.White
                     } else {
-                        Color(0xFFFAFBFA)
+                        Color(0xFFFFFDF9)
                     }
                 )
                 .clickable {
@@ -828,7 +830,7 @@ private fun PantryTableRow(
             fontWeight =
                 FontWeight.SemiBold,
             color =
-                Color(0xFF2F3E34)
+                Color(0xFF38231B)
         )
 
         Text(
@@ -846,7 +848,7 @@ private fun PantryTableRow(
                     ),
             fontSize = 13.sp,
             color =
-                Color(0xFF526057)
+                Color(0xFF794A34)
         )
 
         Text(
@@ -876,7 +878,7 @@ private fun PantryTableRow(
                     ),
             fontSize = 12.sp,
             color =
-                Color(0xFF526057)
+                Color(0xFF794A34)
         )
 
         Text(
@@ -906,7 +908,7 @@ private fun PantryTableRow(
                     ),
             fontSize = 12.sp,
             color =
-                Color(0xFF66746B)
+                Color(0xFF8A7568)
         )
 
         Row(
@@ -1012,7 +1014,7 @@ private fun pantryStockStatus(
 
         else ->
             "🟢 Yeterli" to
-                    Color(0xFF3F6F52)
+                    Color(0xFFEA5716)
     }
 }
 
@@ -1048,7 +1050,7 @@ private fun pantryFreshnessStatus(
 
         else ->
             "🟢 $days gün" to
-                    Color(0xFF3F6F52)
+                    Color(0xFFEA5716)
     }
 }
 
