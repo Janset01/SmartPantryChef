@@ -141,25 +141,6 @@ fun HomeScreen(
             Box(
                 Modifier.fillMaxWidth().padding(horizontal = 2.dp)
                     .height(344.dp).clip(RoundedCornerShape(25.dp))
-                    .pointerInput(featured.size) {
-                        var dragDistance = 0f
-                        detectHorizontalDragGestures(
-                            onDragStart = { dragDistance = 0f },
-                            onHorizontalDrag = { change, amount ->
-                                change.consume()
-                                dragDistance += amount
-                            },
-                            onDragEnd = {
-                                if (featured.size > 1 && kotlin.math.abs(dragDistance) > 55f) {
-                                    featuredIndex = if (dragDistance < 0)
-                                        (featuredIndex + 1) % featured.size
-                                    else (featuredIndex - 1 + featured.size) % featured.size
-                                }
-                                dragDistance = 0f
-                            },
-                            onDragCancel = { dragDistance = 0f }
-                        )
-                    }
                     .clickable { onRecipeClick(recipe) }
             ) {
                 if (!recipe.imageUri.isNullOrBlank()) {
@@ -198,20 +179,7 @@ fun HomeScreen(
                             fontWeight = FontWeight.ExtraBold, color = Color.White)
                     }
                 }
-                Row(
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 62.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    featured.forEachIndexed { index, _ ->
-                        Box(
-                            Modifier.padding(horizontal = 4.dp)
-                                .size(width = if (index == featuredIndex) 16.dp else 7.dp, height = 7.dp)
-                                .clip(CircleShape)
-                                .background(if (index == featuredIndex) homeOrange else Color(0xFFDAB09A))
-                                .clickable { featuredIndex = index }
-                        )
-                    }
-                }
+
 
             }
         } else {
@@ -246,7 +214,52 @@ fun HomeScreen(
         Column(
             Modifier.fillMaxSize().verticalScroll(homeScrollState)
         ) {
-            Spacer(Modifier.height(455.dp))
+            // The scroll layer sits above the hero. Put its interactions here so
+            // taps, swipes and dots are not blocked by the transparent scroll spacer.
+            Box(Modifier.fillMaxWidth().height(455.dp)) {
+                if (featured.isNotEmpty()) {
+                    val activeRecipe = featured[featuredIndex.coerceIn(0, featured.lastIndex)]
+                    Box(
+                        Modifier.fillMaxWidth().padding(top = 124.dp, start = 2.dp, end = 2.dp)
+                            .height(344.dp)
+                            .pointerInput(featured.size) {
+                                var dragDistance = 0f
+                                detectHorizontalDragGestures(
+                                    onDragStart = { dragDistance = 0f },
+                                    onHorizontalDrag = { change, amount ->
+                                        change.consume()
+                                        dragDistance += amount
+                                    },
+                                    onDragEnd = {
+                                        if (featured.size > 1 && kotlin.math.abs(dragDistance) > 55f) {
+                                            featuredIndex = if (dragDistance < 0)
+                                                (featuredIndex + 1) % featured.size
+                                            else (featuredIndex - 1 + featured.size) % featured.size
+                                        }
+                                        dragDistance = 0f
+                                    },
+                                    onDragCancel = { dragDistance = 0f }
+                                )
+                            }
+                            .clickable { onRecipeClick(activeRecipe) }
+                    ) {
+                        Row(
+                            Modifier.align(Alignment.BottomCenter).padding(bottom = 62.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            featured.forEachIndexed { index, _ ->
+                                Box(
+                                    Modifier.padding(horizontal = 4.dp)
+                                        .size(width = if (index == featuredIndex) 16.dp else 7.dp, height = 7.dp)
+                                        .clip(CircleShape)
+                                        .background(if (index == featuredIndex) homeOrange else Color(0xFFDAB09A))
+                                        .clickable { featuredIndex = index }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
             Column(
                 Modifier.fillMaxWidth().background(homeCream)
             ) {
