@@ -454,7 +454,7 @@ fun HomeScreen(
             }
         }
         Spacer(Modifier.height(22.dp))
-        HomeSectionTitle("👨‍🍳", "Tanınmış Şeflerin Tarifleri", "Tümünü Gör ›") {
+        HomeSectionTitle("👨‍🍳", "Profesyonel Mutfaktan", "Tümünü Gör ›") {
             val url = Uri.parse("https://www.google.com/search?q=" +
                 Uri.encode("ünlü şeflerin tarifleri"))
             context.startActivity(Intent(Intent.ACTION_VIEW, url))
