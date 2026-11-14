@@ -9,6 +9,11 @@ import kotlinx.coroutines.delay
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -138,6 +143,22 @@ fun HomeScreen(
             }
         }
     }
+    // Animate the wave in time, not only when the scroll position changes.
+    val waveTransition = rememberInfiniteTransition(label = "homeWave")
+    val wavePhase by waveTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wavePhase"
+    )
+    val waveStrength by animateFloatAsState(
+        targetValue = if (homeScrollState.isScrollInProgress) 1f else 0f,
+        animationSpec = tween(durationMillis = 500),
+        label = "waveStrength"
+    )
     val darkness by animateFloatAsState(
         targetValue = (homeScrollState.value / 560f).coerceIn(0f, 0.50f),
         animationSpec = tween(durationMillis = 180),
@@ -285,16 +306,18 @@ fun HomeScreen(
                             .align(Alignment.TopCenter)
                             .offset(y = (-24).dp)
                     ) {
-                        // Small scroll-driven ripples keep the original wave shape intact.
-                        val ripple = sin(homeScrollState.value / 65f) * 0.12f
+                        // A traveling wave that grows while scrolling and settles afterward.
+                        val left = sin(wavePhase) * 0.22f * waveStrength
+                        val middle = sin(wavePhase + 1.8f) * 0.22f * waveStrength
+                        val right = sin(wavePhase + 3.6f) * 0.22f * waveStrength
                         val wavePath = Path().apply {
-                            moveTo(0f, size.height * (0.60f + ripple * 0.35f))
-                            cubicTo(size.width * 0.13f, size.height * (-0.10f + ripple),
-                                size.width * 0.34f, size.height * (0.92f - ripple),
-                                size.width * 0.50f, size.height * (0.42f + ripple))
-                            cubicTo(size.width * 0.68f, size.height * (-0.06f - ripple),
-                                size.width * 0.87f, size.height * (0.90f + ripple),
-                                size.width, size.height * (0.60f + ripple * 0.35f))
+                            moveTo(0f, size.height * (0.60f + left))
+                            cubicTo(size.width * 0.13f, size.height * (-0.10f + middle),
+                                size.width * 0.34f, size.height * (0.92f - left),
+                                size.width * 0.50f, size.height * (0.42f + middle))
+                            cubicTo(size.width * 0.68f, size.height * (-0.06f + right),
+                                size.width * 0.87f, size.height * (0.90f - middle),
+                                size.width, size.height * (0.60f + right))
                             lineTo(size.width, size.height)
                             lineTo(0f, size.height)
                             close()
