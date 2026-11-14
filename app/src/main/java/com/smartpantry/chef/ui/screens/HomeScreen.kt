@@ -454,27 +454,21 @@ fun HomeScreen(
             }
         }
         Spacer(Modifier.height(22.dp))
-        HomeSectionTitle("👨‍🍳", "Profesyonel Mutfaktan", "Tümünü Gör ›") {
-            val url = Uri.parse("https://www.google.com/search?q=" +
-                Uri.encode("ünlü şeflerin tarifleri"))
-            context.startActivity(Intent(Intent.ACTION_VIEW, url))
-        }
+        HomeSectionTitle("👨‍🍳", "Profesyonel Mutfaktan", "Hazırlanıyor", null)
         Spacer(Modifier.height(10.dp))
-        val featuredChefs = listOf(
-            "Danilo Zanna", "Somer Sivrioğlu", "Mehmet Yalçınkaya"
+        val professionalCollections = listOf(
+            Triple("🍽️", "Usta İşi Tarifler", "Özgün özel tarifler"),
+            Triple("✨", "Şef Dokunuşları", "Kısa mutfak ipuçları"),
+            Triple("🥘", "Gurme Seçkisi", "Özenli sunumlar")
         )
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
-            featuredChefs.forEach { chef ->
+            professionalCollections.forEach { (emoji, name, description) ->
                 Card(
-                    Modifier.width(145.dp).clickable {
-                        val url = Uri.parse("https://www.google.com/search?q=" +
-                            Uri.encode(chef + " tarifleri"))
-                        context.startActivity(Intent(Intent.ACTION_VIEW, url))
-                    },
+                    Modifier.width(145.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE9DC)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -487,18 +481,14 @@ fun HomeScreen(
                                 )),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("👨‍🍳", fontSize = 39.sp)
+                            Text(emoji, fontSize = 39.sp)
                         }
-                        Row(
-                            Modifier.fillMaxWidth().padding(9.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                chef, Modifier.weight(1f), color = homeInk,
-                                fontWeight = FontWeight.Bold, fontSize = 12.sp,
-                                maxLines = 2
-                            )
-                            Text("↗", color = homeOrange, fontSize = 16.sp)
+                        Column(Modifier.padding(9.dp)) {
+                            Text(name, color = homeInk, fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp, maxLines = 2)
+                            Spacer(Modifier.height(4.dp))
+                            Text(description, color = homeMuted, fontSize = 10.sp,
+                                maxLines = 2)
                         }
                     }
                 }
@@ -506,7 +496,7 @@ fun HomeScreen(
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "Şef kartları web üzerindeki tarif aramalarını açar.",
+            "Özgün içerikler hazırlanıyor. Tarifler uygulama içinde açılacak.",
             Modifier.padding(horizontal = 14.dp),
             fontSize = 10.sp, color = homeMuted
         )
@@ -737,14 +727,14 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeSectionTitle(icon: String, title: String, action: String, onAction: () -> Unit) {
+private fun HomeSectionTitle(icon: String, title: String, action: String, onAction: (() -> Unit)?) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically) {
         Text(icon, fontSize = 23.sp, color = homeOrange)
         Spacer(Modifier.width(8.dp))
         Text(title, Modifier.weight(1f), fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold, color = homeInk)
-        Text(action, Modifier.clickable { onAction() }, fontSize = 13.sp,
+        Text(action, if (onAction != null) Modifier.clickable { onAction() } else Modifier, fontSize = 13.sp,
             fontWeight = FontWeight.Bold, color = homeOrange)
     }
 }
