@@ -2,6 +2,8 @@ package com.smartpantry.chef.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
 import android.content.Intent
@@ -44,6 +46,7 @@ import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
 import kotlinx.coroutines.launch
+import kotlin.math.sin
 
 private val homeInk = Color(0xFF201612)
 private val homeOrange = Color(0xFFE94D10)
@@ -127,6 +130,14 @@ fun HomeScreen(
         scope.launch { db.recipeEngagementDao().upsert(updated) }
     }
     val homeScrollState = rememberScrollState()
+    val defaultFling = ScrollableDefaults.flingBehavior()
+    val gentleFling = remember(defaultFling) {
+        object : FlingBehavior {
+            override suspend fun androidx.compose.foundation.gestures.ScrollScope.performFling(initialVelocity: Float): Float {
+                return with(defaultFling) { performFling(initialVelocity * 0.72f) }
+            }
+        }
+    }
     val darkness by animateFloatAsState(
         targetValue = (homeScrollState.value / 560f).coerceIn(0f, 0.50f),
         animationSpec = tween(durationMillis = 180),
@@ -212,7 +223,7 @@ fun HomeScreen(
                 .background(Color.Black.copy(alpha = darkness))
         )
         Column(
-            Modifier.fillMaxSize().verticalScroll(homeScrollState)
+            Modifier.fillMaxSize().verticalScroll(homeScrollState, flingBehavior = gentleFling)
         ) {
             // The scroll layer sits above the hero. Put its interactions here so
             // taps, swipes and dots are not blocked by the transparent scroll spacer.
@@ -274,14 +285,16 @@ fun HomeScreen(
                             .align(Alignment.TopCenter)
                             .offset(y = (-24).dp)
                     ) {
+                        // Small scroll-driven ripples keep the original wave shape intact.
+                        val ripple = sin(homeScrollState.value / 65f) * 0.12f
                         val wavePath = Path().apply {
-                            moveTo(0f, size.height * 0.60f)
-                            cubicTo(size.width * 0.13f, -size.height * 0.10f,
-                                size.width * 0.34f, size.height * 0.92f,
-                                size.width * 0.50f, size.height * 0.42f)
-                            cubicTo(size.width * 0.68f, -size.height * 0.06f,
-                                size.width * 0.87f, size.height * 0.90f,
-                                size.width, size.height * 0.60f)
+                            moveTo(0f, size.height * (0.60f + ripple * 0.35f))
+                            cubicTo(size.width * 0.13f, size.height * (-0.10f + ripple),
+                                size.width * 0.34f, size.height * (0.92f - ripple),
+                                size.width * 0.50f, size.height * (0.42f + ripple))
+                            cubicTo(size.width * 0.68f, size.height * (-0.06f - ripple),
+                                size.width * 0.87f, size.height * (0.90f + ripple),
+                                size.width, size.height * (0.60f + ripple * 0.35f))
                             lineTo(size.width, size.height)
                             lineTo(0f, size.height)
                             close()
