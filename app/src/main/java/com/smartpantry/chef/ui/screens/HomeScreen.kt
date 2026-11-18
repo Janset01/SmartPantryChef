@@ -67,7 +67,8 @@ fun HomeScreen(
     onPantryClick: () -> Unit = {},
     onMyRecipesClick: () -> Unit = {},
     onAddRecipeClick: () -> Unit = {},
-    onFavoritesClick: () -> Unit = {}
+    onFavoritesClick: () -> Unit = {},
+    onWeeklyPlannerClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val db = remember(context) { AppDatabase.getDatabase(context) }
@@ -539,7 +540,7 @@ fun HomeScreen(
         Spacer(Modifier.height(21.dp))
         Card(
             Modifier.fillMaxWidth().padding(horizontal = 15.dp)
-                .clickable { showPlanner = true },
+                .clickable { onWeeklyPlannerClick() },
             shape = RoundedCornerShape(22.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE5D5)),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
