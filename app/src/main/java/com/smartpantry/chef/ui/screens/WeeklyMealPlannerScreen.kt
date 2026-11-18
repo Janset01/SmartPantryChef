@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -83,9 +84,8 @@ fun WeeklyMealPlannerScreen(onBack: () -> Unit, onOpenShoppingList: () -> Unit) 
     var addSlot by remember { mutableStateOf<Int?>(null) }
     var editing by remember { mutableStateOf<PlannedMeal?>(null) }
     var manualName by remember { mutableStateOf("") }
-    var search by remember { mutableStateOf("") }
     var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
-    var portion by remember { mutableStateOf("2") }
+    var portion by remember(selectedDate) { mutableStateOf(context.getSharedPreferences("weekly_meal_portions_v1", Context.MODE_PRIVATE).getString(selectedDate.toString(), "2") ?: "2") }
     var note by remember(selectedDate) { mutableStateOf(context.getSharedPreferences("weekly_meal_notes_v1", Context.MODE_PRIVATE).getString(selectedDate.toString(), "") ?: "") }
     var showShopping by remember { mutableStateOf(false) }
     var shoppingScope by remember { mutableStateOf(0) }
@@ -152,6 +152,11 @@ fun WeeklyMealPlannerScreen(onBack: () -> Unit, onOpenShoppingList: () -> Unit) 
                 persist(entries + source.mapIndexed { i, m -> m.copy(id = System.currentTimeMillis() + i, date = next, done = false) })
                 feedback = "Günün yemekleri ertesi güne kopyalandı."
             }) { Text("Günü kopyala", color = plannerOrange) }
+            TextButton(onClick = {
+                val source = entries.filter { LocalDate.parse(it.date) in weekStart..weekEnd }
+                persist(entries + source.mapIndexed { i, m -> m.copy(id = System.currentTimeMillis() + i, date = LocalDate.parse(m.date).plusWeeks(1).toString(), done = false) })
+                feedback = "Haftalık plan sonraki haftaya kopyalandı."
+            }) { Text("Haftayı kopyala", color = plannerOrange) }
         }
         LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             mealNames.forEachIndexed { slot, slotName ->
@@ -194,7 +199,7 @@ fun WeeklyMealPlannerScreen(onBack: () -> Unit, onOpenShoppingList: () -> Unit) 
                 }, modifier = Modifier.fillMaxWidth(), label = { Text("Günlük not") },
                     placeholder = { Text("Misafir gelecek, dışarıda yemek...") })
                 Spacer(Modifier.height(10.dp))
-                OutlinedTextField(value = portion, onValueChange = { portion = it.filter(Char::isDigit).take(3) },
+                OutlinedTextField(value = portion, onValueChange = { portion = it.filter(Char::isDigit).take(3); context.getSharedPreferences("weekly_meal_portions_v1", Context.MODE_PRIVATE).edit().putString(dateString, portion).apply() },
                     modifier = Modifier.fillMaxWidth(), label = { Text("Kişi sayısı (plan notu)") }, singleLine = true)
                 Spacer(Modifier.height(10.dp))
                 Button(onClick = { showShopping = true; shoppingSelection = emptySet() },
