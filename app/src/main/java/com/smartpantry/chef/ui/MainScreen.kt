@@ -33,6 +33,7 @@ import com.smartpantry.chef.ui.screens.CategoryRecipesScreen
 import com.smartpantry.chef.ui.screens.HomeScreen
 import com.smartpantry.chef.ui.screens.PantryRecipeSuggestionsScreen
 import com.smartpantry.chef.ui.screens.PantryScreen
+import com.smartpantry.chef.ui.screens.RecipeBookScreen
 import com.smartpantry.chef.ui.screens.ProfileScreen
 import com.smartpantry.chef.ui.screens.RecipeDetailScreen
 import com.smartpantry.chef.ui.screens.ShoppingListScreen
@@ -61,6 +62,8 @@ fun MainScreen() {
         mutableStateOf(false)
     }
 
+    var showRecipeBook by remember { mutableStateOf(false) }
+
     var showShoppingList by remember {
         mutableStateOf(false)
     }
@@ -86,6 +89,7 @@ fun MainScreen() {
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
+                        showRecipeBook = false
                     },
                     icon = {
                         Icon(
@@ -107,6 +111,7 @@ fun MainScreen() {
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
+                        showRecipeBook = false
                     },
                     icon = {
                         Icon(
@@ -128,6 +133,7 @@ fun MainScreen() {
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
+                        showRecipeBook = false
                     },
                     icon = {
                         Icon(
@@ -149,6 +155,7 @@ fun MainScreen() {
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
+                        showRecipeBook = false
                     },
                     icon = {
                         Icon(
@@ -170,6 +177,7 @@ fun MainScreen() {
                         isEditingRecipe = false
                         showPantrySuggestions = false
                         showShoppingList = false
+                        showRecipeBook = false
                     },
                     icon = {
                         Icon(
@@ -224,6 +232,13 @@ fun MainScreen() {
                             }
                         )
                     }
+                }
+
+                showRecipeBook -> {
+                    RecipeBookScreen(
+                        onRecipeClick = { recipe -> selectedRecipe = recipe },
+                        onBack = { showRecipeBook = false }
+                    )
                 }
 
                 showCategoryScreen -> {
@@ -291,9 +306,8 @@ fun MainScreen() {
                         )
 
                         4 -> ProfileScreen(
-                            onRecipeClick = { recipe ->
-                                selectedRecipe = recipe
-                            }
+                            onRecipeClick = { recipe -> selectedRecipe = recipe },
+                            onOpenRecipeBook = { showRecipeBook = true }
                         )
                     }
                 }
