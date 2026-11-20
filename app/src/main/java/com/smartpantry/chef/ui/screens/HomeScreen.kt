@@ -68,7 +68,8 @@ fun HomeScreen(
     onMyRecipesClick: () -> Unit = {},
     onAddRecipeClick: () -> Unit = {},
     onFavoritesClick: () -> Unit = {},
-    onWeeklyPlannerClick: () -> Unit = {}
+    onWeeklyPlannerClick: () -> Unit = {},
+    onProfessionalCollectionClick: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
     val db = remember(context) { AppDatabase.getDatabase(context) }
@@ -491,7 +492,7 @@ fun HomeScreen(
             }
         }
         Spacer(Modifier.height(22.dp))
-        HomeSectionTitle("👨‍🍳", "Profesyonel Mutfaktan", "Hazırlanıyor", null)
+        HomeSectionTitle("👨‍🍳", "Profesyonel Mutfaktan", "Tümünü Gör", { onProfessionalCollectionClick(0) })
         Spacer(Modifier.height(10.dp))
         val professionalCollections = listOf(
             Triple("🍽️", "Usta İşi Tarifler", "Özgün özel tarifler"),
@@ -503,9 +504,9 @@ fun HomeScreen(
                 .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
-            professionalCollections.forEach { (emoji, name, description) ->
+            professionalCollections.forEachIndexed { index, (emoji, name, description) ->
                 Card(
-                    Modifier.width(145.dp),
+                    Modifier.width(145.dp).clickable { onProfessionalCollectionClick(index) },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE9DC)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -533,7 +534,7 @@ fun HomeScreen(
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "Özgün içerikler hazırlanıyor. Tarifler uygulama içinde açılacak.",
+            "Özgün tarifler, mutfak ipuçları ve özel menüler için kartlara dokun.",
             Modifier.padding(horizontal = 14.dp),
             fontSize = 10.sp, color = homeMuted
         )
