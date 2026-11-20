@@ -30,6 +30,7 @@ import com.smartpantry.chef.ui.screens.AddRecipeScreen
 import com.smartpantry.chef.ui.screens.EditRecipeScreen
 import com.smartpantry.chef.ui.screens.ExploreScreen
 import com.smartpantry.chef.ui.screens.CategoryRecipesScreen
+import com.smartpantry.chef.ui.screens.ProfessionalKitchenScreen
 import com.smartpantry.chef.ui.screens.WeeklyMealPlannerScreen
 import com.smartpantry.chef.ui.screens.HomeScreen
 import com.smartpantry.chef.ui.screens.PantryRecipeSuggestionsScreen
@@ -62,6 +63,8 @@ fun MainScreen() {
         mutableStateOf(false)
     }
 
+    var showProfessionalKitchen by remember { mutableStateOf(false) }
+    var professionalSection by remember { mutableIntStateOf(0) }
     var showWeeklyPlanner by remember { mutableStateOf(false) }
     var showShoppingList by remember {
         mutableStateOf(false)
@@ -89,6 +92,7 @@ fun MainScreen() {
                         showPantrySuggestions = false
                         showShoppingList = false
                         showWeeklyPlanner = false
+                        showProfessionalKitchen = false
                     },
                     icon = {
                         Icon(
@@ -111,6 +115,7 @@ fun MainScreen() {
                         showPantrySuggestions = false
                         showShoppingList = false
                         showWeeklyPlanner = false
+                        showProfessionalKitchen = false
                     },
                     icon = {
                         Icon(
@@ -133,6 +138,7 @@ fun MainScreen() {
                         showPantrySuggestions = false
                         showShoppingList = false
                         showWeeklyPlanner = false
+                        showProfessionalKitchen = false
                     },
                     icon = {
                         Icon(
@@ -155,6 +161,7 @@ fun MainScreen() {
                         showPantrySuggestions = false
                         showShoppingList = false
                         showWeeklyPlanner = false
+                        showProfessionalKitchen = false
                     },
                     icon = {
                         Icon(
@@ -177,6 +184,7 @@ fun MainScreen() {
                         showPantrySuggestions = false
                         showShoppingList = false
                         showWeeklyPlanner = false
+                        showProfessionalKitchen = false
                     },
                     icon = {
                         Icon(
@@ -233,6 +241,14 @@ fun MainScreen() {
                     }
                 }
 
+                showProfessionalKitchen -> {
+                    ProfessionalKitchenScreen(
+                        initialSection = professionalSection,
+                        onBack = { showProfessionalKitchen = false },
+                        onOpenPlanner = { showProfessionalKitchen = false; showWeeklyPlanner = true }
+                    )
+                }
+
                 showWeeklyPlanner -> {
                     WeeklyMealPlannerScreen(
                         onBack = { showWeeklyPlanner = false },
@@ -285,7 +301,11 @@ fun MainScreen() {
                             onMyRecipesClick = { selectedIndex = 4 },
                             onAddRecipeClick = { selectedIndex = 2 },
                             onFavoritesClick = { selectedIndex = 4 },
-                            onWeeklyPlannerClick = { showWeeklyPlanner = true }
+                            onWeeklyPlannerClick = { showWeeklyPlanner = true },
+                            onProfessionalCollectionClick = { section ->
+                                professionalSection = section
+                                showProfessionalKitchen = true
+                            }
                         )
 
                         1 -> ExploreScreen(
