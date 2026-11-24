@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.verticalScroll
@@ -69,10 +71,28 @@ private val mealCategories = listOf(
     MealCategory("Kahvaltı", "Kahvaltı", "☀️"),
     MealCategory("Öğle Yemeği", "Öğle", "🍲"),
     MealCategory("Akşam Yemeği", "Akşam", "🌙"),
+    MealCategory("Ana Yemek", "Ana Yemek", "🍽️"),
+    MealCategory("Çorba", "Çorba", "🥣"),
+    MealCategory("Salata", "Salata", "🥗"),
+    MealCategory("Fırın", "Fırın", "♨️"),
+    MealCategory("Brunch", "Brunch", "🥞"),
     MealCategory("Atıştırmalık", "Atıştırmalık", "🍿"),
-    MealCategory("Fit", "Fit", "🥗"),
+    MealCategory("Fit", "Fit", "🌿"),
     MealCategory("Tatlı", "Tatlı", "🍰")
 )
+
+private fun availableMealCategories(matches: List<RecipeMatch>): List<MealCategory> {
+    val known = mealCategories.map { it.databaseValue.trim().lowercase(Locale.forLanguageTag("tr-TR")) }.toSet()
+    val additional = matches.map { it.recipe.category.trim() }
+        .filter { it.isNotBlank() && it.lowercase(Locale.forLanguageTag("tr-TR")) !in known }
+        .distinct()
+        .sorted()
+        .map { MealCategory(it, it, "🍴") }
+    return mealCategories + additional
+}
+
+private fun categoryMatchesRecipe(recipe: Recipe, category: MealCategory): Boolean =
+    recipe.category.trim().equals(category.databaseValue.trim(), ignoreCase = true)
 
 @Composable
 private fun suggestionPressScale(source: MutableInteractionSource): Float {
@@ -110,6 +130,7 @@ fun PantryRecipeSuggestionsScreen(
     var selectedFilter by remember {
         mutableStateOf(SuggestionFilter.BEST)
     }
+    var categorySearch by remember { mutableStateOf("") }
     var expiringRecommendations by remember {
         mutableStateOf<List<ExpiringRecipeRecommendation>>(emptyList())
     }
@@ -175,6 +196,7 @@ fun PantryRecipeSuggestionsScreen(
                 } else {
                     selectedCategory = null
                     selectedFilter = SuggestionFilter.BEST
+                    categorySearch = ""
                 }
             },
             interactionSource = backPress,
@@ -216,6 +238,7 @@ fun PantryRecipeSuggestionsScreen(
                     onCategoryClick = {
                         selectedCategory = it
                         selectedFilter = SuggestionFilter.BEST
+                        categorySearch = ""
                     }
                 )
             }
@@ -226,6 +249,8 @@ fun PantryRecipeSuggestionsScreen(
                     matches = matches,
                     expiringRecommendations = expiringRecommendations,
                     selectedFilter = selectedFilter,
+                    search = categorySearch,
+                    onSearchChange = { categorySearch = it },
                     onFilterChange = {
                         selectedFilter = it
                     },
@@ -272,7 +297,7 @@ private fun CategorySelectionContent(
         Spacer(modifier = Modifier.height(24.dp))
     }
 
-    mealCategories
+    availableMealCategories(matches)
         .chunked(2)
         .forEach { rowCategories ->
 
@@ -285,7 +310,7 @@ private fun CategorySelectionContent(
 
                     val categoryMatches =
                         matches.filter {
-                            it.recipe.category == category.databaseValue
+                            categoryMatchesRecipe(it.recipe, category)
                         }
 
                     val suitableCount =
@@ -387,6 +412,8 @@ private fun CategoryRecipesContent(
     matches: List<RecipeMatch>,
     expiringRecommendations: List<ExpiringRecipeRecommendation>,
     selectedFilter: SuggestionFilter,
+    search: String,
+    onSearchChange: (String) -> Unit,
     onFilterChange: (SuggestionFilter) -> Unit,
     onRecipeClick: (Recipe) -> Unit
 ) {
@@ -399,7 +426,12 @@ private fun CategoryRecipesContent(
     val categoryMatches =
         matches
             .filter {
-                it.recipe.category == category.databaseValue
+                categoryMatchesRecipe(it.recipe, category)
+            }
+            .filter { recipeMatch ->
+                val q = search.trim()
+                q.isBlank() || recipeMatch.recipe.name.contains(q, ignoreCase = true) ||
+                    recipeMatch.recipe.ingredients.contains(q, ignoreCase = true)
             }
             .sortedWith(
                 compareBy<RecipeMatch> {
@@ -444,6 +476,24 @@ private fun CategoryRecipesContent(
         text = "Stoklarına ve son kullanma tarihine göre akıllıca sıralandı",
         fontSize = 14.sp,
         color = Color.Gray
+    )
+
+    Spacer(modifier = Modifier.height(14.dp))
+
+    OutlinedTextField(
+        value = search,
+        onValueChange = onSearchChange,
+        modifier = Modifier.fillMaxWidth(),
+        label = { Text("Bu kategoride tarif ara") },
+        placeholder = { Text("Tarif adı veya malzeme yaz...") },
+        singleLine = true,
+        shape = RoundedCornerShape(17.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedBorderColor = Color(0xFFEF712B),
+            unfocusedBorderColor = Color(0xFFE6D6CB)
+        )
     )
 
     Spacer(modifier = Modifier.height(18.dp))
@@ -502,7 +552,8 @@ private fun CategoryRecipesContent(
 
         SmallInfoCard(
             text =
-                when (selectedFilter) {
+                if (search.isNotBlank()) "Bu aramaya ve seçili filtreye uygun tarif bulunamadı."
+                else when (selectedFilter) {
                     SuggestionFilter.READY ->
                         "Şu anda bu kategoride tamamen hazır bir tarif yok."
 
