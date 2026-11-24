@@ -91,7 +91,8 @@ fun PantryScreen(
     onShowRecipeSuggestions: () -> Unit,
     onShowShoppingList: () -> Unit,
     onOpenPackageScanner: () -> Unit,
-    importedProduct: ScannedPantryProduct? = null
+    importedProduct: ScannedPantryProduct? = null,
+    onImportedProductConsumed: () -> Unit = {}
 ) {
 
     val suggestionPress = remember { MutableInteractionSource() }
@@ -143,6 +144,7 @@ fun PantryScreen(
             quantity = scanned.quantity
             selectedUnit = scanned.unit
             expirationDate = scanned.expirationDate
+            onImportedProductConsumed()
         }
     }
 
