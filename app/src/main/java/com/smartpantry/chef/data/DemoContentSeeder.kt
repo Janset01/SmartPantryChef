@@ -107,7 +107,9 @@ object DemoContentSeeder {
             }
             planPrefs.edit().putString("entries",json.toString()).apply()
         }
-        prefs.edit().putBoolean("installed",true).apply()
+        prefs.edit().putBoolean("installed",true)
+            .putString("recipe_ids", ids.values.joinToString(","))
+            .apply()
     }
     private data class Stock(val name:String,val quantity:Double,val unit:String,val days:Long)
 }
