@@ -45,6 +45,12 @@ object DemoContentSeeder {
                 )
                 val id = db.recipeDao().insertRecipe(recipe).toInt()
                 ids[name] = id
+                recipe.imageUri?.let { demoPhoto ->
+                    db.recipeMediaDao().insertMedia(listOf(RecipeMedia(
+                        recipeId = id, mediaType = RecipeMedia.TYPE_IMAGE,
+                        uri = demoPhoto, sortOrder = 0
+                    )))
+                }
                 db.recipeIngredientDao().insertRecipeIngredients(ingredients.map { (title, qty, unit) ->
                     RecipeIngredient(recipeId = id, name = title, quantity = qty, unit = unit)
                 })
