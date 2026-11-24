@@ -1,0 +1,1997 @@
+[
+  {
+    "name": "Sebzeli Omlet",
+    "category": "Kahvaltı",
+    "minutes": 15,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "biber"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Yumurtaları çırp.",
+      "Domates ve biberi küçük doğrayıp tavada sotele.",
+      "Yumurtayı ekleyip kısık ateşte pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Menemen",
+    "category": "Kahvaltı",
+    "minutes": 20,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "sivri biber"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Biberleri yağda sotele.",
+      "Rendelenmiş domatesi ekleyip suyunu çektir.",
+      "Yumurtaları ekle, karıştırarak veya kapakla pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Pankek",
+    "category": "Kahvaltı",
+    "minutes": 25,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı süt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı un"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı kabartma tozu"
+      }
+    ],
+    "steps": [
+      "Yumurtayla sütü çırp.",
+      "Unu ve kabartma tozunu ekle.",
+      "Az yağlı tavada küçük porsiyonlar hâlinde iki tarafını pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Peynirli Tost",
+    "category": "Kahvaltı",
+    "minutes": 10,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Dilim",
+        "name": "ekmek"
+      },
+      {
+        "quantity": 2,
+        "unit": "Dilim",
+        "name": "kaşar peyniri"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı tereyağı"
+      }
+    ],
+    "steps": [
+      "Ekmeğin arasına peyniri koy.",
+      "Dışına çok az tereyağı sür.",
+      "Tost makinesinde veya tavada kızart."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Yulaf Lapası",
+    "category": "Kahvaltı",
+    "minutes": 12,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 5,
+        "unit": "Yemek",
+        "name": "kaşığı yulaf ezmesi"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı süt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "muz"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı tarçın"
+      }
+    ],
+    "steps": [
+      "Yulafla sütü kısık ateşte pişir.",
+      "Koyulaştığında ocaktan al.",
+      "Muz dilimleri ve tarçınla servis et."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Domates Soslu Makarna",
+    "category": "Öğle Yemeği",
+    "minutes": 25,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 250,
+        "unit": "Gram",
+        "name": "makarna"
+      },
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Diş",
+        "name": "sarımsak"
+      }
+    ],
+    "steps": [
+      "Makarnayı tuzlu suda haşla.",
+      "Sarımsağı yağda kısa sotele ve domatesi ekle.",
+      "Makarnayı sosla karıştır."
+    ],
+    "image": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Sebzeli Bulgur Pilavı",
+    "category": "Öğle Yemeği",
+    "minutes": 30,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı bulgur"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "biber"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 2,
+        "unit": "Su",
+        "name": "bardağı su"
+      }
+    ],
+    "steps": [
+      "Soğan ve biberi sotele.",
+      "Domatesi, bulguru ve sıcak suyu ekle.",
+      "Kapağı kapalı şekilde suyunu çekene kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Ton Balıklı Salata",
+    "category": "Öğle Yemeği",
+    "minutes": 15,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Kutu",
+        "name": "ton balığı konservesi"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "salatalık"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 5,
+        "unit": "Yaprak",
+        "name": "marul"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      }
+    ],
+    "steps": [
+      "Sebzeleri yıkayıp doğra.",
+      "Ton balığını süzerek üzerine ekle.",
+      "Limonla karıştırıp servis et."
+    ],
+    "image": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Nohutlu Pirinç Pilavı",
+    "category": "Öğle Yemeği",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı pirinç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı haşlanmış nohut"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı tereyağı"
+      },
+      {
+        "quantity": 2,
+        "unit": "Su",
+        "name": "bardağı su"
+      }
+    ],
+    "steps": [
+      "Pirinci yıka.",
+      "Tereyağında kısa kavur ve nohut ekle.",
+      "Sıcak suyla kısık ateşte pişir, dinlendir."
+    ],
+    "image": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Tavuklu Sandviç",
+    "category": "Öğle Yemeği",
+    "minutes": 25,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 200,
+        "unit": "Gram",
+        "name": "tavuk göğsü"
+      },
+      {
+        "quantity": 2,
+        "unit": "Dilim",
+        "name": "ekmek"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yaprak",
+        "name": "marul"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı yoğurt"
+      }
+    ],
+    "steps": [
+      "Tavuğu tamamen pişene kadar tavada pişir.",
+      "Dilimle, yoğurt ve sebzelerle karıştır.",
+      "Ekmeğin arasına koy."
+    ],
+    "image": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Tavuk Sote",
+    "category": "Akşam Yemeği",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 350,
+        "unit": "Gram",
+        "name": "tavuk göğsü"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "biber"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Tavuğu küçük doğra ve sıcak tavada pişir.",
+      "Soğan ve biberleri ekleyip sotele.",
+      "Domatesle kısık ateşte pişir, tavuğun tamamen piştiğini kontrol et."
+    ],
+    "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırında Sebzeli Köfte",
+    "category": "Akşam Yemeği",
+    "minutes": 50,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 350,
+        "unit": "Gram",
+        "name": "dana kıyma"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "patates"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "biber"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      }
+    ],
+    "steps": [
+      "Kıymayı rendelenmiş soğanla yoğur ve köfteler yap.",
+      "Sebzeleri doğrayıp tepsiye yerleştir.",
+      "190°C fırında köftelerin içi tamamen pişene kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Kremalı Mantarlı Tavuk",
+    "category": "Akşam Yemeği",
+    "minutes": 40,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 350,
+        "unit": "Gram",
+        "name": "tavuk göğsü"
+      },
+      {
+        "quantity": 200,
+        "unit": "Gram",
+        "name": "mantar"
+      },
+      {
+        "quantity": 150,
+        "unit": "Mililitre",
+        "name": "krema"
+      },
+      {
+        "quantity": 1,
+        "unit": "Diş",
+        "name": "sarımsak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Tavuğu sıcak tavada tamamen pişir.",
+      "Mantarı ve sarımsağı sotele.",
+      "Kremayı ekleyip sosu koyulaştır."
+    ],
+    "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Zeytinyağlı Taze Fasulye",
+    "category": "Akşam Yemeği",
+    "minutes": 45,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 500,
+        "unit": "Gram",
+        "name": "taze fasulye"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 3,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Fasulyeleri ayıkla.",
+      "Soğan ve domatesle tencereye al.",
+      "Az su ekleyip fasulyeler yumuşayana kadar kısık ateşte pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Etli Patates Yemeği",
+    "category": "Akşam Yemeği",
+    "minutes": 55,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 350,
+        "unit": "Gram",
+        "name": "dana kuşbaşı"
+      },
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "patates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı domates salçası"
+      }
+    ],
+    "steps": [
+      "Eti az yağla kavur ve gerekli miktarda sıcak su ekle.",
+      "Soğan ve salçayı ilave et.",
+      "Patatesleri ekleyip etler ve patatesler yumuşayana kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Kuru Fasulye",
+    "category": "Ana Yemek",
+    "minutes": 80,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Su",
+        "name": "bardağı kuru fasulye"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı domates salçası"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Fasulyeyi geceden ıslatıp suyunu değiştir.",
+      "Soğan ve salçayı kavur.",
+      "Fasulyeyi ekleyip tamamen yumuşayana kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Nohut Yemeği",
+    "category": "Ana Yemek",
+    "minutes": 70,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Su",
+        "name": "bardağı nohut"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı biber salçası"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Nohudu önceden ıslat.",
+      "Soğanla salçayı kavur.",
+      "Nohut ve sıcak su ekleyerek yumuşayana kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "İzmir Köfte",
+    "category": "Ana Yemek",
+    "minutes": 60,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 400,
+        "unit": "Gram",
+        "name": "dana kıyma"
+      },
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "patates"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı domates salçası"
+      }
+    ],
+    "steps": [
+      "Kıymadan küçük köfteler hazırla.",
+      "Patateslerle fırın kabına diz.",
+      "Domatesli sos ekleyip köfteler tamamen pişene kadar fırınla."
+    ],
+    "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Tavuklu Nohutlu Bulgur",
+    "category": "Ana Yemek",
+    "minutes": 40,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 250,
+        "unit": "Gram",
+        "name": "tavuk göğsü"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı bulgur"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı haşlanmış nohut"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "biber"
+      }
+    ],
+    "steps": [
+      "Tavuğu doğrayıp tavada pişir.",
+      "Bulgur ve biberi ekleyip karıştır.",
+      "Nohut ve sıcak suyla suyunu çekene kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Sebzeli Musakka",
+    "category": "Ana Yemek",
+    "minutes": 55,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "patlıcan"
+      },
+      {
+        "quantity": 250,
+        "unit": "Gram",
+        "name": "dana kıyma"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Patlıcanları dilimleyip fırında ön pişir.",
+      "Kıyma, soğan ve domatesten harç yap.",
+      "Katlayıp fırında tamamen pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Mercimek Çorbası",
+    "category": "Çorba",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı kırmızı mercimek"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "havuç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Mercimeği yıka.",
+      "Doğranmış soğan ve havuçla suda yumuşayana kadar pişir.",
+      "Blenderdan geçir, kıvamını ayarla."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Ezogelin Çorbası",
+    "category": "Çorba",
+    "minutes": 40,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı kırmızı mercimek"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı bulgur"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı pirinç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı domates salçası"
+      }
+    ],
+    "steps": [
+      "Mercimek, bulgur ve pirinci yıka.",
+      "Salçayı yağda kavur ve su ekle.",
+      "Tahıllar tamamen pişene kadar kaynat."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Domates Çorbası",
+    "category": "Çorba",
+    "minutes": 30,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 5,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı tereyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı un"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı süt"
+      }
+    ],
+    "steps": [
+      "Tereyağı ve unu kısa kavur.",
+      "Domates püresi ve suyu ekleyip pişir.",
+      "Sütü azar azar ekleyip karıştır."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Yayla Çorbası",
+    "category": "Çorba",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı yoğurt"
+      },
+      {
+        "quantity": 3,
+        "unit": "Yemek",
+        "name": "kaşığı pirinç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı un"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı kuru nane"
+      }
+    ],
+    "steps": [
+      "Pirinci suda pişir.",
+      "Yoğurt, un ve yumurtayı çırpıp sıcak sudan azar azar ekleyerek ılıt.",
+      "Tencereye katıp karıştırarak kaynat."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Sebze Çorbası",
+    "category": "Çorba",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "havuç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "patates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kabak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Sebzeleri temizleyip küçük doğra.",
+      "Tencerede kısa sotele ve su ekle.",
+      "Yumuşayana kadar pişir, istersen püre yap."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Çoban Salatası",
+    "category": "Salata",
+    "minutes": 12,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "salatalık"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Bütün sebzeleri yıka.",
+      "Küp küp doğra.",
+      "Limon ve yağla harmanla."
+    ],
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Mevsim Salatası",
+    "category": "Salata",
+    "minutes": 12,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 5,
+        "unit": "Yaprak",
+        "name": "marul"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "havuç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "salatalık"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      }
+    ],
+    "steps": [
+      "Sebzeleri yıka ve kurut.",
+      "Havucu rendele, diğerlerini doğra.",
+      "Limonla karıştır."
+    ],
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Roka Salatası",
+    "category": "Salata",
+    "minutes": 10,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Demet",
+        "name": "roka"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Rokayı temizleyip kurula.",
+      "Domatesleri doğra.",
+      "Servis öncesi limon ve yağ ekle."
+    ],
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Yoğurtlu Havuç Salatası",
+    "category": "Salata",
+    "minutes": 20,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "havuç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı yoğurt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Diş",
+        "name": "sarımsak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Havucu rendele ve az yağla yumuşat.",
+      "Soğuduktan sonra yoğurt ve sarımsakla karıştır.",
+      "Soğuk servis et."
+    ],
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Nohutlu Yeşil Salata",
+    "category": "Salata",
+    "minutes": 15,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı haşlanmış nohut"
+      },
+      {
+        "quantity": 5,
+        "unit": "Yaprak",
+        "name": "marul"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "salatalık"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      }
+    ],
+    "steps": [
+      "Yeşillikleri doğra.",
+      "Nohudu yıkayıp ekle.",
+      "Limon ve yağla karıştır."
+    ],
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırında Patates",
+    "category": "Fırın",
+    "minutes": 40,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 4,
+        "unit": "Adet",
+        "name": "patates"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı kekik"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı kırmızı toz biber"
+      }
+    ],
+    "steps": [
+      "Fırını 200°C'ye ısıt.",
+      "Patatesleri eşit dilimle.",
+      "Yağ ve baharatla harmanlayıp kızarana kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırında Somon",
+    "category": "Fırın",
+    "minutes": 30,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "somon fileto"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Diş",
+        "name": "sarımsak"
+      }
+    ],
+    "steps": [
+      "Fırını 190°C'ye ısıt.",
+      "Somonu limon, yağ ve sarımsakla tatlandır.",
+      "Balığın içi tamamen pişene kadar fırınla."
+    ],
+    "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırında Tavuk Kanat",
+    "category": "Fırın",
+    "minutes": 50,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 650,
+        "unit": "Gram",
+        "name": "tavuk kanat"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı yoğurt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı kırmızı toz biber"
+      }
+    ],
+    "steps": [
+      "Kanatları yoğurt ve baharatla harmanla.",
+      "Tepsiye tek kat diz.",
+      "200°C fırında içleri tamamen pişene kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırın Makarna",
+    "category": "Fırın",
+    "minutes": 45,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 250,
+        "unit": "Gram",
+        "name": "makarna"
+      },
+      {
+        "quantity": 2,
+        "unit": "Su",
+        "name": "bardağı süt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı un"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı tereyağı"
+      },
+      {
+        "quantity": 100,
+        "unit": "Gram",
+        "name": "kaşar peyniri"
+      }
+    ],
+    "steps": [
+      "Makarnayı haşla.",
+      "Un, tereyağı ve sütten sos hazırla.",
+      "Makarna ve sosu karıştır, kaşar serpip fırınla."
+    ],
+    "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Sebzeli Fırın Mücver",
+    "category": "Fırın",
+    "minutes": 40,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "kabak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "havuç"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 4,
+        "unit": "Yemek",
+        "name": "kaşığı un"
+      },
+      {
+        "quantity": 1,
+        "unit": "Demet",
+        "name": "dereotu"
+      }
+    ],
+    "steps": [
+      "Sebzeleri rendeleyip fazla suyunu sık.",
+      "Yumurta, un ve dereotuyla karıştır.",
+      "Yağlı kâğıt serili tepside 190°C'de pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Avokadolu Yumurta Tostu",
+    "category": "Brunch",
+    "minutes": 15,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Dilim",
+        "name": "ekmek"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "avokado"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      }
+    ],
+    "steps": [
+      "Ekmeği kızart.",
+      "Avokadoyu limonla ez ve ekmeğe sür.",
+      "Yumurtaları pişirip üzerine koy."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Peynirli Krep",
+    "category": "Brunch",
+    "minutes": 25,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı süt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı un"
+      },
+      {
+        "quantity": 100,
+        "unit": "Gram",
+        "name": "beyaz peynir"
+      }
+    ],
+    "steps": [
+      "Yumurta, süt ve undan akışkan hamur yap.",
+      "İnce krepler pişir.",
+      "Beyaz peynirle doldurup katla."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Mantarlı Omlet",
+    "category": "Brunch",
+    "minutes": 20,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 150,
+        "unit": "Gram",
+        "name": "mantar"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı tereyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "biber"
+      }
+    ],
+    "steps": [
+      "Mantarı ve biberi sotele.",
+      "Yumurtaları çırpıp tavaya ekle.",
+      "Kapağı kapalı, tamamen pişene kadar beklet."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Domatesli Peynirli Sandviç",
+    "category": "Brunch",
+    "minutes": 10,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Dilim",
+        "name": "ekmek"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 80,
+        "unit": "Gram",
+        "name": "beyaz peynir"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yaprak",
+        "name": "marul"
+      }
+    ],
+    "steps": [
+      "Ekmeği hafif kızart.",
+      "Domates ve peyniri dilimle.",
+      "Marulla birlikte sandviç yap."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Sebzeli Frittata",
+    "category": "Brunch",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 4,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kabak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "biber"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 40,
+        "unit": "Gram",
+        "name": "kaşar peyniri"
+      }
+    ],
+    "steps": [
+      "Sebzeleri fırına uygun tavada sotele.",
+      "Çırpılmış yumurtayı dök, kaşar serp.",
+      "180°C fırında içi tamamen pişene kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırın Nohut Cipsi",
+    "category": "Atıştırmalık",
+    "minutes": 35,
+    "servings": 2,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Su",
+        "name": "bardağı haşlanmış nohut"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı kimyon"
+      }
+    ],
+    "steps": [
+      "Nohutları iyice kurula.",
+      "Yağ ve kimyonla karıştır.",
+      "200°C fırında çıtırlaşana kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Yoğurtlu Meyve Kasesi",
+    "category": "Atıştırmalık",
+    "minutes": 10,
+    "servings": 2,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı yoğurt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "muz"
+      },
+      {
+        "quantity": 5,
+        "unit": "Adet",
+        "name": "çilek"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı yulaf ezmesi"
+      }
+    ],
+    "steps": [
+      "Meyveleri temizleyip doğra.",
+      "Yoğurdu kaseye al.",
+      "Meyve ve yulafı üzerine ekle."
+    ],
+    "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Peynirli Mini Sandviç",
+    "category": "Atıştırmalık",
+    "minutes": 12,
+    "servings": 2,
+    "ingredients": [
+      {
+        "quantity": 4,
+        "unit": "Dilim",
+        "name": "ekmek"
+      },
+      {
+        "quantity": 100,
+        "unit": "Gram",
+        "name": "beyaz peynir"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yaprak",
+        "name": "marul"
+      }
+    ],
+    "steps": [
+      "Ekmeği küçük dilimle.",
+      "Peyniri ve sebzeleri yerleştir.",
+      "Küçük sandviçler yap."
+    ],
+    "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Baharatlı Patlamış Mısır",
+    "category": "Atıştırmalık",
+    "minutes": 12,
+    "servings": 2,
+    "ingredients": [
+      {
+        "quantity": 4,
+        "unit": "Yemek",
+        "name": "kaşığı mısır"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı ayçiçek yağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı kırmızı toz biber"
+      }
+    ],
+    "steps": [
+      "Kapaklı tencerede yağı ısıt.",
+      "Mısırı ekle ve kapağı kapat.",
+      "Patlamalar azalınca ateşten al, baharatla karıştır."
+    ],
+    "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Muzlu Yulaf Topları",
+    "category": "Atıştırmalık",
+    "minutes": 20,
+    "servings": 2,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "muz"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı yulaf ezmesi"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı fıstık ezmesi"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı tarçın"
+      }
+    ],
+    "steps": [
+      "Muzu ez.",
+      "Yulaf, tarçın ve fıstık ezmesiyle karıştır.",
+      "Küçük toplar yapıp soğut."
+    ],
+    "image": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Izgara Tavuklu Salata",
+    "category": "Fit",
+    "minutes": 30,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 250,
+        "unit": "Gram",
+        "name": "tavuk göğsü"
+      },
+      {
+        "quantity": 5,
+        "unit": "Yaprak",
+        "name": "marul"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "salatalık"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Tavuğu tamamen pişir.",
+      "Sebzeleri doğra.",
+      "Tavuk dilimlerini salatayla birleştir."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Kinoalı Sebze Kasesi",
+    "category": "Fit",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı kinoa"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "salatalık"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "domates"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "havuç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      }
+    ],
+    "steps": [
+      "Kinoayı yıkayıp paketine göre pişir.",
+      "Sebzeleri doğra.",
+      "Limonla karıştır ve servis et."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırın Brokoli",
+    "category": "Fit",
+    "minutes": 25,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "brokoli"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Diş",
+        "name": "sarımsak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      }
+    ],
+    "steps": [
+      "Brokoliyi küçük parçalara ayır.",
+      "Yağ ve sarımsakla harmanla.",
+      "200°C fırında yumuşayana kadar pişir, limon ekle."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Yoğurtlu Kabak",
+    "category": "Fit",
+    "minutes": 20,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "kabak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı yoğurt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Diş",
+        "name": "sarımsak"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Kabakları rendeleyip hafif sotele.",
+      "Soğut ve yoğurtla karıştır.",
+      "Sarımsak ve yağla servis et."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırında Hindi Köfte",
+    "category": "Fit",
+    "minutes": 40,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 350,
+        "unit": "Gram",
+        "name": "hindi kıyma"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "kuru soğan"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı yulaf ezmesi"
+      }
+    ],
+    "steps": [
+      "Soğanı rendele, kıymayla karıştır.",
+      "Yumurta ve yulaf ekleyip köfte yap.",
+      "190°C fırında içi tamamen pişene kadar pişir."
+    ],
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Sütlaç",
+    "category": "Tatlı",
+    "minutes": 45,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Litre",
+        "name": "süt"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "bardağı pirinç"
+      },
+      {
+        "quantity": 4,
+        "unit": "Yemek",
+        "name": "kaşığı toz şeker"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı tarçın"
+      }
+    ],
+    "steps": [
+      "Pirinci suda iyice yumuşat.",
+      "Süt ve şekeri ekleyerek karıştır.",
+      "Kıvam alınca kaselere paylaştır, soğut."
+    ],
+    "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Muzlu Puding",
+    "category": "Tatlı",
+    "minutes": 25,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "muz"
+      },
+      {
+        "quantity": 2,
+        "unit": "Su",
+        "name": "bardağı süt"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı nişasta"
+      },
+      {
+        "quantity": 3,
+        "unit": "Yemek",
+        "name": "kaşığı toz şeker"
+      }
+    ],
+    "steps": [
+      "Süt, nişasta ve şekeri sürekli karıştırarak pişir.",
+      "Koyulaşınca ocaktan al.",
+      "Muz dilimleriyle kaselere aktar."
+    ],
+    "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "İrmik Helvası",
+    "category": "Tatlı",
+    "minutes": 30,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı irmik"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı tereyağı"
+      },
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı süt"
+      },
+      {
+        "quantity": 4,
+        "unit": "Yemek",
+        "name": "kaşığı toz şeker"
+      }
+    ],
+    "steps": [
+      "İrmiği tereyağında kısık ateşte kavur.",
+      "Şekerli ılık sütü dikkatle ekle.",
+      "Suyunu çekince dinlendir."
+    ],
+    "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Fırında Elma Tatlısı",
+    "category": "Tatlı",
+    "minutes": 35,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 4,
+        "unit": "Adet",
+        "name": "elma"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı ceviz"
+      },
+      {
+        "quantity": 1,
+        "unit": "Çay",
+        "name": "kaşığı tarçın"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı bal"
+      }
+    ],
+    "steps": [
+      "Elmaları ortadan çıkarıp fırın kabına diz.",
+      "Ceviz ve tarçını ekle.",
+      "180°C fırında yumuşayıncaya kadar pişir, balı servis öncesi ekle."
+    ],
+    "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  },
+  {
+    "name": "Yoğurtlu Çilek Kup",
+    "category": "Tatlı",
+    "minutes": 10,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "unit": "Su",
+        "name": "bardağı yoğurt"
+      },
+      {
+        "quantity": 8,
+        "unit": "Adet",
+        "name": "çilek"
+      },
+      {
+        "quantity": 2,
+        "unit": "Yemek",
+        "name": "kaşığı yulaf ezmesi"
+      },
+      {
+        "quantity": 1,
+        "unit": "Yemek",
+        "name": "kaşığı bal"
+      }
+    ],
+    "steps": [
+      "Çilekleri yıka ve dilimle.",
+      "Kup içine yoğurt, çilek ve yulafı katla.",
+      "Üstüne az bal gezdir."
+    ],
+    "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80",
+    "imageNote": "Kategoriye ait temsili demo fotoğrafı"
+  }
+]
