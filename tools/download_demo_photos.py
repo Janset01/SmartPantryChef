@@ -49,12 +49,22 @@ def find_by_search(title):
             candidates.append((score,-extra,page["imageinfo"][0].get("thumburl") or page["imageinfo"][0].get("url")))
     candidates.sort(reverse=True)
     return candidates[0][2] if candidates else None
+# Individually researched alternatives; still the same dish type.
+PHOTO_OVERRIDES={
+    "Pankek":"Pancakes (1).jpg",
+    "Etli Patates Yemeği":"Haşlama.jpg",
+    "Yoğurtlu Kabak":"Kabak kalye ve yogurt.jpg",
+    "Muzlu Yulaf Topları":"Energy Balls (Unsplash).jpg",
+}
 def get_picture(index, recipe):
     path=OUTPUT/f"{index:03}.jpg"
     if path.exists() and path.stat().st_size>3500:
         return (index,recipe["name"],"cached")
     source=recipe.get("image","")
     candidates=[]
+    if recipe["name"] in PHOTO_OVERRIDES:
+        filename=PHOTO_OVERRIDES[recipe["name"]]
+        candidates.append(("verified_alternative:"+filename,lambda:commons_url(filename)))
     if "Special:FilePath/" in source:
         filename=unquote(source.split("Special:FilePath/",1)[1].split("?",1)[0])
         candidates.append(("commons:"+filename,lambda:commons_url(filename)))
