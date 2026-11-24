@@ -50,6 +50,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
+import com.smartpantry.chef.data.DemoRecipeVisibility
 import com.smartpantry.chef.data.SearchHistoryStore
 import kotlinx.coroutines.launch
 import kotlin.math.sin
@@ -116,7 +117,7 @@ fun HomeScreen(
     var featuredIndex by remember { mutableIntStateOf(0) }
     var weeklyViewCounts by remember { mutableStateOf<Map<Int, Int>>(emptyMap()) }
     LaunchedEffect(Unit) {
-        recipes = db.recipeDao().getAllRecipes()
+        recipes = DemoRecipeVisibility.visibleOnDiscover(context, db.recipeDao().getAllRecipes())
         engagements = db.recipeEngagementDao().getAll().associateBy { it.recipeId }
         val sevenDaysAgo = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
         weeklyViewCounts = db.recipeViewEventDao().topSince(sevenDaysAgo)
