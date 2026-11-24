@@ -341,6 +341,9 @@ fun MainScreen() {
                         1 -> ExploreScreen(
                             onRecipeClick = { recipe ->
                                 selectedRecipe = recipe
+                            },
+                            onExplorePantry = {
+                                showPantrySuggestions = true
                             }
                         )
 
