@@ -60,6 +60,7 @@ import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
 import com.smartpantry.chef.data.SearchHistoryStore
+import com.smartpantry.chef.data.DemoRecipeVisibility
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 import java.time.LocalDate
@@ -110,7 +111,7 @@ fun ExploreScreen(
     }
 
     LaunchedEffect(Unit) {
-        recipes = database.recipeDao().getAllRecipes()
+        recipes = DemoRecipeVisibility.visibleOnDiscover(context, database.recipeDao().getAllRecipes())
         engagements = database.recipeEngagementDao().getAll().associateBy { it.recipeId }
     }
 
