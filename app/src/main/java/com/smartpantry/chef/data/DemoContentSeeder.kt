@@ -94,7 +94,10 @@ object DemoContentSeeder {
                 Stock("kırmızı mercimek", 500.0, "Gram", 100),
                 Stock("pirinç", 750.0, "Gram", 130),
                 Stock("yoğurt", 500.0, "Gram", 5), Stock("kabak", 2.0, "Adet", 3),
-                Stock("ceviz", 200.0, "Gram", 45)
+                Stock("ceviz", 200.0, "Gram", 45),
+                Stock("taze fasulye", 450.0, "Gram", 2),
+                Stock("avokado", 2.0, "Adet", 3),
+                Stock("karides", 300.0, "Gram", 1)
             )
             stock.filterNot { it.name.lowercase(locale) in existingPantry }.forEach {
                 db.ingredientDao().insertIngredient(
