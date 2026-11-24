@@ -34,6 +34,8 @@ import com.smartpantry.chef.ui.screens.ProfessionalKitchenScreen
 import com.smartpantry.chef.ui.screens.WeeklyMealPlannerScreen
 import com.smartpantry.chef.ui.screens.HomeScreen
 import com.smartpantry.chef.ui.screens.PantryRecipeSuggestionsScreen
+import com.smartpantry.chef.ui.screens.PackageDateScannerScreen
+import com.smartpantry.chef.ui.screens.ScannedPantryProduct
 import com.smartpantry.chef.ui.screens.PantryScreen
 import com.smartpantry.chef.ui.screens.ProfileScreen
 import com.smartpantry.chef.ui.screens.RecipeDetailScreen
@@ -66,6 +68,8 @@ fun MainScreen() {
     var showProfessionalKitchen by remember { mutableStateOf(false) }
     var professionalSection by remember { mutableIntStateOf(0) }
     var showWeeklyPlanner by remember { mutableStateOf(false) }
+    var showPackageScanner by remember { mutableStateOf(false) }
+    var scannedPantryProduct by remember { mutableStateOf<ScannedPantryProduct?>(null) }
     var showShoppingList by remember {
         mutableStateOf(false)
     }
@@ -249,6 +253,17 @@ fun MainScreen() {
                     )
                 }
 
+                showPackageScanner -> {
+                    PackageDateScannerScreen(
+                        onBack = { showPackageScanner = false },
+                        onApplyToPantry = { product ->
+                            scannedPantryProduct = product
+                            showPackageScanner = false
+                            selectedIndex = 3
+                        }
+                    )
+                }
+
                 showWeeklyPlanner -> {
                     WeeklyMealPlannerScreen(
                         onBack = { showWeeklyPlanner = false },
@@ -322,7 +337,9 @@ fun MainScreen() {
                             },
                             onShowShoppingList = {
                                 showShoppingList = true
-                            }
+                            },
+                            onOpenPackageScanner = { showPackageScanner = true },
+                            importedProduct = scannedPantryProduct
                         )
 
                         4 -> ProfileScreen(
