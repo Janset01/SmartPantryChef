@@ -34,7 +34,7 @@ object DemoContentSeeder {
         val db = AppDatabase.getDatabase(context)
         val data = JSONArray(context.assets.open("demo_recipes.json").bufferedReader().use { it.readText() })
         if (prefs.getBoolean("installed", false)) {
-            seedNewLeekRecipes(db, data, prefs)
+            seedNewLeekRecipes(context, db, data, prefs)
             refreshDemoPhotosAndLegacyFilter(context, db, data, prefs)
             return
         }
@@ -158,6 +158,7 @@ object DemoContentSeeder {
     }
 
     private suspend fun seedNewLeekRecipes(
+        context: Context,
         db: AppDatabase, data: JSONArray,
         prefs: android.content.SharedPreferences
     ) {
