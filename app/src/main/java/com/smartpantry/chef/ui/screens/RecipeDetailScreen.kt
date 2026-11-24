@@ -459,7 +459,7 @@ fun RecipeDetailScreen(
 
                     Text(
                         text =
-                            "🎥 Tarif Videosu",
+                            if (isDemoRecipe) "🎥 Demo • İlgili Mutfak Videosu" else "🎥 Tarif Videosu",
                         fontSize = 19.sp,
                         fontWeight =
                             FontWeight.Bold,
@@ -474,7 +474,7 @@ fun RecipeDetailScreen(
 
                     Text(
                         text =
-                            "Tarifin yapılış videosunu açıp izleyebilirsin.",
+                            if (isDemoRecipe) "Bu kaynak video pişirme tekniği örneğidir; tarifi birebir göstermeyebilir." else "Tarifin yapılış videosunu açıp izleyebilirsin.",
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
