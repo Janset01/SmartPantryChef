@@ -33,7 +33,7 @@ fun ExploreAllRecipesScreen(
     var engagements by remember { mutableStateOf<Map<Int, RecipeEngagement>>(emptyMap()) }
     var query by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
-        recipes = database.recipeDao().getAllRecipes()
+        recipes = DemoRecipeVisibility.visibleOnDiscover(context, database.recipeDao().getAllRecipes())
         engagements = database.recipeEngagementDao().getAll().associateBy { it.recipeId }
     }
     val title = when(mode) {
