@@ -339,7 +339,8 @@ fun MainScreen() {
                                 showShoppingList = true
                             },
                             onOpenPackageScanner = { showPackageScanner = true },
-                            importedProduct = scannedPantryProduct
+                            importedProduct = scannedPantryProduct,
+                            onImportedProductConsumed = { scannedPantryProduct = null }
                         )
 
                         4 -> ProfileScreen(
