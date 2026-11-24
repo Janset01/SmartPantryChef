@@ -13,9 +13,12 @@ object DemoContentSeeder {
     private val locale = Locale.forLanguageTag("tr-TR")
     suspend fun ensureInstalled(context: Context) {
         val prefs = context.getSharedPreferences("smartpantry_demo_v1", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("installed", false)) return
         val db = AppDatabase.getDatabase(context)
         val data = JSONArray(context.assets.open("demo_recipes.json").bufferedReader().use { it.readText() })
+        if (prefs.getBoolean("installed", false)) {
+            refreshDemoPhotosAndLegacyFilter(db, data, prefs)
+            return
+        }
         val ids = mutableMapOf<String, Int>()
         val today = LocalDate.now()
         val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", locale)
@@ -133,5 +136,41 @@ object DemoContentSeeder {
             .putString("recipe_ids", ids.values.joinToString(","))
             .apply()
     }
+
+    private suspend fun refreshDemoPhotosAndLegacyFilter(
+        db: AppDatabase,
+        data: JSONArray,
+        prefs: android.content.SharedPreferences
+    ) {
+        val demoIds = prefs.getString("recipe_ids", "").orEmpty()
+            .split(",").mapNotNull { it.toIntOrNull() }.toSet()
+        if (demoIds.isEmpty()) return
+        val recipes = db.recipeDao().getAllRecipes()
+        if (!prefs.contains("legacy_recipe_ids")) {
+            val legacyIds = recipes.filter { it.id !in demoIds }.map { it.id }
+            prefs.edit().putString("legacy_recipe_ids", legacyIds.joinToString(",")).apply()
+        }
+        val curated = (0 until data.length()).associate { index ->
+            val obj = data.getJSONObject(index)
+            obj.getString("name") to obj.optString("image").takeIf { it.isNotBlank() }
+        }
+        db.withTransaction {
+            recipes.filter { it.id in demoIds }.forEach { recipe ->
+                val photo = curated[recipe.name]
+                val oldPhoto = recipe.imageUri.orEmpty()
+                if (oldPhoto.startsWith("https://images.unsplash.com/photo-") &&
+                    oldPhoto != photo) {
+                    db.recipeDao().updateRecipe(recipe.copy(imageUri = photo))
+                    if (photo != null) {
+                        db.recipeMediaDao().updateOldDemoImage(recipe.id, photo)
+                    } else {
+                        db.recipeMediaDao().removeOldDemoImage(recipe.id)
+                    }
+                }
+            }
+        }
+        prefs.edit().putBoolean("photos_v2", true).apply()
+    }
+
     private data class Stock(val name:String,val quantity:Double,val unit:String,val days:Long)
 }
