@@ -39,15 +39,24 @@ fun ExploreAllRecipesScreen(
     val title = when(mode) {
         1 -> "Bu Hafta Popüler"
         2 -> "Yeni Tarifler"
+        3 -> "Haftanın Öne Çıkan 3 Tarifi"
         else -> "Sana Özel Öneriler"
     }
     val searchCounts = remember(context) { SearchHistoryStore.counts(context) }
-    val sorted = remember(recipes, engagements, mode, searchCounts, query) {
+    var weeklyViews by remember { mutableStateOf<Map<Int,Int>>(emptyMap()) }
+    LaunchedEffect(Unit) {
+        val since = System.currentTimeMillis() - 7L*24*60*60*1000
+        weeklyViews = database.recipeViewEventDao().topSince(since)
+            .associate { it.recipeId to it.viewCount }
+    }
+    val sorted = remember(recipes, engagements, mode, searchCounts, query, weeklyViews) {
         recipes.filter {
             query.isBlank() || it.name.contains(query, true) ||
                 it.category.contains(query, true) || it.ingredients.contains(query, true)
         }.let { filtered ->
             when (mode) {
+                3 -> filtered.sortedWith(compareByDescending<Recipe> { weeklyViews[it.id] ?: 0 }
+                    .thenByDescending { it.id }).take(3)
                 1 -> filtered.sortedWith(compareByDescending<Recipe> {
                     engagements[it.id]?.averageRating ?: 0.0
                 }.thenByDescending { engagements[it.id]?.ratingCount ?: 0 })
