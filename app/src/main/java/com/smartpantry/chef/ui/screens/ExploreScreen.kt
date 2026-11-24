@@ -84,7 +84,8 @@ private fun displayRecipeTitle(name: String): String {
 @Composable
 fun ExploreScreen(
     onRecipeClick: (Recipe) -> Unit,
-    onExplorePantry: () -> Unit
+    onExplorePantry: () -> Unit,
+    onSeeAll: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val database = remember(context) { AppDatabase.getDatabase(context) }
@@ -211,7 +212,7 @@ fun ExploreScreen(
                 fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = exploreInk
             )
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
-                showAllRecommendations = !showAllRecommendations
+                onSeeAll(tab)
             }, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = exploreGreen)
         }
         Spacer(Modifier.height(5.dp))
@@ -280,7 +281,7 @@ fun ExploreScreen(
             Text("🔥 Bu Hafta Popüler", modifier = Modifier.weight(1f),
                 fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = exploreInk)
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
-                showAllPopular = !showAllPopular
+                onSeeAll(1)
             }, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = exploreGreen)
         }
         Spacer(Modifier.height(13.dp))
