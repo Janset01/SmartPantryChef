@@ -89,7 +89,9 @@ private fun pantryPressScale(source: MutableInteractionSource): Float {
 @Composable
 fun PantryScreen(
     onShowRecipeSuggestions: () -> Unit,
-    onShowShoppingList: () -> Unit
+    onShowShoppingList: () -> Unit,
+    onOpenPackageScanner: () -> Unit,
+    importedProduct: ScannedPantryProduct? = null
 ) {
 
     val suggestionPress = remember { MutableInteractionSource() }
@@ -133,6 +135,15 @@ fun PantryScreen(
 
     var expirationDate by remember {
         mutableStateOf("")
+    }
+
+    LaunchedEffect(importedProduct) {
+        importedProduct?.let { scanned ->
+            name = scanned.name
+            quantity = scanned.quantity
+            selectedUnit = scanned.unit
+            expirationDate = scanned.expirationDate
+        }
     }
 
     // Dialoglarda kullanılacak malzemeler
@@ -306,6 +317,15 @@ fun PantryScreen(
             shape = RoundedCornerShape(18.dp)
         ) {
             Text("🛒 Alışveriş Listem", color = pantryOrange, fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onOpenPackageScanner,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Text("📷 Ambalajdan Ürün ve Tarih Tara", color = pantryOrange, fontWeight = FontWeight.Bold)
         }
 
         Spacer(
