@@ -72,6 +72,11 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     // Bundled on-device text recognition; no cloud upload required.
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation("androidx.camera:camera-core:1.6.2")
+    implementation("androidx.camera:camera-camera2:1.6.2")
+    implementation("androidx.camera:camera-lifecycle:1.6.2")
+    implementation("androidx.camera:camera-view:1.6.2")
 
     // ROOM
     implementation("androidx.room:room-runtime:2.8.4")
