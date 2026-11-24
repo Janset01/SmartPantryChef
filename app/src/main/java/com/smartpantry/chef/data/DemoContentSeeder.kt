@@ -136,6 +136,7 @@ object DemoContentSeeder {
         prefs.edit().putBoolean("installed",true)
             .putString("recipe_ids", ids.values.joinToString(","))
             .apply()
+        refreshDemoPhotosAndLegacyFilter(db, data, prefs)
     }
 
     private suspend fun seedNewLeekRecipes(
