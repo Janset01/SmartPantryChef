@@ -50,6 +50,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
+import com.smartpantry.chef.data.SearchHistoryStore
 import kotlinx.coroutines.launch
 import kotlin.math.sin
 
@@ -77,6 +78,12 @@ fun HomeScreen(
     var recipes by remember { mutableStateOf<List<Recipe>>(emptyList()) }
     var engagements by remember { mutableStateOf<Map<Int, RecipeEngagement>>(emptyMap()) }
     var search by remember { mutableStateOf("") }
+    LaunchedEffect(search) {
+        if (search.trim().length >= 3) {
+            kotlinx.coroutines.delay(1300)
+            SearchHistoryStore.record(context, search)
+        }
+    }
     var searchOpen by remember { mutableStateOf(false) }
     var filtersOpen by remember { mutableStateOf(false) }
     var searchCategory by remember { mutableStateOf("Tümü") }

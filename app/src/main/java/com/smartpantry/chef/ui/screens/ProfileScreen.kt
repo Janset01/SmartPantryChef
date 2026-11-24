@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -123,6 +124,13 @@ fun ProfileScreen(
     var searchText by remember {
         mutableStateOf("")
     }
+
+    val demoIds = remember(context) {
+        context.getSharedPreferences("smartpantry_demo_v1", android.content.Context.MODE_PRIVATE)
+            .getString("recipe_ids", "").orEmpty().split(",")
+            .mapNotNull { it.trim().toIntOrNull() }.toSet()
+    }
+    var recipeSource by remember { mutableStateOf(if (demoIds.isNotEmpty()) "Demo Tarifler" else "Tümü") }
 
     var selectedCategory by remember {
         mutableStateOf("Tümü")
@@ -222,7 +230,12 @@ fun ProfileScreen(
 
             matchesSearch &&
                     matchesCategory &&
-                    matchesPersonalFilters
+                    matchesPersonalFilters &&
+                    when (recipeSource) {
+                        "Demo Tarifler" -> recipe.id in demoIds
+                        "Kendi Tariflerim" -> recipe.id !in demoIds
+                        else -> true
+                    }
         }
 
     val visibleRecipes =
@@ -422,6 +435,19 @@ fun ProfileScreen(
             modifier =
                 Modifier.height(18.dp)
         )
+
+        if (demoIds.isNotEmpty()) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("Demo Tarifler", "Kendi Tariflerim", "Tümü").forEach { source ->
+                    FilterChip(selected = recipeSource == source,
+                        onClick = { recipeSource = source },
+                        label = { Text(source) })
+                }
+            }
+            Text("Demo tarifler örnek içeriktir; önceki kişisel tariflerin silinmedi.",
+                color = Color.Gray, fontSize = 11.sp, modifier = Modifier.padding(vertical = 5.dp))
+        }
 
         Row(
             modifier =
