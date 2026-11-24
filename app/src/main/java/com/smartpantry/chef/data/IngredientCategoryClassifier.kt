@@ -148,6 +148,18 @@ object IngredientCategoryClassifier {
         }
     }
 
+    // Scanners require positive food evidence, not the fuzzy category fallback.
+    // Exact food phrases inside a branded receipt line are accepted; unknown
+    // products must be explicitly reviewed rather than guessed.
+    fun containsKnownFoodName(printedName: String): Boolean {
+        val normalized = normalizeIngredientCategoryText(printedName)
+        if (normalized.isEmpty()) return false
+        val words = " $normalized "
+        return categoryMap.keys.any { foodName ->
+            foodName.isNotBlank() && words.contains(" $foodName ")
+        }
+    }
+
     fun classify(ingredientName: String): PantryCategoryResult {
         val normalized = normalizeIngredientCategoryText(ingredientName)
 
