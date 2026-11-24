@@ -64,6 +64,7 @@ private val homeGradient = Brush.horizontalGradient(listOf(Color(0xFFFF8D34), Co
 fun HomeScreen(
     onRecipeClick: (Recipe) -> Unit = {},
     onExplore: () -> Unit = {},
+    onFeaturedRecipesClick: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
     onPantryClick: () -> Unit = {},
     onMyRecipesClick: () -> Unit = {},
@@ -213,7 +214,7 @@ fun HomeScreen(
                     Box(
                         Modifier.clip(RoundedCornerShape(28.dp))
                             .background(homeGradient)
-                            .clickable { onRecipeClick(recipe) }
+                            .clickable { onFeaturedRecipesClick() }
                             .padding(horizontal = 18.dp, vertical = 12.dp)
                     ) {
                         Text("Tariflere Göz At  →", fontSize = 14.sp,
