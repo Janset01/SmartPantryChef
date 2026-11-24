@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.withTransaction
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
+import android.net.Uri
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -11,13 +13,29 @@ import java.util.Locale
 /** Test-only starter catalog. Never deletes user data. */
 object DemoContentSeeder {
     private val locale = Locale.forLanguageTag("tr-TR")
+    /** Prefer verified JPG files bundled in assets. Never depend on broken remote links. */
+    private fun demoPhoto(context: Context, index: Int): String? {
+        val filename = "%03d.jpg".format(Locale.US, index)
+        return runCatching {
+            context.assets.open("demo_photos/$filename").use { source ->
+                val directory = File(context.filesDir, "demo_recipe_photos_v3")
+                    .apply { mkdirs() }
+                val target = File(directory, filename)
+                if (target.length() < 1000L) {
+                    target.outputStream().use { dest -> source.copyTo(dest) }
+                }
+                if (target.length() > 1000L) Uri.fromFile(target).toString() else null
+            }
+        }.getOrNull()
+    }
+
     suspend fun ensureInstalled(context: Context) {
         val prefs = context.getSharedPreferences("smartpantry_demo_v1", Context.MODE_PRIVATE)
         val db = AppDatabase.getDatabase(context)
         val data = JSONArray(context.assets.open("demo_recipes.json").bufferedReader().use { it.readText() })
         if (prefs.getBoolean("installed", false)) {
-            seedNewLeekRecipes(db, data, prefs)
-            refreshDemoPhotosAndLegacyFilter(db, data, prefs)
+            seedNewLeekRecipes(context, db, data, prefs)
+            refreshDemoPhotosAndLegacyFilter(context, db, data, prefs)
             return
         }
         val ids = mutableMapOf<String, Int>()
@@ -45,7 +63,7 @@ object DemoContentSeeder {
                         (if (qty % 1.0 == 0.0) qty.toInt().toString() else qty.toString()) + " " + unit + " " + title
                     },
                     instructions = instructions,
-                    imageUri = item.optString("image").takeIf { it.startsWith("https://") }
+                    imageUri = demoPhoto(context, i)
                 )
                 val id = db.recipeDao().insertRecipe(recipe).toInt()
                 ids[name] = id
@@ -136,10 +154,11 @@ object DemoContentSeeder {
         prefs.edit().putBoolean("installed",true)
             .putString("recipe_ids", ids.values.joinToString(","))
             .apply()
-        refreshDemoPhotosAndLegacyFilter(db, data, prefs)
+        refreshDemoPhotosAndLegacyFilter(context, db, data, prefs)
     }
 
     private suspend fun seedNewLeekRecipes(
+        context: Context,
         db: AppDatabase, data: JSONArray,
         prefs: android.content.SharedPreferences
     ) {
@@ -161,7 +180,7 @@ object DemoContentSeeder {
                 val text = (0 until steps.length()).joinToString("\n\n") { n ->
                     (n + 1).toString() + ". " + steps.getString(n)
                 }
-                val photo = obj.optString("image").takeIf { it.startsWith("https://") }
+                val photo = demoPhoto(context, index)
                 val recipe = Recipe(
                     name = name, category = obj.getString("category"),
                     preparationTime = obj.getInt("minutes").toString() + " dk",
@@ -197,6 +216,7 @@ object DemoContentSeeder {
     }
 
     private suspend fun refreshDemoPhotosAndLegacyFilter(
+        context: Context,
         db: AppDatabase,
         data: JSONArray,
         prefs: android.content.SharedPreferences
@@ -211,20 +231,25 @@ object DemoContentSeeder {
         }
         val curated = (0 until data.length()).associate { index ->
             val obj = data.getJSONObject(index)
-            obj.getString("name") to obj.optString("image").takeIf { it.isNotBlank() }
+            obj.getString("name") to demoPhoto(context, index)
         }
         db.withTransaction {
             recipes.filter { it.id in demoIds }.forEach { recipe ->
                 val photo = curated[recipe.name]
                 val oldPhoto = recipe.imageUri.orEmpty()
-                if (oldPhoto.startsWith("https://images.unsplash.com/photo-") &&
-                    oldPhoto != photo) {
+                val wasGeneratedDemoCover =
+                    oldPhoto.startsWith("https://images.unsplash.com/photo-") ||
+                    oldPhoto.startsWith("https://commons.wikimedia.org/wiki/Special:FilePath/") ||
+                    oldPhoto.contains("/demo_recipe_photos_v3/")
+                // Never replace a user-customized image. No asset means no fake photo.
+                if (photo != null && wasGeneratedDemoCover && oldPhoto != photo) {
                     db.recipeDao().updateRecipe(recipe.copy(imageUri = photo))
-                    if (photo != null) {
-                        db.recipeMediaDao().updateOldDemoImage(recipe.id, photo)
-                    } else {
-                        db.recipeMediaDao().removeOldDemoImage(recipe.id)
-                    }
+                    db.recipeMediaDao().updateOldDemoImage(recipe.id, photo)
+                    db.recipeMediaDao().updateOldCommonsImage(recipe.id, photo)
+                } else if (photo != null && oldPhoto.isBlank()) {
+                    db.recipeDao().updateRecipe(recipe.copy(imageUri = photo))
+                    db.recipeMediaDao().updateOldDemoImage(recipe.id, photo)
+                    db.recipeMediaDao().updateOldCommonsImage(recipe.id, photo)
                 }
             }
         }
