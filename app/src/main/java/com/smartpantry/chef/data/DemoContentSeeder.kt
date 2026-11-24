@@ -45,12 +45,25 @@ object DemoContentSeeder {
                 )
                 val id = db.recipeDao().insertRecipe(recipe).toInt()
                 ids[name] = id
+                val demoMedia = mutableListOf<RecipeMedia>()
                 recipe.imageUri?.let { demoPhoto ->
-                    db.recipeMediaDao().insertMedia(listOf(RecipeMedia(
-                        recipeId = id, mediaType = RecipeMedia.TYPE_IMAGE,
-                        uri = demoPhoto, sortOrder = 0
-                    )))
+                    demoMedia += RecipeMedia(recipeId = id, mediaType = RecipeMedia.TYPE_IMAGE,
+                        uri = demoPhoto, sortOrder = 0)
                 }
+                val tutorialUrl = when (name) {
+                    "Domates Soslu Makarna" ->
+                        "https://commons.wikimedia.org/wiki/File:Cooking_with_Laura_Homemade_Pasta.webm"
+                    "Nohutlu Pirinç Pilavı" ->
+                        "https://commons.wikimedia.org/wiki/File:Rice_Cooking_on_a_gas_stove.webm"
+                    "Tavuklu Nohutlu Bulgur" ->
+                        "https://commons.wikimedia.org/wiki/File:Cooking_Chicken_and_Rice.webm"
+                    else -> null
+                }
+                tutorialUrl?.let { url ->
+                    demoMedia += RecipeMedia(recipeId = id, mediaType = RecipeMedia.TYPE_VIDEO,
+                        uri = url, sortOrder = 1)
+                }
+                if (demoMedia.isNotEmpty()) db.recipeMediaDao().insertMedia(demoMedia)
                 db.recipeIngredientDao().insertRecipeIngredients(ingredients.map { (title, qty, unit) ->
                     RecipeIngredient(recipeId = id, name = title, quantity = qty, unit = unit)
                 })
