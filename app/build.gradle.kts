@@ -70,6 +70,8 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+    // Bundled on-device text recognition; no cloud upload required.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 
     // ROOM
     implementation("androidx.room:room-runtime:2.8.4")
