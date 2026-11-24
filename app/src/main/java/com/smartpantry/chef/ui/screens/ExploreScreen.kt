@@ -78,7 +78,10 @@ private fun displayRecipeTitle(name: String): String {
 }
 
 @Composable
-fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
+fun ExploreScreen(
+    onRecipeClick: (Recipe) -> Unit,
+    onExplorePantry: () -> Unit
+) {
     val context = LocalContext.current
     val database = remember(context) { AppDatabase.getDatabase(context) }
     val scope = rememberCoroutineScope()
@@ -217,13 +220,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
         }
         Spacer(Modifier.height(21.dp))
         Card(
-            modifier = Modifier.fillMaxWidth().clickable {
-                ingredientMode = true
-                searchOpen = true
-                search = ""
-                category = "Tümü"
-                showAllRecommendations = true
-            },
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onExplorePantry),
             shape = RoundedCornerShape(15.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE0A6)),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -242,8 +239,7 @@ fun ExploreScreen(onRecipeClick: (Recipe) -> Unit) {
                     Text("Elindeki Malzemelerle Keşfet", fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF432414), fontSize = 13.sp, lineHeight = 16.sp)
                     Spacer(Modifier.height(3.dp))
-                    Text(if (ingredientMode) "Malzemeni yaz, tarifleri keşfet."
-                        else "Buzdolabındaki malzemelerle tarif bul.",
+                    Text("Buzdolabındaki stoklarına göre tarif bul.",
                         color = Color(0xFF795038), fontSize = 10.sp, lineHeight = 12.sp)
                 }
                 Spacer(Modifier.width(6.dp))
