@@ -288,7 +288,7 @@ fun PackageDateScannerScreen(
 }
 
 @Composable
-private fun PantryLiveCamera(
+internal fun PantryLiveCamera(
     modifier: Modifier,
     onPhoto: (Uri) -> Unit,
     onError: (String) -> Unit
