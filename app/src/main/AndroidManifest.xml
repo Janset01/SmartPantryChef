@@ -5,6 +5,7 @@
 
     <!-- İnternet -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- Android 13+ bildirim izni -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
