@@ -29,6 +29,8 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Ingredient
+import com.smartpantry.chef.data.ScannedFoodValidator
+import com.smartpantry.chef.data.ScannedFoodStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
@@ -74,7 +76,8 @@ private suspend fun lookupProductByBarcode(code: String): BarcodeProduct? = with
 
 private data class ReceiptRow(
     val id: Int, val name: String, val amount: String = "1",
-    val unit: String = "Adet", val date: String = "", val selected: Boolean = true
+    val unit: String = "Adet", val date: String = "", val selected: Boolean = false,
+    val confirmedFood: Boolean = false
 )
 
 private fun validCalendarDate(date: String): Boolean = runCatching {
@@ -91,7 +94,7 @@ private fun receiptCandidates(raw: String): List<ReceiptRow> {
         .distinct().take(30).mapIndexed { i, line ->
             val name = line.replace(Regex("""\s+\d+[.,]\d{2}\s*(?:TL|₺)?\s*$"""), "")
                 .replace(Regex("""\s+"""), " ").trim()
-            ReceiptRow(i, name)
+            ReceiptRow(i, name, selected = ScannedFoodValidator.classify(name) == ScannedFoodStatus.FOOD)
         }.filter { it.name.isNotEmpty() }.toList()
 }
 
@@ -123,6 +126,8 @@ fun ReceiptBarcodeScreen(
     var expiration by remember { mutableStateOf("") }
     var saving by remember { mutableStateOf(false) }
     var success by remember { mutableStateOf("") }
+    var barcodeFoodConfirmed by remember(barcode) { mutableStateOf(false) }
+    var rejectedNonFoodCount by remember { mutableIntStateOf(0) }
     LaunchedEffect(barcode) {
         if (barcode.isNotBlank() && barcodeMode) {
             lookingUp = true
@@ -156,7 +161,13 @@ fun ReceiptBarcodeScreen(
             } else {
                 textReader.process(image).addOnSuccessListener { result ->
                     scannedText = result.text
-                    rows = receiptCandidates(result.text)
+                    val recognized = receiptCandidates(result.text)
+                    rejectedNonFoodCount = recognized.count {
+                        ScannedFoodValidator.classify(it.name) == ScannedFoodStatus.NOT_FOOD
+                    }
+                    rows = recognized.filter {
+                        ScannedFoodValidator.classify(it.name) != ScannedFoodStatus.NOT_FOOD
+                    }
                     if (rows.isEmpty()) error = "Ürün adları ayırt edilemedi. Fotoğrafı yeniden çekebilirsin."
                     isReading = false
                 }.addOnFailureListener {
@@ -236,7 +247,21 @@ fun ReceiptBarcodeScreen(
                     Text(productLookupStatus, color = scanOrange, fontSize = 12.sp)
                     if (lookingUp) LinearProgressIndicator(Modifier.fillMaxWidth())
                 }
-                OutlinedTextField(productName, { productName = it }, label = { Text("Ürün adı") }, modifier = Modifier.fillMaxWidth())
+                val barcodeFoodStatus = ScannedFoodValidator.classify(productName)
+                if (barcodeFoodStatus == ScannedFoodStatus.NOT_FOOD) {
+                    Text("Bu ürün gıda dışı olarak algılandı. Buzdolabım stoklarına eklenemez.",
+                        color = Color(0xFFB3261E), fontSize = 12.sp)
+                } else if (barcodeFoodStatus == ScannedFoodStatus.REVIEW && productName.isNotBlank()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = barcodeFoodConfirmed, onCheckedChange = { barcodeFoodConfirmed = it })
+                        Text("Bu ürünün yenilebilir bir gıda olduğunu ambalajından doğruladım.",
+                            fontSize = 12.sp, modifier = Modifier.weight(1f))
+                    }
+                } else if (barcodeFoodStatus == ScannedFoodStatus.FOOD) {
+                    Text("✓ Gıda ürünü olarak tanındı", color = Color(0xFF397F4B), fontSize = 12.sp)
+                }
+                OutlinedTextField(productName, { productName = it; barcodeFoodConfirmed = false },
+                    label = { Text("Ürün adı") }, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(amount, { amount = it }, label = { Text("Miktar") }, modifier = Modifier.fillMaxWidth())
                 Row(Modifier.horizontalScroll(rememberScrollState())) {
                     listOf("Adet", "Litre", "Mililitre", "Gram", "Kilogram").forEach { u ->
@@ -249,6 +274,8 @@ fun ReceiptBarcodeScreen(
                 Text("TETT ile SKT farklıdır. Tarihi ambalajdan doğrulayın.", fontSize = 12.sp)
                 Button(onClick = { onBarcodeProduct(ScannedPantryProduct(productName.trim(), amount, unit, expiration)) },
                     enabled = barcode.isNotEmpty() && productName.isNotBlank() &&
+                        (barcodeFoodStatus == ScannedFoodStatus.FOOD ||
+                            (barcodeFoodStatus == ScannedFoodStatus.REVIEW && barcodeFoodConfirmed)) &&
                         (amount.replace(",", ".").toDoubleOrNull() ?: 0.0) > 0 && validCalendarDate(expiration),
                     modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = scanOrange)) {
                     Text("Bilgileri stok formuna aktar")
@@ -256,21 +283,51 @@ fun ReceiptBarcodeScreen(
             }
         } else {
             if (scannedText.isNotBlank()) {
-                Text("${rows.size} olası ürün satırı bulundu. Fişteki fiyatlar ve ürün adları yanlış okunabilir.",
+                Text("${rows.size} olası gıda satırı bulundu. ${rejectedNonFoodCount} gıda dışı satır ayıklandı. Şüpheli ürünler onay gerektirir.",
                     fontSize = 12.sp, color = scanInk)
             }
             LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 itemsIndexed(rows, key = { _, row -> row.id }) { index, row ->
+                    val foodStatus = ScannedFoodValidator.classify(row.name)
+                    val canSelect = foodStatus == ScannedFoodStatus.FOOD ||
+                        (foodStatus == ScannedFoodStatus.REVIEW && row.confirmedFood)
                     Card(colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(15.dp)) {
                         Column(Modifier.padding(12.dp)) {
                             Row {
-                                Checkbox(row.selected, onCheckedChange = { v ->
+                                Checkbox(row.selected && canSelect, enabled = canSelect, onCheckedChange = { v ->
                                     rows = rows.map { if (it.id == row.id) it.copy(selected = v) else it }
                                 })
                                 OutlinedTextField(row.name, onValueChange = { v ->
-                                    rows = rows.map { if (it.id == row.id) it.copy(name = v) else it }
+                                    rows = rows.map {
+                                        if (it.id == row.id) it.copy(
+                                            name = v, confirmedFood = false,
+                                            selected = ScannedFoodValidator.classify(v) == ScannedFoodStatus.FOOD
+                                        ) else it
+                                    }
                                 }, label = { Text("Ürün adı") }, modifier = Modifier.weight(1f))
+                            }
+                            when (foodStatus) {
+                                ScannedFoodStatus.FOOD ->
+                                    Text("✓ Gıda olarak tanındı", color = Color(0xFF397F4B), fontSize = 12.sp)
+                                ScannedFoodStatus.NOT_FOOD ->
+                                    Text("Gıda dışı ürün • Stoka eklenemez", color = Color(0xFFB3261E), fontSize = 12.sp)
+                                ScannedFoodStatus.REVIEW -> {
+                                    Text("Ürün tanınamadı • Önce gıda olduğunu kontrol et",
+                                        color = Color(0xFF99622D), fontSize = 12.sp)
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(checked = row.confirmedFood, onCheckedChange = { confirmed ->
+                                            rows = rows.map {
+                                                if (it.id == row.id) it.copy(
+                                                    confirmedFood = confirmed,
+                                                    selected = if (confirmed) it.selected else false
+                                                ) else it
+                                            }
+                                        })
+                                        Text("Bu ürün yenilebilir gıdadır, kontrol ettim.",
+                                            fontSize = 12.sp, modifier = Modifier.weight(1f))
+                                    }
+                                }
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 OutlinedTextField(row.amount, onValueChange = { v ->
@@ -306,7 +363,11 @@ fun ReceiptBarcodeScreen(
             }
             val chosen = rows.filter { it.selected }
             val allValid = chosen.isNotEmpty() && chosen.all {
-                it.name.isNotBlank() && (it.amount.replace(",", ".").toDoubleOrNull() ?: 0.0) > 0 &&
+                val decision = ScannedFoodValidator.classify(it.name)
+                val foodApproved = decision == ScannedFoodStatus.FOOD ||
+                    (decision == ScannedFoodStatus.REVIEW && it.confirmedFood)
+                foodApproved && it.name.isNotBlank() &&
+                    (it.amount.replace(",", ".").toDoubleOrNull() ?: 0.0) > 0 &&
                     validCalendarDate(it.date)
             }
             Button(onClick = {
