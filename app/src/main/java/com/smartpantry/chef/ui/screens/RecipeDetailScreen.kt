@@ -72,6 +72,11 @@ fun RecipeDetailScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val isDemoRecipe = remember(recipe.id) {
+        context.getSharedPreferences("smartpantry_demo_v1", android.content.Context.MODE_PRIVATE)
+            .getString("recipe_ids", "").orEmpty().split(",")
+            .mapNotNull { it.trim().toIntOrNull() }.contains(recipe.id)
+    }
 
     val database = remember {
         AppDatabase.getDatabase(context)
@@ -191,6 +196,11 @@ fun RecipeDetailScreen(
     val forest = Color(0xFFE96A24)
     val ink = Color(0xFF493028)
     Column(Modifier.fillMaxSize().background(Color(0xFFFFF8F2)).verticalScroll(rememberScrollState())) {
+        if (isDemoRecipe) {
+            Text("DEMO TARİF • Yorumlar, yıldızlar ve görseller örnek amaçlıdır.",
+                color = Color(0xFFB65421), fontSize = 11.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
+        }
         Box(Modifier.fillMaxWidth()) {
             if (!recipe.imageUri.isNullOrBlank()) {
                 Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
@@ -351,7 +361,7 @@ fun RecipeDetailScreen(
 
             Text(
                 text =
-                    "Tarif hazırlanırken eklenen fotoğraflar",
+                    if (isDemoRecipe) "Temsili demo görseli • gerçek yapım aşaması fotoğrafı değildir." else "Tarif hazırlanırken eklenen fotoğraflar",
                 fontSize = 13.sp,
                 color = Color.Gray
             )
