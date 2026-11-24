@@ -1,6 +1,10 @@
 package com.smartpantry.chef.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.Alignment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -70,6 +74,7 @@ fun ReceiptBarcodeScreen(
         onDispose { textReader.close(); barcodeReader.close() }
     }
     var isReading by remember { mutableStateOf(false) }
+    var showLiveCamera by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
     var scannedText by remember { mutableStateOf("") }
     var rows by remember { mutableStateOf<List<ReceiptRow>>(emptyList()) }
@@ -111,6 +116,15 @@ fun ReceiptBarcodeScreen(
             isReading = false
         }
     }
+    val cameraPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) showLiveCamera = true
+        else error = "Kamera izni verilmedi. Galeriden fotoğraf seçebilirsin."
+    }
+    fun openLiveCamera() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+            showLiveCamera = true
+        else cameraPermission.launch(Manifest.permission.CAMERA)
+    }
     val gallery = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) scan(uri)
     }
@@ -129,7 +143,18 @@ fun ReceiptBarcodeScreen(
             camera.launch(uri)
         }.onFailure { error = "Kamera açılamadı: ${it.localizedMessage ?: "Tekrar dene."}" }
     }
-    Column(Modifier.fillMaxSize().background(scanCream).padding(horizontal = 16.dp)) {
+    if (showLiveCamera) {
+        Box(Modifier.fillMaxSize().background(Color.Black)) {
+            PantryLiveCamera(Modifier.fillMaxSize(),
+                onPhoto = { uri -> showLiveCamera = false; scan(uri) },
+                onError = { error = it; showLiveCamera = false })
+            TextButton(onClick = { showLiveCamera = false }, modifier = Modifier.align(Alignment.TopStart)) {
+                Text("✕ Kapat", color = Color.White)
+            }
+            Text(if (barcodeMode) "Barkodu çerçeve içine yerleştir" else "Fişi net biçimde kadraja al",
+                color = Color.White, modifier = Modifier.align(Alignment.TopCenter).padding(top = 65.dp))
+        }
+    } else Column(Modifier.fillMaxSize().background(scanCream).padding(horizontal = 16.dp)) {
         TextButton(onClick = onBack) { Text("‹ Buzdolabıma dön", color = scanOrange) }
         Text(if (barcodeMode) "Barkod Okut" else "Fiş Tara",
             fontSize = 25.sp, fontWeight = FontWeight.ExtraBold, color = scanInk)
@@ -139,7 +164,7 @@ fun ReceiptBarcodeScreen(
             color = Color(0xFF80695C), fontSize = 13.sp)
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = ::takePhoto, enabled = !isReading, modifier = Modifier.weight(1f),
+            Button(onClick = ::openLiveCamera, enabled = !isReading, modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(containerColor = scanOrange)) { Text("📷 Fotoğraf çek") }
             OutlinedButton(onClick = { gallery.launch("image/*") }, enabled = !isReading,
                 modifier = Modifier.weight(1f)) { Text("Galeriden seç") }
