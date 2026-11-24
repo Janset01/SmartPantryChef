@@ -657,57 +657,25 @@ fun PantryScreen(
             modifier = Modifier.height(14.dp)
         )
 
-        OutlinedTextField(value = pantrySearch, onValueChange = { pantrySearch = it },
-            label = { Text("Stoktaki ürünlerde ara...") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            listOf("Tümü", "Süt", "Sebze", "Meyve", "Diğer").forEach { filter ->
-                FilterChip(selected = pantryFilter == filter, onClick = { pantryFilter = filter }, label = { Text(filter) })
+        PantryInventoryTable(
+            ingredients = ingredients,
+
+            onUseClick = { ingredient ->
+                ingredientToUse =
+                    ingredient
+            },
+
+            onEditClick = { ingredient ->
+                ingredientToEdit =
+                    ingredient
+            },
+
+            onDeleteClick = { ingredient ->
+                ingredientToDelete =
+                    ingredient
             }
-        }
-        val filteredStock = ingredients.filter { ingredient ->
-            val matchesSearch = ingredient.name.contains(pantrySearch, ignoreCase = true)
-            val isMilk = listOf("süt", "yoğurt", "peynir", "ayran", "krema", "tereyağ").any { ingredient.name.contains(it, true) }
-            val isVegetable = listOf("domates", "salatalık", "biber", "patates", "soğan", "marul", "havuç").any { ingredient.name.contains(it, true) }
-            val isFruit = listOf("elma", "muz", "armut", "portakal", "çilek", "limon").any { ingredient.name.contains(it, true) }
-            matchesSearch && when (pantryFilter) {
-                "Süt" -> isMilk
-                "Sebze" -> isVegetable
-                "Meyve" -> isFruit
-                "Diğer" -> !isMilk && !isVegetable && !isFruit
-                else -> true
-            }
-        }
-        filteredStock.forEach { ingredient ->
-            Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                shape = RoundedCornerShape(17.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF9))) {
-                Row(Modifier.padding(11.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(68.dp).clip(RoundedCornerShape(13.dp))
-                        .background(Color(0xFFFFE3D0)), contentAlignment = Alignment.Center) {
-                        if (!ingredient.imageUri.isNullOrBlank()) {
-                            Image(painter = rememberAsyncImagePainter(ingredient.imageUri),
-                                contentDescription = ingredient.name,
-                                modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                        } else Text("🥛", fontSize = 29.sp)
-                    }
-                    Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(ingredient.name, fontWeight = FontWeight.Bold, color = pantryInk,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("${formatIngredientQuantity(ingredient.remainingQuantity)} ${ingredient.unit}",
-                            color = Color(0xFF80695C), fontSize = 12.sp)
-                        Text("SKT: ${ingredient.expirationDate}", color = pantryOrange, fontSize = 11.sp)
-                    }
-                    TextButton(onClick = { ingredientToEdit = ingredient }) { Text("Düzenle", color = pantryOrange, fontSize = 11.sp) }
-                }
-                Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp),
-                    horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = { ingredientToUse = ingredient }) { Text("Kullandım", fontSize = 12.sp) }
-                    TextButton(onClick = { ingredientToDelete = ingredient }) { Text("Sil", fontSize = 12.sp) }
-                }
-            }
-        }
-        if (filteredStock.isEmpty()) Text("Bu filtrede ürün bulunamadı.", color = Color(0xFF80695C))
+        )
+
         Spacer(
             modifier = Modifier.height(30.dp)
         )
