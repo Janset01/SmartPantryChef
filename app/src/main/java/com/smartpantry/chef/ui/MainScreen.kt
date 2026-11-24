@@ -34,6 +34,7 @@ import com.smartpantry.chef.ui.screens.ProfessionalKitchenScreen
 import com.smartpantry.chef.ui.screens.WeeklyMealPlannerScreen
 import com.smartpantry.chef.ui.screens.HomeScreen
 import com.smartpantry.chef.ui.screens.PantryRecipeSuggestionsScreen
+import com.smartpantry.chef.ui.screens.ReceiptBarcodeScreen
 import com.smartpantry.chef.ui.screens.PackageDateScannerScreen
 import com.smartpantry.chef.ui.screens.ScannedPantryProduct
 import com.smartpantry.chef.ui.screens.PantryScreen
@@ -68,6 +69,8 @@ fun MainScreen() {
     var showProfessionalKitchen by remember { mutableStateOf(false) }
     var professionalSection by remember { mutableIntStateOf(0) }
     var showWeeklyPlanner by remember { mutableStateOf(false) }
+    var showReceiptScanner by remember { mutableStateOf(false) }
+    var showBarcodeScanner by remember { mutableStateOf(false) }
     var showPackageScanner by remember { mutableStateOf(false) }
     var scannedPantryProduct by remember { mutableStateOf<ScannedPantryProduct?>(null) }
     var showShoppingList by remember {
@@ -253,6 +256,18 @@ fun MainScreen() {
                     )
                 }
 
+                showReceiptScanner || showBarcodeScanner -> {
+                    ReceiptBarcodeScreen(
+                        barcodeMode = showBarcodeScanner,
+                        onBack = { showReceiptScanner = false; showBarcodeScanner = false },
+                        onBarcodeProduct = { product ->
+                            scannedPantryProduct = product
+                            showBarcodeScanner = false
+                            selectedIndex = 3
+                        }
+                    )
+                }
+
                 showPackageScanner -> {
                     PackageDateScannerScreen(
                         onBack = { showPackageScanner = false },
@@ -339,6 +354,8 @@ fun MainScreen() {
                                 showShoppingList = true
                             },
                             onOpenPackageScanner = { showPackageScanner = true },
+                            onOpenReceiptScanner = { showReceiptScanner = true },
+                            onOpenBarcodeScanner = { showBarcodeScanner = true },
                             importedProduct = scannedPantryProduct,
                             onImportedProductConsumed = { scannedPantryProduct = null }
                         )
