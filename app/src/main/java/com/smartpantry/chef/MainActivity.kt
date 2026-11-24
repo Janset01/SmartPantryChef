@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     try {
                         withContext(Dispatchers.IO) {
-                            DemoContentSeeder.ensureInstalled(this@MainActivity)
+                            if (BuildConfig.DEBUG) DemoContentSeeder.ensureInstalled(this@MainActivity)
                         }
                     } catch (e: Exception) {
                         Log.e("SmartPantryDemo", "Sample content could not be loaded", e)
