@@ -29,13 +29,48 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Ingredient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
+import java.net.HttpURLConnection
+import java.net.URL
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 private val scanOrange = Color(0xFFEA681F)
 private val scanCream = Color(0xFFFFF8F2)
 private val scanInk = Color(0xFF38231B)
+
+private data class BarcodeProduct(val name: String, val amount: String?, val unit: String?)
+
+private suspend fun lookupProductByBarcode(code: String): BarcodeProduct? = withContext(Dispatchers.IO) {
+    if (!code.matches(Regex("""\d{8,14}"""))) return@withContext null
+    val url = "https://world.openfoodfacts.org/api/v2/product/$code.json?fields=product_name,product_name_tr,quantity"
+    val connection = URL(url).openConnection() as HttpURLConnection
+    try {
+        connection.connectTimeout = 5000
+        connection.readTimeout = 5000
+        connection.setRequestProperty("User-Agent", "SmartPantryChef/1.0 (https://github.com/Janset01/SmartPantryChef)")
+        if (connection.responseCode != 200) return@withContext null
+        val data = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+        if (data.optInt("status") != 1) return@withContext null
+        val product = data.optJSONObject("product") ?: return@withContext null
+        val name = product.optString("product_name_tr").takeIf { it.isNotBlank() }
+            ?: product.optString("product_name").takeIf { it.isNotBlank() } ?: return@withContext null
+        val weight = product.optString("quantity")
+        val parsed = Regex("""(?i)(\d+(?:[.,]\d+)?)\s*(ml|l|lt|g|gr|kg)\b""").find(weight)
+        val amount = parsed?.groupValues?.get(1)?.replace(",", ".")
+        val unit = when(parsed?.groupValues?.get(2)?.lowercase(Locale.ROOT)) {
+            "ml" -> "Mililitre"
+            "l", "lt" -> "Litre"
+            "g", "gr" -> "Gram"
+            "kg" -> "Kilogram"
+            else -> null
+        }
+        BarcodeProduct(name, amount, unit)
+    } finally { connection.disconnect() }
+}
 
 private data class ReceiptRow(
     val id: Int, val name: String, val amount: String = "1",
@@ -80,12 +115,29 @@ fun ReceiptBarcodeScreen(
     var scannedText by remember { mutableStateOf("") }
     var rows by remember { mutableStateOf<List<ReceiptRow>>(emptyList()) }
     var barcode by remember { mutableStateOf("") }
+    var productLookupStatus by remember { mutableStateOf("") }
+    var lookingUp by remember { mutableStateOf(false) }
     var productName by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("1") }
     var unit by remember { mutableStateOf("Adet") }
     var expiration by remember { mutableStateOf("") }
     var saving by remember { mutableStateOf(false) }
     var success by remember { mutableStateOf("") }
+    LaunchedEffect(barcode) {
+        if (barcode.isNotBlank() && barcodeMode) {
+            lookingUp = true
+            productLookupStatus = "Ürün bilgileri aranıyor..."
+            val info = runCatching { lookupProductByBarcode(barcode) }.getOrNull()
+            if (info != null) {
+                productName = info.name
+                info.amount?.let { amount = it }
+                info.unit?.let { unit = it }
+                productLookupStatus = "Open Food Facts ürün bilgileri bulundu. Kaydetmeden önce kontrol edin."
+            } else productLookupStatus = "Barkod veritabanında bulunamadı. Alanları elle doldurun."
+            lookingUp = false
+        }
+    }
+
 
     fun scan(uri: Uri) {
         isReading = true
@@ -179,6 +231,10 @@ fun ReceiptBarcodeScreen(
                     Text("Okunan barkod: $barcode", fontWeight = FontWeight.Bold)
                     Text("Barkod numarası tek başına ürün adını veya SKT'yi doğrulamaz.",
                         fontSize = 12.sp, color = Color(0xFF80695C))
+                }
+                if (barcode.isNotBlank()) {
+                    Text(productLookupStatus, color = scanOrange, fontSize = 12.sp)
+                    if (lookingUp) LinearProgressIndicator(Modifier.fillMaxWidth())
                 }
                 OutlinedTextField(productName, { productName = it }, label = { Text("Ürün adı") }, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(amount, { amount = it }, label = { Text("Miktar") }, modifier = Modifier.fillMaxWidth())
