@@ -19,7 +19,8 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.People
 import com.smartpantry.chef.data.Recipe
-import com.smartpantry.chef.data.DemoRecipeVisibilityEngagement
+import com.smartpantry.chef.data.DemoRecipeVisibility
+import com.smartpantry.chef.data.RecipeEngagement
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -37,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
-import com.smartpantry.chef.data.Recipe
 
 private val categoryCream = Color(0xFFFFF8F2)
 private val categoryOrange = Color(0xFFE94D10)
