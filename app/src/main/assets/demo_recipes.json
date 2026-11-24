@@ -1993,5 +1993,87 @@
     ],
     "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Yogurt_parfait.jpg?width=850",
     "imageNote": "Wikimedia Commons dosyası: Yogurt parfait.jpg"
+  },
+  {
+    "name": "Zeytinyağlı Pırasa",
+    "category": "Ana Yemek",
+    "minutes": 45,
+    "servings": 4,
+    "ingredients": [
+      {
+        "quantity": 4,
+        "unit": "Adet",
+        "name": "pırasa"
+      },
+      {
+        "quantity": 2,
+        "unit": "Adet",
+        "name": "havuç"
+      },
+      {
+        "quantity": 3,
+        "unit": "Yemek kaşığı",
+        "name": "zeytinyağı"
+      },
+      {
+        "quantity": 3,
+        "unit": "Yemek kaşığı",
+        "name": "pirinç"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "limon"
+      }
+    ],
+    "steps": [
+      "Pırasaları yıkayıp halka doğra, havuçları ince dilimle.",
+      "Zeytinyağında havuçları kısa süre sotele, pırasaları ekle.",
+      "Yıkanmış pirinç ve az sıcak su ekleyerek sebzeler yumuşayana kadar pişir.",
+      "Ilıdıktan sonra limonla servis et."
+    ],
+    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Zeytinya%C4%9Fl%C4%B1_p%C4%B1rasa.jpg?width=850",
+    "imageNote": "Wikimedia Commons dosyası: Zeytinyağlı pırasa.jpg"
+  },
+  {
+    "name": "Pırasalı Börek",
+    "category": "Fırın",
+    "minutes": 55,
+    "servings": 6,
+    "ingredients": [
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "pırasa"
+      },
+      {
+        "quantity": 3,
+        "unit": "Adet",
+        "name": "yufka"
+      },
+      {
+        "quantity": 150,
+        "unit": "Gram",
+        "name": "beyaz peynir"
+      },
+      {
+        "quantity": 1,
+        "unit": "Adet",
+        "name": "yumurta"
+      },
+      {
+        "quantity": 3,
+        "unit": "Yemek kaşığı",
+        "name": "zeytinyağı"
+      }
+    ],
+    "steps": [
+      "Pırasaları ince doğrayıp az yağla yumuşayana kadar sotele.",
+      "Soğuyan harca ezilmiş peyniri ekle.",
+      "Yufkaların arasına harcı yerleştirip rulo yap, tepsiye diz.",
+      "Üzerine yumurta sürüp 190°C fırında kızarıncaya ve içi tamamen pişinceye kadar pişir."
+    ],
+    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Pirasali_b%C3%B6rek.jpg?width=850",
+    "imageNote": "Wikimedia Commons dosyası: Pirasali börek.jpg"
   }
 ]
