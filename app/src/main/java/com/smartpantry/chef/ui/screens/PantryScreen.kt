@@ -16,6 +16,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -38,6 +43,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +53,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
+import coil3.compose.rememberAsyncImagePainter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -91,6 +102,8 @@ fun PantryScreen(
     onShowRecipeSuggestions: () -> Unit,
     onShowShoppingList: () -> Unit,
     onOpenPackageScanner: () -> Unit,
+    onOpenReceiptScanner: () -> Unit,
+    onOpenBarcodeScanner: () -> Unit,
     importedProduct: ScannedPantryProduct? = null,
     onImportedProductConsumed: () -> Unit = {}
 ) {
@@ -137,6 +150,9 @@ fun PantryScreen(
     var expirationDate by remember {
         mutableStateOf("")
     }
+    var showManualForm by remember { mutableStateOf(false) }
+    var pantrySearch by remember { mutableStateOf("") }
+    var pantryFilter by remember { mutableStateOf("Tümü") }
 
     LaunchedEffect(importedProduct) {
         importedProduct?.let { scanned ->
@@ -144,6 +160,7 @@ fun PantryScreen(
             quantity = scanned.quantity
             selectedUnit = scanned.unit
             expirationDate = scanned.expirationDate
+            showManualForm = true
             onImportedProductConsumed()
         }
     }
@@ -322,18 +339,31 @@ fun PantryScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = onOpenPackageScanner,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(18.dp)
-        ) {
-            Text("📷 Ambalajdan Ürün ve Tarih Tara", color = pantryOrange, fontWeight = FontWeight.Bold)
+        Text("Ürün Ekle", fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = pantryInk)
+        Spacer(Modifier.height(10.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            PantryActionTile("✎", "Manuel Ekle", "Bilgileri kendin gir", Modifier.weight(1f)) { showManualForm = !showManualForm }
+            PantryActionTile("▤", "Fiş Tara", "Fişten toplu ürün ekle", Modifier.weight(1f), onOpenReceiptScanner)
         }
-
-        Spacer(
-            modifier = Modifier.height(20.dp)
-        )
-
+        Spacer(Modifier.height(10.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            PantryActionTile("▣", "Ürün Tara", "Ambalajdan tarih oku", Modifier.weight(1f), onOpenPackageScanner)
+            PantryActionTile("▥", "Barkod Okut", "Barkoddan bilgi al", Modifier.weight(1f), onOpenBarcodeScanner)
+        }
+        Spacer(Modifier.height(16.dp))
+        Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF0E5))) {
+            Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("▣", fontSize = 25.sp, color = pantryOrange)
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Stok Durumu", fontWeight = FontWeight.Bold, color = pantryInk)
+                    Text("Toplam ${ingredients.size} ürün", color = Color(0xFF80695C), fontSize = 12.sp)
+                }
+            }
+        }
+        Spacer(Modifier.height(20.dp))
+        if (showManualForm) {
         // ------------------------------------------------
         // YENİ MALZEME KARTI
         // ------------------------------------------------
@@ -607,8 +637,9 @@ fun PantryScreen(
             }
         }
 
+        } // Manuel form
         Spacer(
-            modifier = Modifier.height(28.dp)
+            modifier = Modifier.height(22.dp)
         )
 
         // ------------------------------------------------
@@ -626,25 +657,57 @@ fun PantryScreen(
             modifier = Modifier.height(14.dp)
         )
 
-        PantryInventoryTable(
-            ingredients = ingredients,
-
-            onUseClick = { ingredient ->
-                ingredientToUse =
-                    ingredient
-            },
-
-            onEditClick = { ingredient ->
-                ingredientToEdit =
-                    ingredient
-            },
-
-            onDeleteClick = { ingredient ->
-                ingredientToDelete =
-                    ingredient
+        OutlinedTextField(value = pantrySearch, onValueChange = { pantrySearch = it },
+            label = { Text("Stoktaki ürünlerde ara...") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            listOf("Tümü", "Süt", "Sebze", "Meyve", "Diğer").forEach { filter ->
+                FilterChip(selected = pantryFilter == filter, onClick = { pantryFilter = filter }, label = { Text(filter) })
             }
-        )
-
+        }
+        val filteredStock = ingredients.filter { ingredient ->
+            val matchesSearch = ingredient.name.contains(pantrySearch, ignoreCase = true)
+            val isMilk = listOf("süt", "yoğurt", "peynir", "ayran", "krema", "tereyağ").any { ingredient.name.contains(it, true) }
+            val isVegetable = listOf("domates", "salatalık", "biber", "patates", "soğan", "marul", "havuç").any { ingredient.name.contains(it, true) }
+            val isFruit = listOf("elma", "muz", "armut", "portakal", "çilek", "limon").any { ingredient.name.contains(it, true) }
+            matchesSearch && when (pantryFilter) {
+                "Süt" -> isMilk
+                "Sebze" -> isVegetable
+                "Meyve" -> isFruit
+                "Diğer" -> !isMilk && !isVegetable && !isFruit
+                else -> true
+            }
+        }
+        filteredStock.forEach { ingredient ->
+            Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                shape = RoundedCornerShape(17.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF9))) {
+                Row(Modifier.padding(11.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(68.dp).clip(RoundedCornerShape(13.dp))
+                        .background(Color(0xFFFFE3D0)), contentAlignment = Alignment.Center) {
+                        if (!ingredient.imageUri.isNullOrBlank()) {
+                            Image(painter = rememberAsyncImagePainter(ingredient.imageUri),
+                                contentDescription = ingredient.name,
+                                modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        } else Text("🥛", fontSize = 29.sp)
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(ingredient.name, fontWeight = FontWeight.Bold, color = pantryInk,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("${formatIngredientQuantity(ingredient.remainingQuantity)} ${ingredient.unit}",
+                            color = Color(0xFF80695C), fontSize = 12.sp)
+                        Text("SKT: ${ingredient.expirationDate}", color = pantryOrange, fontSize = 11.sp)
+                    }
+                    TextButton(onClick = { ingredientToEdit = ingredient }) { Text("Düzenle", color = pantryOrange, fontSize = 11.sp) }
+                }
+                Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                    horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = { ingredientToUse = ingredient }) { Text("Kullandım", fontSize = 12.sp) }
+                    TextButton(onClick = { ingredientToDelete = ingredient }) { Text("Sil", fontSize = 12.sp) }
+                }
+            }
+        }
+        if (filteredStock.isEmpty()) Text("Bu filtrede ürün bulunamadı.", color = Color(0xFF80695C))
         Spacer(
             modifier = Modifier.height(30.dp)
         )
@@ -1188,5 +1251,25 @@ private fun pantryExpiryWarningText(
 
         else ->
             "⚠️ ${warning.ingredientName} son kullanma tarihine 5 gün kaldı."
+    }
+}
+
+@Composable
+private fun PantryActionTile(
+    symbol: String, title: String, subtitle: String,
+    modifier: Modifier = Modifier, onClick: () -> Unit
+) {
+    Card(modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF9)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+        Column(Modifier.fillMaxWidth().height(128.dp).padding(9.dp),
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Text(symbol, fontSize = 30.sp, color = pantryOrange)
+            Spacer(Modifier.height(5.dp))
+            Text(title, fontWeight = FontWeight.Bold, color = pantryInk, fontSize = 14.sp)
+            Text(subtitle, fontSize = 10.sp, color = Color(0xFF80695C), maxLines = 2,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center, lineHeight = 13.sp)
+        }
     }
 }
