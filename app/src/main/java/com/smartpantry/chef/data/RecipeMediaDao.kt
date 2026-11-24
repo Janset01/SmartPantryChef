@@ -22,6 +22,13 @@ interface RecipeMediaDao {
         recipeId: Int
     ): List<RecipeMedia>
 
+
+    @Query("UPDATE recipe_media SET uri = :newUri WHERE recipeId = :recipeId AND mediaType = 'IMAGE' AND uri LIKE 'https://images.unsplash.com/photo-%'")
+    suspend fun updateOldDemoImage(recipeId: Int, newUri: String)
+
+    @Query("DELETE FROM recipe_media WHERE recipeId = :recipeId AND mediaType = 'IMAGE' AND uri LIKE 'https://images.unsplash.com/photo-%'")
+    suspend fun removeOldDemoImage(recipeId: Int)
+
     @Query(
         "DELETE FROM recipe_media " +
                 "WHERE recipeId = :recipeId"

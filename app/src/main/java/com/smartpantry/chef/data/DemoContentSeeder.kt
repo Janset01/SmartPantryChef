@@ -13,9 +13,13 @@ object DemoContentSeeder {
     private val locale = Locale.forLanguageTag("tr-TR")
     suspend fun ensureInstalled(context: Context) {
         val prefs = context.getSharedPreferences("smartpantry_demo_v1", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("installed", false)) return
         val db = AppDatabase.getDatabase(context)
         val data = JSONArray(context.assets.open("demo_recipes.json").bufferedReader().use { it.readText() })
+        if (prefs.getBoolean("installed", false)) {
+            seedNewLeekRecipes(db, data, prefs)
+            refreshDemoPhotosAndLegacyFilter(db, data, prefs)
+            return
+        }
         val ids = mutableMapOf<String, Int>()
         val today = LocalDate.now()
         val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", locale)
@@ -132,6 +136,100 @@ object DemoContentSeeder {
         prefs.edit().putBoolean("installed",true)
             .putString("recipe_ids", ids.values.joinToString(","))
             .apply()
+        refreshDemoPhotosAndLegacyFilter(db, data, prefs)
     }
+
+    private suspend fun seedNewLeekRecipes(
+        db: AppDatabase, data: JSONArray,
+        prefs: android.content.SharedPreferences
+    ) {
+        val titles = setOf("Zeytinyağlı Pırasa", "Pırasalı Börek")
+        val known = db.recipeDao().getAllRecipes().map { it.name }.toSet()
+        val ids = prefs.getString("recipe_ids", "").orEmpty()
+            .split(",").mapNotNull { it.toIntOrNull() }.toMutableSet()
+        db.withTransaction {
+            for (index in 0 until data.length()) {
+                val obj = data.getJSONObject(index)
+                val name = obj.getString("name")
+                if (name !in titles || name in known) continue
+                val input = obj.getJSONArray("ingredients")
+                val items = (0 until input.length()).map { n ->
+                    val it = input.getJSONObject(n)
+                    Triple(it.getString("name"), it.getDouble("quantity"), it.getString("unit"))
+                }
+                val steps = obj.getJSONArray("steps")
+                val text = (0 until steps.length()).joinToString("\n\n") { n ->
+                    (n + 1).toString() + ". " + steps.getString(n)
+                }
+                val photo = obj.optString("image").takeIf { it.startsWith("https://") }
+                val recipe = Recipe(
+                    name = name, category = obj.getString("category"),
+                    preparationTime = obj.getInt("minutes").toString() + " dk",
+                    servings = obj.getInt("servings").toString() + " kişi",
+                    ingredients = items.joinToString("\n") { (title, q, unit) ->
+                        (if (q % 1.0 == 0.0) q.toInt().toString() else q.toString()) +
+                            " " + unit + " " + title
+                    },
+                    instructions = text, imageUri = photo
+                )
+                val id = db.recipeDao().insertRecipe(recipe).toInt()
+                ids.add(id)
+                db.recipeIngredientDao().insertRecipeIngredients(items.map { (title, qty, unit) ->
+                    RecipeIngredient(recipeId = id, name = title, quantity = qty, unit = unit)
+                })
+                if (photo != null) {
+                    db.recipeMediaDao().insertMedia(listOf(
+                        RecipeMedia(recipeId = id, mediaType = RecipeMedia.TYPE_IMAGE,
+                            uri = photo, sortOrder = 0)
+                    ))
+                }
+                db.recipeCommentDao().insertComment(
+                    RecipeComment(recipeId = id, authorNickname = "Demo • Örnek Yorum",
+                        text = "Demo yorum: Tarifin sebze oranını sevdim.",
+                        createdAt = System.currentTimeMillis())
+                )
+                db.recipeEngagementDao().upsert(RecipeEngagement(
+                    recipeId = id, averageRating = 4.5, ratingCount = 2, commentCount = 1
+                ))
+            }
+        }
+        prefs.edit().putString("recipe_ids", ids.joinToString(",")).apply()
+    }
+
+    private suspend fun refreshDemoPhotosAndLegacyFilter(
+        db: AppDatabase,
+        data: JSONArray,
+        prefs: android.content.SharedPreferences
+    ) {
+        val demoIds = prefs.getString("recipe_ids", "").orEmpty()
+            .split(",").mapNotNull { it.toIntOrNull() }.toSet()
+        if (demoIds.isEmpty()) return
+        val recipes = db.recipeDao().getAllRecipes()
+        if (!prefs.contains("legacy_recipe_ids")) {
+            val legacyIds = recipes.filter { it.id !in demoIds }.map { it.id }
+            prefs.edit().putString("legacy_recipe_ids", legacyIds.joinToString(",")).apply()
+        }
+        val curated = (0 until data.length()).associate { index ->
+            val obj = data.getJSONObject(index)
+            obj.getString("name") to obj.optString("image").takeIf { it.isNotBlank() }
+        }
+        db.withTransaction {
+            recipes.filter { it.id in demoIds }.forEach { recipe ->
+                val photo = curated[recipe.name]
+                val oldPhoto = recipe.imageUri.orEmpty()
+                if (oldPhoto.startsWith("https://images.unsplash.com/photo-") &&
+                    oldPhoto != photo) {
+                    db.recipeDao().updateRecipe(recipe.copy(imageUri = photo))
+                    if (photo != null) {
+                        db.recipeMediaDao().updateOldDemoImage(recipe.id, photo)
+                    } else {
+                        db.recipeMediaDao().removeOldDemoImage(recipe.id)
+                    }
+                }
+            }
+        }
+        prefs.edit().putBoolean("photos_v2", true).apply()
+    }
+
     private data class Stock(val name:String,val quantity:Double,val unit:String,val days:Long)
 }

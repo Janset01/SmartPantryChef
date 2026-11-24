@@ -346,7 +346,7 @@ fun RecipeDetailScreen(
 
             Text(
                 text =
-                    "📸 Yapım Aşamaları",
+                    if (isDemoRecipe) "🍽️ Yemeğin Fotoğrafı" else "📸 Yapım Aşamaları",
                 fontSize = 21.sp,
                 fontWeight =
                     FontWeight.Bold,
@@ -361,7 +361,7 @@ fun RecipeDetailScreen(
 
             Text(
                 text =
-                    if (isDemoRecipe) "Temsili demo görseli • gerçek yapım aşaması fotoğrafı değildir." else "Tarif hazırlanırken eklenen fotoğraflar",
+                    if (isDemoRecipe) "Yemeğe uygun örnek servis fotoğrafı; gerçek yapım aşaması çekimi değildir." else "Tarif hazırlanırken eklenen fotoğraflar",
                 fontSize = 13.sp,
                 color = Color.Gray
             )
@@ -429,6 +429,19 @@ fun RecipeDetailScreen(
                             }
                         }
                     }
+            }
+        }
+
+        if (isDemoRecipe && recipe.imageUri.orEmpty().contains("commons.wikimedia.org")) {
+            TextButton(onClick = {
+                val source = recipe.imageUri.orEmpty()
+                    .replace("/wiki/Special:FilePath/", "/wiki/File:")
+                    .substringBefore("?width=")
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source))
+                runCatching { context.startActivity(intent) }
+            }) {
+                Text("Fotoğraf kaynağı, eser sahibi ve lisans: Wikimedia Commons",
+                    fontSize = 12.sp, color = Color(0xFFB65421))
             }
         }
 

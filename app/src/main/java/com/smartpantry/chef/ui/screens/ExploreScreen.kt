@@ -60,6 +60,7 @@ import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
 import com.smartpantry.chef.data.SearchHistoryStore
+import com.smartpantry.chef.data.DemoRecipeVisibility
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 import java.time.LocalDate
@@ -84,7 +85,8 @@ private fun displayRecipeTitle(name: String): String {
 @Composable
 fun ExploreScreen(
     onRecipeClick: (Recipe) -> Unit,
-    onExplorePantry: () -> Unit
+    onExplorePantry: () -> Unit,
+    onSeeAll: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val database = remember(context) { AppDatabase.getDatabase(context) }
@@ -109,7 +111,7 @@ fun ExploreScreen(
     }
 
     LaunchedEffect(Unit) {
-        recipes = database.recipeDao().getAllRecipes()
+        recipes = DemoRecipeVisibility.visibleOnDiscover(context, database.recipeDao().getAllRecipes())
         engagements = database.recipeEngagementDao().getAll().associateBy { it.recipeId }
     }
 
@@ -211,7 +213,7 @@ fun ExploreScreen(
                 fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = exploreInk
             )
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
-                showAllRecommendations = !showAllRecommendations
+                onSeeAll(tab)
             }, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = exploreGreen)
         }
         Spacer(Modifier.height(5.dp))
@@ -280,7 +282,7 @@ fun ExploreScreen(
             Text("🔥 Bu Hafta Popüler", modifier = Modifier.weight(1f),
                 fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = exploreInk)
             Text("Tümünü Gör ›", modifier = Modifier.clickable {
-                showAllPopular = !showAllPopular
+                onSeeAll(1)
             }, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = exploreGreen)
         }
         Spacer(Modifier.height(13.dp))

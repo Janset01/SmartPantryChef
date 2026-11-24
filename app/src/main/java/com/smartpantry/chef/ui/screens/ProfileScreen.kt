@@ -360,9 +360,9 @@ fun ProfileScreen(
 
                 Text(
                     text =
-                        recipes.size
-                            .toString() +
-                                " tarif",
+                        (if (recipeSource == "Demo Tarifler") recipes.count { it.id in demoIds }
+                         else if (recipeSource == "Kendi Tariflerim") recipes.count { it.id !in demoIds }
+                         else recipes.size).toString() + " tarif",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )

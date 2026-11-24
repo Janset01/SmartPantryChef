@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.People
+import com.smartpantry.chef.data.Recipe
+import com.smartpantry.chef.data.DemoRecipeVisibility
 import com.smartpantry.chef.data.RecipeEngagement
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
@@ -36,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
-import com.smartpantry.chef.data.Recipe
 
 private val categoryCream = Color(0xFFFFF8F2)
 private val categoryOrange = Color(0xFFE94D10)
@@ -68,7 +69,7 @@ fun CategoryRecipesScreen(
     fun numberFrom(value: String): Int? = Regex("\\d+").find(value)?.value?.toIntOrNull()
 
     LaunchedEffect(category) {
-        recipes = db.recipeDao().getAllRecipes()
+        recipes = DemoRecipeVisibility.visibleOnDiscover(context, db.recipeDao().getAllRecipes())
         engagements = db.recipeEngagementDao().getAll().associateBy { it.recipeId }
     }
     val visible = recipes.filter { recipe ->

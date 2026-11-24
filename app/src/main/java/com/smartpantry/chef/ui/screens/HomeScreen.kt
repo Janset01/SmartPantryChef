@@ -50,6 +50,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
+import com.smartpantry.chef.data.DemoRecipeVisibility
 import com.smartpantry.chef.data.SearchHistoryStore
 import kotlinx.coroutines.launch
 import kotlin.math.sin
@@ -64,6 +65,7 @@ private val homeGradient = Brush.horizontalGradient(listOf(Color(0xFFFF8D34), Co
 fun HomeScreen(
     onRecipeClick: (Recipe) -> Unit = {},
     onExplore: () -> Unit = {},
+    onFeaturedRecipesClick: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
     onPantryClick: () -> Unit = {},
     onMyRecipesClick: () -> Unit = {},
@@ -115,7 +117,7 @@ fun HomeScreen(
     var featuredIndex by remember { mutableIntStateOf(0) }
     var weeklyViewCounts by remember { mutableStateOf<Map<Int, Int>>(emptyMap()) }
     LaunchedEffect(Unit) {
-        recipes = db.recipeDao().getAllRecipes()
+        recipes = DemoRecipeVisibility.visibleOnDiscover(context, db.recipeDao().getAllRecipes())
         engagements = db.recipeEngagementDao().getAll().associateBy { it.recipeId }
         val sevenDaysAgo = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
         weeklyViewCounts = db.recipeViewEventDao().topSince(sevenDaysAgo)
@@ -213,7 +215,7 @@ fun HomeScreen(
                     Box(
                         Modifier.clip(RoundedCornerShape(28.dp))
                             .background(homeGradient)
-                            .clickable { onRecipeClick(recipe) }
+                            .clickable { onFeaturedRecipesClick() }
                             .padding(horizontal = 18.dp, vertical = 12.dp)
                     ) {
                         Text("Tariflere Göz At  →", fontSize = 14.sp,
