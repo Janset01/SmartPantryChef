@@ -59,6 +59,10 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smartpantry.chef.data.AppDatabase
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeEngagement
+import com.smartpantry.chef.data.SearchHistoryStore
+import kotlinx.coroutines.delay
+import kotlin.random.Random
+import java.time.LocalDate
 import kotlinx.coroutines.launch
 
 private val exploreGreen = Color(0xFFD94A12)
@@ -94,6 +98,15 @@ fun ExploreScreen(
     var showAllPopular by remember { mutableStateOf(false) }
     var ingredientMode by remember { mutableStateOf(false) }
     var searchOpen by remember { mutableStateOf(false) }
+    var searchHistory by remember { mutableStateOf(SearchHistoryStore.counts(context)) }
+    val hasDemo = remember(context) { context.getSharedPreferences("smartpantry_demo_v1", android.content.Context.MODE_PRIVATE).getBoolean("installed",false) }
+    LaunchedEffect(search,searchOpen) {
+        if (searchOpen && search.trim().length >= 3) {
+            delay(1100)
+            SearchHistoryStore.record(context,search)
+            searchHistory = SearchHistoryStore.counts(context)
+        }
+    }
 
     LaunchedEffect(Unit) {
         recipes = database.recipeDao().getAllRecipes()
@@ -108,8 +121,10 @@ fun ExploreScreen(
     }
     val shown = when (tab) {
         0 -> searched.sortedWith(
-            compareByDescending<Recipe> { engagements[it.id]?.myRating ?: 0 }
+            compareByDescending<Recipe> { SearchHistoryStore.relevance(it, searchHistory) }
                 .thenByDescending { engagements[it.id]?.isFavorite == true }
+                .thenByDescending { engagements[it.id]?.myRating ?: 0 }
+                .thenBy { (it.id * 17 + LocalDate.now().dayOfYear * 31) % 97 }
         )
         1 -> searched.sortedWith(
             compareByDescending<Recipe> { engagements[it.id]?.averageRating ?: 0.0 }
@@ -129,6 +144,11 @@ fun ExploreScreen(
         Modifier.fillMaxSize().background(exploreCream)
             .verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)
     ) {
+        if (hasDemo) {
+            Text("DEMO İÇERİK • Örnek yorum ve puanlar test amaçlıdır.",
+                fontSize = 11.sp, color = exploreGreen,
+                modifier = Modifier.padding(bottom = 5.dp))
+        }
         Spacer(Modifier.height(18.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Keşfet", modifier = Modifier.weight(1f), fontSize = 30.sp,
@@ -197,7 +217,7 @@ fun ExploreScreen(
         Spacer(Modifier.height(5.dp))
         Text(
             when (tab) {
-                0 -> "Puanlarına ve favorilerine göre sıralandı."
+                0 -> "Arama alışkanlıkların, favorilerin ve günlük çeşitliliğe göre önerildi."
                 1 -> "Tariflerin aldığı puanlara göre sıralandı."
                 else -> "En son eklenen tariflere göz at."
             },
