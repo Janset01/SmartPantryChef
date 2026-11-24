@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,7 +57,7 @@ private fun receiptCandidates(raw: String): List<ReceiptRow> {
             val name = line.replace(Regex("""\s+\d+[.,]\d{2}\s*(?:TL|₺)?\s*$"""), "")
                 .replace(Regex("""\s+"""), " ").trim()
             ReceiptRow(i, name)
-        }.filter { it.name.isNotEmpty() }
+        }.filter { it.name.isNotEmpty() }.toList()
 }
 
 @Composable
