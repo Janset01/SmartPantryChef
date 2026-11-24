@@ -336,6 +336,7 @@ fun MainScreen() {
                         0 -> HomeScreen(
                             onRecipeClick = { recipe -> selectedRecipe = recipe },
                             onExplore = { selectedIndex = 1 },
+                            onFeaturedRecipesClick = { exploreAllMode = 3 },
                             onCategoryClick = { category ->
                                 selectedCategory = category.takeUnless { it == "Tümü" }
                                 showCategoryScreen = true
