@@ -13,6 +13,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
@@ -240,7 +241,19 @@ fun CategoryRecipesScreen(
     if (filterOpen) {
         AlertDialog(
             onDismissRequest = { filterOpen = false },
-            title = { Text("Filtrele ve Sırala", color = categoryInk) },
+            title = {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Filtrele ve Sırala", Modifier.weight(1f),
+                        color = categoryInk, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = {
+                        categoryMenuOpen = false
+                        filterOpen = false
+                    }) {
+                        Icon(Icons.Default.Close, contentDescription = "Filtreleri kapat",
+                            tint = categoryOrange)
+                    }
+                }
+            },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     run {
