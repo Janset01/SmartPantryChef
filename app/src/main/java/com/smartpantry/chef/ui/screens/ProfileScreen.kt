@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -557,22 +558,18 @@ fun ProfileScreen(
                         )
                 ) {
 
-                    Text(
-                        text =
-                            "Kategori seç",
-                        modifier =
-                            Modifier.padding(
-                                horizontal =
-                                    16.dp,
-                                vertical =
-                                    8.dp
-                            ),
-                        fontSize = 12.sp,
-                        fontWeight =
-                            FontWeight.Bold,
-                        color =
-                            Color.Gray
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Kategori seç", modifier = Modifier.weight(1f),
+                            fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                        IconButton(onClick = { categoryMenuOpen = false },
+                            modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Default.Close, contentDescription = "Kategorileri kapat",
+                                tint = Color(0xFFE66B25))
+                        }
+                    }
 
                     categories.forEach {
                             category ->
@@ -735,24 +732,19 @@ fun ProfileScreen(
                         )
                 ) {
 
-                    Text(
-                        text =
-                            "Benim seçimlerim",
-                        modifier =
-                            Modifier.padding(
-                                horizontal =
-                                    16.dp,
-                                vertical =
-                                    8.dp
-                            ),
-                        fontSize = 12.sp,
-                        fontWeight =
-                            FontWeight.Bold,
-                        color =
-                            Color(
-                                0xFF766A62
-                            )
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Benim seçimlerim", modifier = Modifier.weight(1f),
+                            fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                            color = Color(0xFF766A62))
+                        IconButton(onClick = { filterMenuOpen = false },
+                            modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Default.Close, contentDescription = "Filtreleri kapat",
+                                tint = Color(0xFFE66B25))
+                        }
+                    }
 
                     PersonalRecipeFilter
                         .entries
