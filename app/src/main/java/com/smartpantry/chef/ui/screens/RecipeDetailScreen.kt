@@ -56,6 +56,7 @@ import com.smartpantry.chef.data.MatchStatus
 import com.smartpantry.chef.data.Recipe
 import com.smartpantry.chef.data.RecipeComment
 import com.smartpantry.chef.data.RecipeEngagement
+import com.smartpantry.chef.data.RecipeRatingCalculator
 import com.smartpantry.chef.data.RecipeIngredient
 import com.smartpantry.chef.data.RecipeMatch
 import com.smartpantry.chef.data.RecipeMedia
@@ -549,38 +550,10 @@ fun RecipeDetailScreen(
                 engagement.ratingCount,
             onRatingSelected = { rating ->
 
-                val oldPersonalRating =
-                    engagement.myRating
-
-                val newCount =
-                    if (
-                        oldPersonalRating == 0
-                    ) {
-                        engagement.ratingCount + 1
-                    } else {
-                        engagement.ratingCount
-                    }
-
-                val oldTotal =
-                    engagement.averageRating *
-                            engagement.ratingCount
-
-                val adjustedTotal =
-                    oldTotal -
-                            oldPersonalRating +
-                            rating
-
                 val updated =
-                    engagement.copy(
-                        myRating = rating,
-                        ratingCount = newCount,
-                        averageRating =
-                            if (newCount > 0) {
-                                adjustedTotal /
-                                        newCount
-                            } else {
-                                0.0
-                            }
+                    RecipeRatingCalculator.applyPersonalRating(
+                        engagement,
+                        rating
                     )
 
                 engagement = updated

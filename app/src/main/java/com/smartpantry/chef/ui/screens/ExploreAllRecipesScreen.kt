@@ -99,7 +99,7 @@ fun ExploreAllRecipesScreen(
                             Spacer(Modifier.height(5.dp))
                             Text(recipe.category + "  •  " + recipe.preparationTime,
                                 color = Color(0xFF947366), fontSize = 12.sp)
-                            Text("★ " + (engagements[recipe.id]?.averageRating ?: 0.0).toString(),
+                            Text("★ " + RecipeRatingCalculator.displayAverage(engagements[recipe.id]?.averageRating ?: 0.0),
                                 color = Color(0xFFED6A23), fontSize = 12.sp)
                         }
                         Text("›", fontSize = 27.sp, color = Color(0xFFED6A23),
