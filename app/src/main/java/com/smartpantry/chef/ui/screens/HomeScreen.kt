@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -184,7 +185,7 @@ fun HomeScreen(
             Box(
                 Modifier.fillMaxWidth().padding(horizontal = 2.dp)
                     .height(344.dp).clip(RoundedCornerShape(25.dp))
-                    .clickable { onRecipeClick(recipe) }
+                    .clickable { onFeaturedRecipesClick() }
             ) {
                 if (!recipe.imageUri.isNullOrBlank()) {
                     Image(rememberAsyncImagePainter(recipe.imageUri), recipe.name,
@@ -284,7 +285,7 @@ fun HomeScreen(
                                     onDragCancel = { dragDistance = 0f }
                                 )
                             }
-                            .clickable { onRecipeClick(activeRecipe) }
+                            .clickable { onFeaturedRecipesClick() }
                     ) {
                         Row(
                             Modifier.align(Alignment.BottomEnd).padding(end = 20.dp, bottom = 62.dp),
@@ -632,13 +633,18 @@ fun HomeScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Tarif Ara", Modifier.weight(1f), fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold, color = homeInk)
-                    TextButton(onClick = {
+                    IconButton(onClick = {
                         searchOpen = false
                         search = ""
                         searchCategory = "Tümü"
                         searchMaxMinutes = 0
                         searchMinRating = false
-                    }) { Text("Kapat", color = homeOrange) }
+                        searchSort = "En yeni"
+                        filtersOpen = false
+                    }) {
+                        Icon(Icons.Default.Close, contentDescription = "Aramayı kapat",
+                            tint = homeOrange)
+                    }
                 }
                 Text("${filteredHomeRecipes.size} tarif bulundu", color = homeMuted, fontSize = 12.sp)
                 if (searchCategory != "Tümü" || searchMaxMinutes != 0 || searchMinRating) {
@@ -691,7 +697,16 @@ fun HomeScreen(
     if (filtersOpen) {
         AlertDialog(
             onDismissRequest = { filtersOpen = false },
-            title = { Text("Tarif Filtreleri", color = homeInk) },
+            title = {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Tarif Filtreleri", Modifier.weight(1f), color = homeInk,
+                        fontWeight = FontWeight.Bold)
+                    IconButton(onClick = { filtersOpen = false }) {
+                        Icon(Icons.Default.Close, contentDescription = "Filtreleri kapat",
+                            tint = homeOrange)
+                    }
+                }
+            },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     Text("Kategori", fontWeight = FontWeight.Bold, color = homeInk)
