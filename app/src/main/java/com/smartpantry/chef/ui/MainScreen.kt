@@ -51,6 +51,7 @@ fun MainScreen() {
     var selectedIndex by remember {
         mutableIntStateOf(0)
     }
+    var homeReturnSignal by remember { mutableIntStateOf(0) }
 
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var showCategoryScreen by remember { mutableStateOf(false) }
@@ -94,6 +95,7 @@ fun MainScreen() {
                 NavigationBarItem(
                     selected = selectedIndex == 0,
                     onClick = {
+                        homeReturnSignal++
                         selectedIndex = 0
                         selectedRecipe = null
                         showCategoryScreen = false
@@ -335,6 +337,7 @@ fun MainScreen() {
 
                         0 -> HomeScreen(
                             onRecipeClick = { recipe -> selectedRecipe = recipe },
+                            homeReturnSignal = homeReturnSignal,
                             onExplore = { selectedIndex = 1 },
                             onFeaturedRecipesClick = { exploreAllMode = 3 },
                             onCategoryClick = { category ->

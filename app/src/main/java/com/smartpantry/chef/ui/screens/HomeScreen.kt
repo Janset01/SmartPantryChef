@@ -65,6 +65,7 @@ private val homeGradient = Brush.horizontalGradient(listOf(Color(0xFFFF8D34), Co
 @Composable
 fun HomeScreen(
     onRecipeClick: (Recipe) -> Unit = {},
+    homeReturnSignal: Int = 0,
     onExplore: () -> Unit = {},
     onFeaturedRecipesClick: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
@@ -93,6 +94,19 @@ fun HomeScreen(
     var searchMaxMinutes by remember { mutableIntStateOf(0) }
     var searchMinRating by remember { mutableStateOf(false) }
     var searchSort by remember { mutableStateOf("En yeni") }
+    // The Home tab remains selected during inline search. Explicit Home taps
+    // must close the result overlay even when selectedIndex is already zero.
+    LaunchedEffect(homeReturnSignal) {
+        if (homeReturnSignal > 0) {
+            searchOpen = false
+            filtersOpen = false
+            search = ""
+            searchCategory = "Tümü"
+            searchMaxMinutes = 0
+            searchMinRating = false
+            searchSort = "En yeni"
+        }
+    }
     val searchCategories = listOf("Tümü", "Ana Yemek", "Salata", "Tatlı", "Çorba",
         "Fırın", "Kahvaltı", "Atıştırmalık", "Öğle Yemeği", "Brunch", "Akşam Yemeği", "Fit")
     val filteredHomeRecipes = remember(recipes, engagements, search, searchCategory, searchMaxMinutes, searchMinRating, searchSort) {
