@@ -86,7 +86,8 @@ private fun displayRecipeTitle(name: String): String {
 fun ExploreScreen(
     onRecipeClick: (Recipe) -> Unit,
     onExplorePantry: () -> Unit,
-    onSeeAll: (Int) -> Unit
+    onSeeAll: (Int) -> Unit,
+    onOpenReadyMenus: (String) -> Unit
 ) {
     val context = LocalContext.current
     val database = remember(context) { AppDatabase.getDatabase(context) }
@@ -299,6 +300,41 @@ fun ExploreScreen(
                         onClick = { onRecipeClick(recipe) })
                 }
             }
+        }
+        Spacer(Modifier.height(26.dp))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("🍽️ Sofranı Planla", fontSize = 21.sp,
+                fontWeight = FontWeight.ExtraBold, color = exploreInk)
+        }
+        Spacer(Modifier.height(5.dp))
+        Text("Hazır menülerden seç, tariflere kolayca ulaş.",
+            color = exploreMuted, fontSize = 12.sp)
+        Spacer(Modifier.height(12.dp))
+        val menuCollections = com.smartpantry.chef.data.CuratedMenus.collections
+        menuCollections.chunked(2).forEach { pair ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                pair.forEach { menu ->
+                    Card(
+                        modifier = Modifier.weight(1f)
+                            .clickable { onOpenReadyMenus(menu.id) },
+                        shape = RoundedCornerShape(17.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBDD)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(Modifier.padding(13.dp)) {
+                            Text(menu.emoji, fontSize = 25.sp)
+                            Spacer(Modifier.height(5.dp))
+                            Text(menu.title, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                                color = exploreInk, maxLines = 1)
+                            Text(menu.shortDescription, fontSize = 11.sp,
+                                color = exploreMuted, maxLines = 2,
+                                overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(10.dp))
         }
         Spacer(Modifier.height(27.dp))
         Text("🥬 Temalara Göre Keşfet", fontSize = 22.sp,
