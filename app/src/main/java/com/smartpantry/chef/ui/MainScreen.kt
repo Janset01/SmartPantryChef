@@ -30,6 +30,7 @@ import com.smartpantry.chef.ui.screens.AddRecipeScreen
 import com.smartpantry.chef.ui.screens.EditRecipeScreen
 import com.smartpantry.chef.ui.screens.ExploreScreen
 import com.smartpantry.chef.ui.screens.ExploreAllRecipesScreen
+import com.smartpantry.chef.ui.screens.ReadyMenusScreen
 import com.smartpantry.chef.ui.screens.CategoryRecipesScreen
 import com.smartpantry.chef.ui.screens.ProfessionalKitchenScreen
 import com.smartpantry.chef.ui.screens.WeeklyMealPlannerScreen
@@ -72,6 +73,7 @@ fun MainScreen() {
     var professionalSection by remember { mutableIntStateOf(0) }
     var showWeeklyPlanner by remember { mutableStateOf(false) }
     var exploreAllMode by remember { mutableIntStateOf(-1) }
+    var selectedMenuCollection by remember { mutableStateOf<String?>(null) }
     var showReceiptScanner by remember { mutableStateOf(false) }
     var showBarcodeScanner by remember { mutableStateOf(false) }
     var showPackageScanner by remember { mutableStateOf(false) }
@@ -104,6 +106,7 @@ fun MainScreen() {
                         showShoppingList = false
                         showWeeklyPlanner = false
                         exploreAllMode = -1
+                        selectedMenuCollection = null
                         showProfessionalKitchen = false
                     },
                     icon = {
@@ -128,6 +131,7 @@ fun MainScreen() {
                         showShoppingList = false
                         showWeeklyPlanner = false
                         exploreAllMode = -1
+                        selectedMenuCollection = null
                         showProfessionalKitchen = false
                     },
                     icon = {
@@ -152,6 +156,7 @@ fun MainScreen() {
                         showShoppingList = false
                         showWeeklyPlanner = false
                         exploreAllMode = -1
+                        selectedMenuCollection = null
                         showProfessionalKitchen = false
                     },
                     icon = {
@@ -176,6 +181,7 @@ fun MainScreen() {
                         showShoppingList = false
                         showWeeklyPlanner = false
                         exploreAllMode = -1
+                        selectedMenuCollection = null
                         showProfessionalKitchen = false
                     },
                     icon = {
@@ -200,6 +206,7 @@ fun MainScreen() {
                         showShoppingList = false
                         showWeeklyPlanner = false
                         exploreAllMode = -1
+                        selectedMenuCollection = null
                         showProfessionalKitchen = false
                     },
                     icon = {
@@ -255,6 +262,14 @@ fun MainScreen() {
                             }
                         )
                     }
+                }
+
+                selectedMenuCollection != null -> {
+                    ReadyMenusScreen(
+                        initialCollectionId = selectedMenuCollection!!,
+                        onBack = { selectedMenuCollection = null },
+                        onRecipeClick = { selectedRecipe = it }
+                    )
                 }
 
                 exploreAllMode >= 0 -> {
@@ -362,7 +377,8 @@ fun MainScreen() {
                             onExplorePantry = {
                                 showPantrySuggestions = true
                             },
-                            onSeeAll = { mode -> exploreAllMode = mode }
+                            onSeeAll = { mode -> exploreAllMode = mode },
+                            onOpenReadyMenus = { collectionId -> selectedMenuCollection = collectionId }
                         )
 
                         2 -> AddRecipeScreen()
