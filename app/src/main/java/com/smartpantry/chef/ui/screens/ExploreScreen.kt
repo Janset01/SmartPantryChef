@@ -176,6 +176,29 @@ fun ExploreScreen(
             )
         }
         Spacer(Modifier.height(18.dp))
+        Text("🥬 Temalara Göre Keşfet", fontSize = 22.sp,
+            fontWeight = FontWeight.ExtraBold, color = exploreInk)
+        Spacer(Modifier.height(12.dp))
+        Row(Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            categories.drop(1).forEachIndexed { index, name ->
+                val shades = listOf(0xFFFFE5CC, 0xFFFFD9BE, 0xFFFFEBD6, 0xFFF5DCD0)
+                Column(
+                    Modifier.width(132.dp).clip(RoundedCornerShape(20.dp))
+                        .background(Color(shades[index % shades.size]))
+                        .clickable { category = if (category == name) "Tümü" else name }
+                        .padding(vertical = 19.dp, horizontal = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(listOf("🥐", "🍲", "🍝", "🍰", "🥗", "🥪")[index], fontSize = 32.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Text(name, fontWeight = FontWeight.Bold, color = exploreInk,
+                        fontSize = 13.sp, maxLines = 1)
+                    if (category == name) Text("✓ Seçili", color = exploreGreen, fontSize = 11.sp)
+                }
+            }
+        }
+        Spacer(Modifier.height(23.dp))
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(9.dp)
@@ -335,29 +358,6 @@ fun ExploreScreen(
                 if (pair.size == 1) Spacer(Modifier.weight(1f))
             }
             Spacer(Modifier.height(10.dp))
-        }
-        Spacer(Modifier.height(27.dp))
-        Text("🥬 Temalara Göre Keşfet", fontSize = 22.sp,
-            fontWeight = FontWeight.ExtraBold, color = exploreInk)
-        Spacer(Modifier.height(12.dp))
-        Row(Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            categories.drop(1).forEachIndexed { index, name ->
-                val shades = listOf(0xFFFFE5CC, 0xFFFFD9BE, 0xFFFFEBD6, 0xFFF5DCD0)
-                Column(
-                    Modifier.width(132.dp).clip(RoundedCornerShape(20.dp))
-                        .background(Color(shades[index % shades.size]))
-                        .clickable { category = if (category == name) "Tümü" else name }
-                        .padding(vertical = 19.dp, horizontal = 10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(listOf("🥐", "🍲", "🍝", "🍰", "🥗", "🥪")[index], fontSize = 32.sp)
-                    Spacer(Modifier.height(8.dp))
-                    Text(name, fontWeight = FontWeight.Bold, color = exploreInk,
-                        fontSize = 13.sp, maxLines = 1)
-                    if (category == name) Text("✓ Seçili", color = exploreGreen, fontSize = 11.sp)
-                }
-            }
         }
         Spacer(Modifier.height(30.dp))
     }
